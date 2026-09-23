@@ -115,23 +115,12 @@
   color: var(--text-primary);
 }
 
-/* --- Frase Diaria en el Panel de Alumno (Arriba de todo) --- */
+/* --- Frase Diaria en el Panel de Alumno (Arriba de todo, Compacta & Editorial) --- */
 .platform-daily-quote-strip {
-  background: linear-gradient(135deg, rgba(244, 239, 230, 0.98), rgba(235, 227, 214, 0.98));
-  border-bottom: 1px solid rgba(192, 112, 83, 0.2);
-  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, rgba(248, 244, 237, 0.96), rgba(242, 236, 226, 0.96));
+  border-bottom: 1px solid rgba(192, 112, 83, 0.12);
+  padding: 0.55rem 1rem;
   position: relative;
-  overflow: hidden;
-}
-
-.platform-daily-quote-strip::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--terracotta), var(--olive));
 }
 
 .platform-quote-container {
@@ -139,7 +128,7 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.6rem 1.25rem;
+  gap: 0.45rem 1.15rem;
   text-align: center;
 }
 
@@ -147,20 +136,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.22rem 0.75rem;
-  background-color: rgba(192, 112, 83, 0.12);
-  border: 1px solid rgba(192, 112, 83, 0.25);
+  padding: 0.2rem 0.65rem;
+  background-color: rgba(192, 112, 83, 0.08);
+  border: 1px solid rgba(192, 112, 83, 0.2);
   border-radius: var(--radius-pill);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--terracotta-dark);
+  flex-shrink: 0;
 }
 
 .platform-quote-phrase {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-style: italic;
   color: var(--text-primary);
   margin: 0;
@@ -168,54 +158,56 @@
 }
 
 .platform-quote-author {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--olive-dark);
   letter-spacing: 0.04em;
   font-style: normal;
+  white-space: nowrap;
 }
 
-/* --- Welcome Sanctuary Banner (Datos Concisos y Útiles) --- */
+/* --- Welcome Sanctuary Banner (Comprimido, Limpio & Sin Emojis) --- */
 .sanctuary-banner {
   background: linear-gradient(180deg, #E6DDD0 0%, #EFE8DC 100%);
-  padding: 2.25rem 0 2rem 0;
+  padding: 1.35rem 0 1.25rem 0;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .sanctuary-banner-grid {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
 .greeting-title {
-  font-size: clamp(2rem, 3.5vw, 2.75rem);
-  margin-bottom: 0.35rem;
+  font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+  margin-bottom: 0.2rem;
+  letter-spacing: -0.01em;
 }
 
 .greeting-subtitle {
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 .stats-compact-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-top: 1.15rem;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
 }
 
 .stat-compact-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 0.75rem 0.65rem;
+  padding: 0.55rem 0.65rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  gap: 0.55rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 
@@ -224,10 +216,34 @@
   transform: translateY(-2px);
 }
 
-.stat-compact-icon {
-  font-size: 1.35rem;
-  line-height: 1;
+.stat-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.stat-compact-card:hover .stat-icon-wrap {
+  transform: scale(1.08);
+}
+
+.stat-icon-flame {
+  background-color: rgba(192, 112, 83, 0.12);
+  color: var(--terracotta);
+}
+
+.stat-icon-time {
+  background-color: rgba(107, 122, 94, 0.12);
+  color: var(--olive);
+}
+
+.stat-icon-lotus {
+  background-color: rgba(184, 134, 11, 0.12);
+  color: #B8860B;
 }
 
 .stat-compact-info {
@@ -238,14 +254,14 @@
 
 .stat-compact-info strong {
   font-family: var(--font-serif);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.1;
   color: var(--terracotta);
 }
 
 .stat-compact-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -255,16 +271,17 @@
   text-overflow: ellipsis;
 }
 
-/* Proximo vivo alert */
+/* Alerta de clase en vivo compacta & elegante */
 .live-class-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-medium);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(246, 241, 232, 0.95));
+  border: 1px solid rgba(107, 122, 94, 0.25);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-subtle);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.15rem;
   position: relative;
   overflow: hidden;
 }
@@ -272,18 +289,26 @@
 .live-class-card::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 15%;
+  bottom: 15%;
   left: 0;
-  bottom: 0;
-  width: 4px;
+  width: 3px;
+  border-radius: var(--radius-pill);
   background-color: var(--olive);
+}
+
+.live-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
 }
 
 .live-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -298,20 +323,47 @@
   animation: pulse-dot 1.8s infinite;
 }
 
+.live-card-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.live-card-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.btn-live-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* --- Resume Last Played Section --- */
 .resume-section {
-  padding: 2rem 0 1rem 0;
+  padding: 1.25rem 0 0.5rem 0;
 }
 
 .resume-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1.25rem;
   box-shadow: var(--shadow-subtle);
   transition: all var(--transition-fast);
 }
@@ -324,30 +376,31 @@
 .resume-left {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.15rem;
 }
 
 .resume-thumb {
-  width: 80px;
-  height: 52px;
+  width: 76px;
+  height: 48px;
   border-radius: var(--radius-sm);
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .resume-title {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 .resume-progress-bar {
-  width: 180px;
-  height: 5px;
+  width: 160px;
+  height: 4px;
   background-color: var(--sand-200);
   border-radius: var(--radius-pill);
   overflow: hidden;
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
 }
 
 .resume-progress-fill {
@@ -358,7 +411,7 @@
 
 /* --- Library & Secciones Horizontales de Prácticas --- */
 .library-section {
-  padding: 2.25rem 0 5rem 0;
+  padding: 1.75rem 0 4.5rem 0;
   flex-grow: 1;
 }
 
@@ -366,30 +419,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2.25rem;
+  gap: 0.85rem;
+  margin-bottom: 1.85rem;
   flex-wrap: wrap;
 }
 
 .platform-search-clean {
   position: relative;
   flex: 1;
-  min-width: 260px;
+  min-width: 250px;
 }
 
 .platform-search-clean .filter-search-input {
   width: 100%;
-  padding: 0.65rem 1rem 0.65rem 2.4rem;
+  padding: 0.55rem 1rem 0.55rem 2.3rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-medium);
   background-color: var(--bg-surface);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   transition: all var(--transition-fast);
 }
 
 .platform-search-clean .filter-search-input:focus {
   border-color: var(--terracotta);
-  box-shadow: 0 0 0 3px rgba(192, 112, 83, 0.15);
+  box-shadow: 0 0 0 3px rgba(192, 112, 83, 0.12);
 }
 
 .platform-search-clean .filter-search-icon {
@@ -397,8 +450,8 @@
   left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   color: var(--text-muted);
 }
 
@@ -408,13 +461,14 @@
   gap: 0.45rem;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-medium);
-  padding: 0.6rem 1rem;
+  padding: 0.52rem 0.95rem;
   border-radius: var(--radius-pill);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
+  color: var(--text-secondary);
 }
 
 .platform-fav-pill:hover {
@@ -422,9 +476,33 @@
   background-color: var(--sand-50);
 }
 
+.platform-fav-pill input[type="checkbox"] {
+  display: none;
+}
+
+.platform-fav-pill.active,
+.platform-fav-pill:has(input:checked) {
+  background-color: var(--terracotta-soft);
+  border-color: var(--terracotta);
+  color: var(--terracotta-dark);
+}
+
+.platform-fav-pill.active .fav-pill-icon,
+.platform-fav-pill:has(input:checked) .fav-pill-icon {
+  fill: var(--terracotta);
+  color: var(--terracotta);
+}
+
+.fav-pill-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: color var(--transition-fast), fill var(--transition-fast);
+}
+
 /* --- Dual Horizontal Carousels: Yoga & Meditación --- */
 .classes-section-group {
-  margin-bottom: 2.75rem;
+  margin-bottom: 2.25rem;
 }
 
 .classes-group-header {
@@ -432,31 +510,58 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.9rem;
   padding: 0 0.25rem;
 }
 
+.classes-group-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.group-header-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--terracotta);
+  flex-shrink: 0;
+}
+
+#group-meditation .group-header-icon {
+  color: var(--olive);
+}
+
 .classes-group-title {
-  font-size: clamp(1.4rem, 4vw, 1.85rem);
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 3.2vw, 1.65rem);
   color: var(--text-primary);
-  margin: 0.15rem 0 0.25rem 0;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .classes-group-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0.15rem 0 0 0;
 }
 
 .classes-group-count {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  color: var(--terracotta);
+  letter-spacing: 0.02em;
+  color: var(--terracotta-dark);
   background-color: var(--terracotta-soft);
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.7rem;
   border-radius: var(--radius-pill);
+  border: 1px solid rgba(192, 112, 83, 0.15);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+#group-meditation .classes-group-count {
+  color: var(--olive-dark);
+  background-color: var(--olive-soft);
+  border-color: rgba(107, 122, 94, 0.2);
 }
 
 .classes-slider-wrap {
@@ -470,7 +575,7 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   gap: 1.15rem;
-  padding: 0.5rem 0.25rem 1.15rem 0.25rem;
+  padding: 0.4rem 0.25rem 1rem 0.25rem;
   scrollbar-width: none;
   cursor: grab;
 }
@@ -480,9 +585,9 @@
 }
 
 .classes-carousel .class-card {
-  flex: 0 0 310px;
-  min-width: 310px;
-  max-width: 310px;
+  flex: 0 0 290px;
+  min-width: 290px;
+  max-width: 290px;
   scroll-snap-align: start;
   margin: 0;
 }
@@ -491,7 +596,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .classes-drag-hint {

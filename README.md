@@ -1,7 +1,7 @@
 # Namasté — Espacio de Yoga y Bienestar Consciente
 
 > **Cuerpo · Mente · Corazón**  
-> Guiado por **Vale Manassero** (+14 años de experiencia).
+> Guiado por **Valeria Manassero** (+14 años de experiencia).
 
 Plataforma digital y Shala online concebido para cultivar presencia, honrar tus ritmos y reencontrarte en el silencio. Más que una práctica física, un refugio consciente para volver a tu centro de calma cada día.
 

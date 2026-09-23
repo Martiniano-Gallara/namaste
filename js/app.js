@@ -1090,8 +1090,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const codeEl = document.getElementById('drawer-access-code');
         const code = codeEl ? codeEl.textContent : 'NAMASTE-ALUMNO';
         navigator.clipboard.writeText(code).then(() => {
-          btnCopyDrawerCode.textContent = '¡Copiado!';
-          setTimeout(() => { btnCopyDrawerCode.textContent = '📋 Copiar código'; }, 2000);
+          btnCopyDrawerCode.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>¡Copiado!</span>
+          `;
+          setTimeout(() => {
+            btnCopyDrawerCode.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copiar código</span>
+            `;
+          }, 2000);
         });
       });
     }
@@ -1195,15 +1203,30 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.style.color = '';
         statusBadge.textContent = '● Membresía Activa';
       }
-      if (pauseBtn) pauseBtn.textContent = '⏸️ Pausar o Cancelar Membresía';
+      if (pauseBtn) {
+        pauseBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+          <span>Pausar o Cancelar Membresía</span>
+        `;
+      }
     } else {
       if (statusBadge) {
         statusBadge.className = 'status-badge-active';
         statusBadge.style.backgroundColor = '#F5ECE8';
         statusBadge.style.color = '#B93826';
-        statusBadge.textContent = '⏸ En Pausa';
+        statusBadge.textContent = '● En Pausa';
       }
-      if (pauseBtn) pauseBtn.textContent = '▶️ Reactivar mi membresía';
+      if (pauseBtn) {
+        pauseBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Reactivar mi membresía</span>
+        `;
+      }
     }
   }
 
