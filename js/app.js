@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Habilita arrastre fluido con mouse para los carruseles (testimonios y beneficios) en escritorio
+   * Habilita arrastre fluido con mouse para los carruseles (testimonios, planes y clases) en escritorio
    */
   function setupHorizontalSliders() {
-    ['testimonials-slider', 'benefits-slider', 'steps-slider', 'plans-slider'].forEach(id => {
+    ['testimonials-slider', 'benefits-slider', 'steps-slider', 'plans-slider', 'carousel-yoga', 'carousel-meditation'].forEach(id => {
       const slider = document.getElementById(id);
       if (!slider) return;
 
@@ -107,19 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Configura la Cita del Día con rotación automática cada 24 horas
+   * Se muestra tanto en la landing como en la parte superior del panel del alumno
    */
   function setupDailyQuote() {
+    if (typeof getQuoteOfTheDay !== 'function') return;
+    const quote = getQuoteOfTheDay();
+    if (!quote) return;
+
+    // Cita en Landing
     const textEl = document.getElementById('daily-quote-text');
     const authorEl = document.getElementById('daily-quote-author');
-    if (!textEl || !authorEl) return;
+    if (textEl) textEl.textContent = quote.text;
+    if (authorEl) authorEl.textContent = quote.author.startsWith('—') ? quote.author : `— ${quote.author}`;
 
-    if (typeof getQuoteOfTheDay === 'function') {
-      const quote = getQuoteOfTheDay();
-      if (quote) {
-        textEl.textContent = quote.text;
-        authorEl.textContent = quote.author.startsWith('—') ? quote.author : `— ${quote.author}`;
-      }
-    }
+    // Cita en Panel de Alumno (Arriba de todo)
+    const platformTextEl = document.getElementById('platform-quote-phrase-text');
+    const platformAuthorEl = document.getElementById('platform-quote-phrase-author');
+    if (platformTextEl) platformTextEl.textContent = quote.text;
+    if (platformAuthorEl) platformAuthorEl.textContent = quote.author.startsWith('—') ? quote.author : `— ${quote.author}`;
   }
 
   // ========================================================================
@@ -812,62 +817,59 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderPlatformClasses() {
-    const grid = document.getElementById('platform-classes-grid');
+    const yogaCarousel = document.getElementById('carousel-yoga');
+    const medCarousel = document.getElementById('carousel-meditation');
+    const yogaCountEl = document.getElementById('yoga-classes-count');
+    const medCountEl = document.getElementById('meditation-classes-count');
     const emptyState = document.getElementById('platform-empty-state');
-    const counterEl = document.getElementById('classes-count-label');
+    const yogaGroup = document.getElementById('group-yoga');
+    const medGroup = document.getElementById('group-meditation');
 
-    if (!grid) return;
+    if (!yogaCarousel || !medCarousel) return;
 
     let filtered = CLASSES_DATA.filter(c => {
-      // Filtro Categoría
-      if (state.activeCategoryFilter !== 'all' && c.category !== state.activeCategoryFilter) {
-        return false;
-      }
-      // Filtro Duración
-      if (state.activeDurationFilter === 'short' && c.duration > 20) return false;
-      if (state.activeDurationFilter === 'medium' && (c.duration < 21 || c.duration > 45)) return false;
-      if (state.activeDurationFilter === 'long' && c.duration < 46) return false;
-
-      // Filtro Nivel
-      if (state.activeLevelFilter !== 'all' && c.level !== state.activeLevelFilter) {
-        return false;
-      }
-
       // Filtro Solo Favoritas
       if (state.onlyFavorites && !ProgressService.isFavorite(c.id)) {
         return false;
       }
 
-      // Filtro Solo Nuevas
-      if (state.onlyNew && !c.isNew) {
-        return false;
-      }
-
       // Búsqueda de texto
       if (state.searchQuery) {
-        const matchTitle = c.title.toLowerCase().includes(state.searchQuery);
-        const matchInstructor = c.instructor.toLowerCase().includes(state.searchQuery);
-        const matchDesc = c.description.toLowerCase().includes(state.searchQuery);
-        if (!matchTitle && !matchInstructor && !matchDesc) return false;
+        const query = state.searchQuery.toLowerCase();
+        const matchTitle = (c.title || '').toLowerCase().includes(query);
+        const matchInstructor = (c.instructor || '').toLowerCase().includes(query);
+        const matchDesc = (c.description || '').toLowerCase().includes(query);
+        const matchCat = (c.categoryLabel || '').toLowerCase().includes(query);
+        const matchIntentions = (c.intentions || []).some(i => i.toLowerCase().includes(query));
+        if (!matchTitle && !matchInstructor && !matchDesc && !matchCat && !matchIntentions) return false;
       }
 
       return true;
     });
 
-    if (counterEl) {
-      counterEl.textContent = `Mostrando ${filtered.length} clases`;
+    const isMeditation = (c) => c.category === 'meditacion' || c.category === 'relax';
+    const yogaClasses = filtered.filter(c => !isMeditation(c));
+    const medClasses = filtered.filter(c => isMeditation(c));
+
+    if (yogaCountEl) {
+      yogaCountEl.textContent = `${yogaClasses.length} ${yogaClasses.length === 1 ? 'práctica' : 'prácticas'}`;
+    }
+    if (medCountEl) {
+      medCountEl.textContent = `${medClasses.length} ${medClasses.length === 1 ? 'práctica' : 'prácticas'}`;
     }
 
     if (filtered.length === 0) {
-      grid.style.display = 'none';
+      if (yogaGroup) yogaGroup.style.display = 'none';
+      if (medGroup) medGroup.style.display = 'none';
       if (emptyState) emptyState.style.display = 'block';
       return;
     }
 
-    grid.style.display = 'grid';
     if (emptyState) emptyState.style.display = 'none';
+    if (yogaGroup) yogaGroup.style.display = yogaClasses.length > 0 ? 'block' : 'none';
+    if (medGroup) medGroup.style.display = medClasses.length > 0 ? 'block' : 'none';
 
-    grid.innerHTML = filtered.map(c => {
+    function createCardHTML(c) {
       const isFav = ProgressService.isFavorite(c.id);
       const isDone = ProgressService.isCompleted(c.id);
 
@@ -922,32 +924,36 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </article>
       `;
-    }).join('');
+    }
 
-    // Eventos de apertura de reproductor y de favoritos
-    grid.querySelectorAll('.class-card-platform').forEach(card => {
-      card.addEventListener('click', (e) => {
-        // Evitar activar el reproductor si se hizo clic directamente en el corazón de favoritos
-        if (e.target.closest('.favorite-btn')) return;
-        const classId = card.getAttribute('data-class-id');
-        const classObj = CLASSES_DATA.find(c => c.id === classId);
-        if (classObj) openClassPlayer(classObj);
+    yogaCarousel.innerHTML = yogaClasses.map(createCardHTML).join('');
+    medCarousel.innerHTML = medClasses.map(createCardHTML).join('');
+
+    // Eventos de apertura de reproductor y de favoritos en ambos carruseles
+    [yogaCarousel, medCarousel].forEach(carousel => {
+      carousel.querySelectorAll('.class-card-platform').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.favorite-btn')) return;
+          const classId = card.getAttribute('data-class-id');
+          const classObj = CLASSES_DATA.find(c => c.id === classId);
+          if (classObj) openClassPlayer(classObj);
+        });
       });
-    });
 
-    grid.querySelectorAll('.favorite-btn').forEach(favBtn => {
-      favBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const classId = favBtn.getAttribute('data-favorite-id');
-        const isNowFav = ProgressService.toggleFavorite(classId);
-        favBtn.classList.toggle('active', isNowFav);
-        const svg = favBtn.querySelector('svg');
-        if (svg) {
-          svg.setAttribute('fill', isNowFav ? 'currentColor' : 'none');
-        }
-        if (state.onlyFavorites) {
-          renderPlatformClasses();
-        }
+      carousel.querySelectorAll('.favorite-btn').forEach(favBtn => {
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const classId = favBtn.getAttribute('data-favorite-id');
+          const isNowFav = ProgressService.toggleFavorite(classId);
+          favBtn.classList.toggle('active', isNowFav);
+          const svg = favBtn.querySelector('svg');
+          if (svg) {
+            svg.setAttribute('fill', isNowFav ? 'currentColor' : 'none');
+          }
+          if (state.onlyFavorites) {
+            renderPlatformClasses();
+          }
+        });
       });
     });
   }
@@ -1049,6 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // PERFIL DEL ALUMNO & ESTADO DE MEMBRESÍA
   // ========================================================================
   function setupProfileDrawer() {
+    // Abrir drawer desde botón de perfil en desktop
     const profileTrigger = document.getElementById('btn-open-user-profile');
     if (profileTrigger) {
       profileTrigger.addEventListener('click', () => {
@@ -1057,6 +1064,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Abrir drawer desde botón hamburguesa de la plataforma en móvil
+    const platformMenuToggle = document.getElementById('platform-menu-toggle');
+    if (platformMenuToggle) {
+      platformMenuToggle.addEventListener('click', () => {
+        populateProfileDrawer();
+        openModal(modals.profileDrawer);
+      });
+    }
+
+    // Cerrar sesión
     const btnLogout = document.getElementById('btn-profile-logout');
     if (btnLogout) {
       btnLogout.addEventListener('click', () => {
@@ -1066,22 +1083,82 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Copiar código de acceso del alumno
     const btnCopyDrawerCode = document.getElementById('btn-copy-drawer-code');
     if (btnCopyDrawerCode) {
       btnCopyDrawerCode.addEventListener('click', () => {
-        const code = document.getElementById('drawer-access-code').textContent;
+        const codeEl = document.getElementById('drawer-access-code');
+        const code = codeEl ? codeEl.textContent : 'NAMASTE-ALUMNO';
         navigator.clipboard.writeText(code).then(() => {
           btnCopyDrawerCode.textContent = '¡Copiado!';
-          setTimeout(() => { btnCopyDrawerCode.textContent = 'Copiar código'; }, 2000);
+          setTimeout(() => { btnCopyDrawerCode.textContent = '📋 Copiar código'; }, 2000);
         });
       });
     }
 
+    // Pausar / Reactivar membresía
     const btnTogglePause = document.getElementById('btn-toggle-pause-membership');
     if (btnTogglePause) {
       btnTogglePause.addEventListener('click', () => {
-        const isActive = MembershipService.toggleMembershipPause();
+        MembershipService.toggleMembershipPause();
         populateProfileDrawer();
+      });
+    }
+
+    // Cambiar de plan / Ver opciones
+    const btnChangePlan = document.getElementById('btn-drawer-change-plan');
+    if (btnChangePlan) {
+      btnChangePlan.addEventListener('click', () => {
+        closeModal(modals.profileDrawer);
+        switchView('landing');
+        setTimeout(() => {
+          const plansSection = document.getElementById('planes');
+          if (plansSection) plansSection.scrollIntoView({ behavior: 'smooth' });
+        }, 180);
+      });
+    }
+
+    // Botón volver a la página principal desde drawer
+    const btnBackLanding = document.getElementById('btn-drawer-back-landing');
+    if (btnBackLanding) {
+      btnBackLanding.addEventListener('click', () => {
+        closeModal(modals.profileDrawer);
+        switchView('landing');
+      });
+    }
+
+    // Accesos directos a carruseles desde el drawer
+    const shortcutYoga = document.getElementById('shortcut-yoga-link');
+    if (shortcutYoga) {
+      shortcutYoga.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal(modals.profileDrawer);
+        const el = document.getElementById('group-yoga');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    const shortcutMed = document.getElementById('shortcut-meditation-link');
+    if (shortcutMed) {
+      shortcutMed.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal(modals.profileDrawer);
+        const el = document.getElementById('group-meditation');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    // Limpiar filtros cuando no hay resultados
+    const btnClearFilters = document.getElementById('btn-clear-platform-filters');
+    if (btnClearFilters) {
+      btnClearFilters.addEventListener('click', () => {
+        state.searchQuery = '';
+        state.onlyFavorites = false;
+        const searchInput = document.getElementById('platform-search-input');
+        if (searchInput) searchInput.value = '';
+        const favToggle = document.getElementById('filter-toggle-favorites');
+        if (favToggle) favToggle.checked = false;
+        renderPlatformClasses();
       });
     }
   }
@@ -1090,26 +1167,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = AuthService.getCurrentUser();
     if (!user) return;
 
-    document.getElementById('drawer-user-name').textContent = user.name;
-    document.getElementById('drawer-user-email').textContent = user.email;
-    document.getElementById('drawer-access-code').textContent = user.accessCode;
-    document.getElementById('drawer-plan-name').textContent = user.planName || 'Plan Santuario';
-    document.getElementById('drawer-member-since').textContent = user.memberSince || 'Marzo 2026';
-    document.getElementById('drawer-next-billing').textContent = user.nextBillingDate || '22 Octubre 2026';
+    const nameEl = document.getElementById('drawer-user-name');
+    if (nameEl) nameEl.textContent = user.name;
+
+    const emailEl = document.getElementById('drawer-user-email');
+    if (emailEl) emailEl.textContent = user.email;
+
+    const codeEl = document.getElementById('drawer-access-code');
+    if (codeEl) codeEl.textContent = user.accessCode;
+
+    const planNameEl = document.getElementById('drawer-plan-name');
+    if (planNameEl) planNameEl.textContent = user.planName || 'Plan Santuario';
+
+    const memberSinceEl = document.getElementById('drawer-member-since');
+    if (memberSinceEl) memberSinceEl.textContent = user.memberSince || 'Marzo 2026';
+
+    const nextBillingEl = document.getElementById('drawer-next-billing');
+    if (nextBillingEl) nextBillingEl.textContent = user.nextBillingDate || '22 Octubre 2026';
 
     const statusBadge = document.getElementById('drawer-membership-status');
     const pauseBtn = document.getElementById('btn-toggle-pause-membership');
 
     if (user.active) {
-      statusBadge.className = 'status-badge-active';
-      statusBadge.textContent = '● Membresía Activa';
-      if (pauseBtn) pauseBtn.textContent = 'Pausar temporalmente membresía';
+      if (statusBadge) {
+        statusBadge.className = 'status-badge-active';
+        statusBadge.style.backgroundColor = '';
+        statusBadge.style.color = '';
+        statusBadge.textContent = '● Membresía Activa';
+      }
+      if (pauseBtn) pauseBtn.textContent = '⏸️ Pausar o Cancelar Membresía';
     } else {
-      statusBadge.className = 'status-badge-active';
-      statusBadge.style.backgroundColor = '#F5ECE8';
-      statusBadge.style.color = '#B93826';
-      statusBadge.textContent = '⏸ En Pausa';
-      if (pauseBtn) pauseBtn.textContent = 'Reactivar mi membresía';
+      if (statusBadge) {
+        statusBadge.className = 'status-badge-active';
+        statusBadge.style.backgroundColor = '#F5ECE8';
+        statusBadge.style.color = '#B93826';
+        statusBadge.textContent = '⏸ En Pausa';
+      }
+      if (pauseBtn) pauseBtn.textContent = '▶️ Reactivar mi membresía';
     }
   }
 

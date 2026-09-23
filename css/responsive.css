@@ -809,14 +809,96 @@
     width: 100%;
   }
 
+  /* Reproductor Inmersivo de Video / Detalle de Clase Móvil */
+  .player-modal-backdrop {
+    padding: 0 !important;
+  }
+
   .player-modal-dialog {
-    max-height: 100vh;
-    height: 100vh;
-    border-radius: 0;
+    max-height: 100vh !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+  }
+
+  .player-video-wrapper {
+    width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    max-height: 40vh !important;
+    flex-shrink: 0 !important;
+  }
+
+  .player-video-wrapper video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .player-close-floating {
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1rem !important;
   }
 
   .player-details-scroll {
-    padding: 1.25rem;
+    padding: 1.15rem 1rem 4rem 1rem !important;
+    gap: 0.95rem !important;
+    background-color: var(--bg-surface) !important;
+  }
+
+  .player-meta-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .player-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .player-class-main-title {
+    font-size: clamp(1.25rem, 5vw, 1.55rem) !important;
+    margin: 0.1rem 0 0.4rem 0 !important;
+    line-height: 1.25 !important;
+  }
+
+  .btn-complete-practice {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.88rem !important;
+  }
+
+  .player-description-text {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .player-specs-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .player-props-box {
+    padding: 0.95rem 1rem !important;
+  }
+
+  .player-instructor-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+    padding-top: 1rem !important;
+  }
+
+  .btn-spotify-playlist {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .footer-compact-bottom {
@@ -830,8 +912,161 @@
     justify-content: center;
   }
 
+  /* Header del Panel de Alumno en Móvil */
+  .platform-header {
+    height: 60px !important;
+    padding: 0 0.5rem !important;
+  }
+
+  .platform-header-inner {
+    padding: 0 !important;
+  }
+
+  .platform-nav-left {
+    gap: 0.75rem !important;
+  }
+
   .platform-nav-left .platform-links {
-    display: none;
+    display: none !important;
+  }
+
+  .platform-user-panel {
+    gap: 0.5rem !important;
+  }
+
+  .streak-badge {
+    padding: 0.3rem 0.65rem !important;
+    font-size: 0.76rem !important;
+    gap: 0.3rem !important;
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .show-mobile {
+    display: flex !important;
+  }
+
+  .platform-hamburger-btn {
+    display: flex !important;
+    width: 38px !important;
+    height: 38px !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-medium) !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  /* Frase Diaria Móvil en el Panel del Alumno */
+  .platform-daily-quote-strip {
+    padding: 0.75rem 0.85rem !important;
+  }
+
+  .platform-quote-container {
+    gap: 0.4rem 0.75rem !important;
+  }
+
+  .platform-quote-phrase {
+    font-size: 0.95rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .platform-quote-author {
+    font-size: 0.75rem !important;
+  }
+
+  /* Banner de Bienvenida y Métricas Concisas en Móvil */
+  .sanctuary-banner {
+    padding: 1.5rem 0 1.35rem 0 !important;
+  }
+
+  .sanctuary-banner-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .greeting-title {
+    font-size: clamp(1.65rem, 6vw, 2.1rem) !important;
+  }
+
+  .greeting-subtitle {
+    font-size: 0.88rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .stats-compact-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+    margin-top: 0.85rem !important;
+  }
+
+  .stat-compact-card {
+    padding: 0.65rem 0.45rem !important;
+    gap: 0.4rem !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .stat-compact-icon {
+    font-size: 1.15rem !important;
+  }
+
+  .stat-compact-info {
+    align-items: center !important;
+  }
+
+  .stat-compact-info strong {
+    font-size: 1.2rem !important;
+  }
+
+  .stat-compact-label {
+    font-size: 0.64rem !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .live-class-card {
+    padding: 1.15rem !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Carruseles Horizontales de Yoga y Meditación en Móvil */
+  .classes-section-group {
+    margin-bottom: 2rem !important;
+  }
+
+  .classes-group-header {
+    margin-bottom: 0.85rem !important;
+  }
+
+  .classes-group-title {
+    font-size: clamp(1.2rem, 5vw, 1.55rem) !important;
+  }
+
+  .classes-group-subtitle {
+    font-size: 0.8rem !important;
+  }
+
+  .classes-carousel {
+    gap: 0.85rem !important;
+    padding: 0.35rem 0.25rem 0.85rem 0.25rem !important;
+  }
+
+  .classes-carousel .class-card {
+    flex: 0 0 82% !important;
+    min-width: 260px !important;
+    max-width: 310px !important;
+  }
+
+  /* Drawer de Perfil & Membresía Móvil */
+  .profile-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .profile-drawer-body {
+    padding: 1.25rem !important;
+    gap: 1.15rem !important;
   }
 }
 
