@@ -1,0 +1,858 @@
+/* ==========================================================================
+   NAMASTÉ - RESPONSIVE DESIGN & MOBILE FIRST OPTIMIZATIONS
+   ========================================================================== */
+
+/* --- Mobile Bottom Navigation --- */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-nav-height);
+  background-color: rgba(239, 232, 220, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 150;
+  padding: 0 1rem;
+}
+
+.mobile-nav-items {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  list-style: none;
+}
+
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+  padding: 0.35rem 0.5rem;
+}
+
+.mobile-nav-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-nav-btn.active,
+.mobile-nav-btn:hover {
+  color: var(--terracotta);
+}
+
+/* --- Media Queries (Tablet & Desktop Small) --- */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-visual {
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .philosophy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .pricing-card.recommended {
+    transform: none;
+  }
+
+  .pricing-card.recommended:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Beneficios en modo horizontal deslizable */
+  .benefits-section {
+    padding-top: 2rem !important;
+    padding-bottom: 2.25rem !important;
+  }
+
+  .benefits-header {
+    margin-bottom: 1.15rem !important;
+  }
+
+  .benefits-title {
+    font-size: clamp(1.2rem, 5.2vw, 1.8rem) !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  .benefits-subtitle {
+    max-width: 320px !important;
+    margin: 0.35rem auto 0 auto !important;
+    font-size: 0.88rem !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+  }
+
+  .benefits-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0.85rem !important;
+    padding: 0.25rem 0.5rem 0.85rem 0.25rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .benefits-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .benefit-card {
+    flex: 0 0 82% !important;
+    min-width: 260px !important;
+    max-width: 310px !important;
+    padding: 1.35rem 1.25rem !important;
+    border-radius: var(--radius-md) !important;
+    gap: 0.75rem !important;
+    scroll-snap-align: start !important;
+  }
+
+  .benefit-card h3 {
+    font-size: 1.05rem !important;
+  }
+
+  .benefit-card p {
+    font-size: 0.9rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .benefits-slider-hint {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0.2rem !important;
+  }
+
+  .benefits-drag-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--terracotta);
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+
+  /* Reseñas / Testimonios Comprimido & Deslizable */
+  .testimonials-section {
+    padding-top: 2rem !important;
+    padding-bottom: 2.25rem !important;
+  }
+
+  .testimonials-header {
+    margin-bottom: 1.15rem !important;
+  }
+
+  .testimonials-title {
+    font-size: clamp(1.2rem, 5.2vw, 1.8rem) !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  .testimonials-subtitle {
+    max-width: 320px !important;
+    margin: 0.35rem auto 0 auto !important;
+    font-size: 0.88rem !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+  }
+
+  .testimonials-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0.85rem !important;
+    padding: 0.25rem 0.5rem 0.85rem 0.25rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .testimonials-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .testimonial-card {
+    flex: 0 0 82% !important;
+    min-width: 260px !important;
+    max-width: 310px !important;
+    padding: 1.25rem 1.15rem !important;
+    border-radius: var(--radius-md) !important;
+    gap: 0.75rem !important;
+    scroll-snap-align: start !important;
+  }
+
+  .testimonial-quote {
+    font-size: 0.94rem !important;
+    line-height: 1.48 !important;
+  }
+
+  .testimonial-author {
+    padding-top: 0.65rem !important;
+  }
+
+  .testimonials-slider-hint {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0.2rem !important;
+  }
+
+  .testimonials-drag-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--terracotta);
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+
+  .footer-compact-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .footer-brand-compact {
+    justify-content: center;
+  }
+
+  .footer-nav-compact {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .footer-copy {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .footer-copyright-text {
+    white-space: nowrap !important;
+    font-size: clamp(0.66rem, 2.75vw, 0.82rem) !important;
+    line-height: 1.3 !important;
+    display: block !important;
+  }
+
+  .footer-dev {
+    font-size: 0.76rem !important;
+    display: block !important;
+  }
+
+  .sanctuary-banner-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* FAQ Acordeón Comprimido (Preguntas en 1 solo renglón, respuestas concisas) */
+  .faq-container {
+    gap: 0.65rem !important;
+  }
+
+  .faq-trigger {
+    padding: 1rem 1.15rem !important;
+    gap: 0.65rem !important;
+  }
+
+  .faq-trigger h4 {
+    font-size: clamp(0.82rem, 3.4vw, 0.95rem) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.25 !important;
+  }
+
+  .faq-icon {
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .faq-item.open .faq-content {
+    padding: 0 1.15rem 1.15rem 1.15rem !important;
+  }
+
+  .faq-content p {
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* --- Media Queries (Mobile & Phablet) --- */
+@media (max-width: 768px) {
+  /* 1. Eliminar apartado de arriba en celulares */
+  .top-bar {
+    display: none !important;
+  }
+
+  .nav-links {
+    display: none !important;
+  }
+
+  /* 2. Header reducido con menú hamburguesa */
+  .site-header {
+    height: 52px !important;
+    padding: 0.35rem 0 !important;
+  }
+
+  .brand-logo {
+    gap: 0.5rem;
+  }
+
+  .brand-icon-img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .brand-title {
+    font-size: 1.15rem !important;
+  }
+
+  .header-actions #nav-btn-start,
+  .header-actions #nav-btn-login {
+    display: none !important;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  /* 3. Hero visible en pantallazo inicial con imagen difuminada en el fondo */
+  .hero-section {
+    min-height: calc(100svh - 52px) !important;
+    min-height: calc(100dvh - 52px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    padding: 1rem 0 1.5rem 0 !important;
+    background-color: #FAF8F5 !important;
+  }
+
+  .hero-section::before,
+  .hero-section::after {
+    display: none !important;
+  }
+
+  .hero-bg-mobile {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .hero-bg-mobile-img {
+    position: absolute !important;
+    top: -5% !important;
+    left: -5% !important;
+    width: 110% !important;
+    height: 110% !important;
+    object-fit: cover !important;
+    object-position: center 25% !important;
+    filter: blur(2.5px) brightness(0.96) saturate(0.95) !important;
+    opacity: 0.38 !important;
+    transform: scale(1.04) !important;
+  }
+
+  .hero-bg-mobile-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    background: linear-gradient(
+      180deg,
+      rgba(250, 248, 245, 0.7) 0%,
+      rgba(250, 248, 245, 0.45) 30%,
+      rgba(250, 248, 245, 0.78) 75%,
+      rgba(250, 248, 245, 0.96) 100%
+    ) !important;
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 2;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem !important;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+
+  .hero-emblem-badge {
+    align-self: flex-start !important;
+    margin: 0 0 0.35rem 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border-radius: 0 !important;
+    gap: 0.45rem !important;
+  }
+
+  .hero-emblem-img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .hero-emblem-text {
+    font-size: 0.74rem !important;
+    letter-spacing: 0.14em !important;
+    color: var(--terracotta) !important;
+    font-weight: 600 !important;
+  }
+
+  .hero-title {
+    font-size: clamp(1.75rem, 7.8vw, 2.35rem) !important;
+    line-height: 1.18 !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .hero-title-line-1 {
+    display: block !important;
+  }
+
+  .hero-title-line-2 {
+    display: block !important;
+    white-space: nowrap !important;
+  }
+
+  .hero-title-line-2 em {
+    white-space: nowrap !important;
+  }
+
+  .hero-description {
+    font-size: 0.94rem !important;
+    line-height: 1.55 !important;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem !important;
+    max-width: 100% !important;
+  }
+
+  /* 6. Solo botón comenzar */
+  .hero-ctas {
+    width: 100% !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .hero-ctas .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.85rem 1.4rem !important;
+    font-size: 1.05rem !important;
+  }
+
+  /* 4. Tarjetas horizontales de datos reales (ambas en 1 solo renglón) */
+  .hero-trust-bar {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  .trust-card {
+    padding: 0.65rem 0.45rem !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    justify-content: center !important;
+    gap: 0.2rem !important;
+  }
+
+  .trust-number {
+    font-size: clamp(0.9rem, 3.4vw, 1.15rem) !important;
+    white-space: nowrap !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  .trust-label {
+    font-size: clamp(0.55rem, 2.1vw, 0.65rem) !important;
+    letter-spacing: 0.01em !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Ocultar bloque visual extra para mantener el pantallazo inicial limpio */
+  .hero-visual {
+    display: none !important;
+  }
+
+  /* Frase Diaria Móvil (Ancho Completo, Sin Tarjeta) */
+  .daily-quote-section {
+    padding: 2.2rem 1rem !important;
+    width: 100% !important;
+  }
+
+  .daily-quote-container {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .daily-quote-bg-img {
+    opacity: 0.35 !important;
+  }
+
+  .daily-quote-watermark {
+    font-size: 5.5rem !important;
+    top: -0.8rem !important;
+    opacity: 0.08 !important;
+  }
+
+  .daily-quote-inner {
+    gap: 0.55rem !important;
+  }
+
+  .daily-quote-header {
+    padding: 0.22rem 0.75rem !important;
+  }
+
+  .daily-quote-label {
+    font-size: 0.64rem !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  .daily-quote-phrase {
+    font-size: 1.25rem !important;
+    line-height: 1.4 !important;
+    margin: 0.2rem 0 0.1rem 0 !important;
+    max-width: 90% !important;
+  }
+
+  .daily-quote-author {
+    font-size: 0.74rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  /* Nuestra Esencia Móvil (Sin Fondo, Sin Tarjeta, Editorial Premium) */
+  .philosophy-section {
+    padding: 2.8rem 1.25rem !important;
+    background-color: var(--bg-canvas-alt) !important;
+  }
+
+  .philosophy-content {
+    max-width: 100% !important;
+  }
+
+  .philosophy-title {
+    font-size: clamp(1.85rem, 6.5vw, 2.3rem) !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  .philosophy-divider {
+    width: 36px !important;
+    height: 1.5px !important;
+    margin: 0 auto 1rem auto !important;
+  }
+
+  .philosophy-text {
+    font-size: 0.98rem !important;
+    line-height: 1.68 !important;
+  }
+
+  /* Cómo Funciona / Paso a Paso Móvil */
+  .steps-title {
+    font-size: clamp(1.4rem, 5.5vw, 1.85rem) !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.015em !important;
+  }
+
+  .steps-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0.85rem !important;
+    padding: 0.25rem 0.5rem 0.85rem 0.25rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .steps-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .step-card {
+    flex: 0 0 82% !important;
+    min-width: 260px !important;
+    max-width: 310px !important;
+    padding: 1.4rem 1.3rem !important;
+    border-radius: var(--radius-md) !important;
+    gap: 0.75rem !important;
+    scroll-snap-align: start !important;
+  }
+
+  .step-card h3 {
+    font-size: 1.05rem !important;
+  }
+
+  .step-card p {
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .steps-slider-hint {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0.2rem !important;
+  }
+
+  .steps-drag-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--terracotta);
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+
+  /* Planes y Membresías Móvil */
+  .plans-section {
+    padding: 2.25rem 0 2.5rem 0 !important;
+  }
+
+  .plans-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .plans-title {
+    font-size: clamp(1.4rem, 5.5vw, 1.85rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  .billing-switcher-container {
+    margin-top: 1.15rem !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .billing-switcher {
+    padding: 3px !important;
+    margin: 0 auto !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+  }
+
+  .billing-switch-btn {
+    padding: 0.45rem 1.35rem !important;
+    font-size: 0.84rem !important;
+    min-width: 95px !important;
+    text-align: center !important;
+  }
+
+  /* Carrusel Horizontal de Planes Móvil (Deslizable como las reseñas) */
+  .plans-slider-wrap {
+    position: relative !important;
+    width: 100% !important;
+  }
+
+  .plans-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0.85rem !important;
+    padding: 0.85rem 0.5rem 1.25rem 0.5rem !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .plans-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .pricing-card {
+    flex: 0 0 84% !important;
+    min-width: 270px !important;
+    max-width: 320px !important;
+    padding: 1.45rem 1.25rem !important;
+    border-radius: var(--radius-md) !important;
+    scroll-snap-align: start !important;
+  }
+
+  .plans-slider-hint {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .plans-drag-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--terracotta);
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+
+  .pricing-desc {
+    min-height: auto !important;
+    font-size: 0.82rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .pricing-amount {
+    font-size: 2.2rem !important;
+  }
+
+  .pricing-features-list {
+    gap: 0.45rem !important;
+    margin-bottom: 1.15rem !important;
+  }
+
+  .pricing-feature-item {
+    font-size: 0.84rem !important;
+  }
+
+  .classes-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-floating-quote {
+    position: static;
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+
+  .filter-row-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search-box {
+    width: 100%;
+  }
+
+  .filter-tabs {
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-tab-pill {
+    white-space: nowrap;
+  }
+
+  .resume-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resume-right {
+    width: 100%;
+  }
+
+  .resume-right .btn {
+    width: 100%;
+  }
+
+  .player-modal-dialog {
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .player-details-scroll {
+    padding: 1.25rem;
+  }
+
+  .footer-compact-bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .footer-brand-text {
+    justify-content: center;
+  }
+
+  .platform-nav-left .platform-links {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 0.75rem 0 1.25rem 0 !important;
+  }
+
+  .hero-content {
+    gap: 0.65rem !important;
+  }
+
+  .hero-title {
+    font-size: clamp(1.65rem, 7.2vw, 2rem) !important;
+  }
+
+  .modal-dialog {
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+  }
+}

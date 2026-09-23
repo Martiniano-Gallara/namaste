@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namasté — Escuela de Yoga & Membresía de Prácticas Conscientes Online</title>
+  <meta name="description"
+    content="Santuario online de yoga, meditación y prácticas conscientes. Membresías mensuales para cultivar tu bienestar diario con clases guiadas, sesiones en vivo y acompañamiento cercano." />
+  <meta name="keywords"
+    content="yoga online, escuela de yoga, clases de yoga en español, meditación guiada, vinyasa flow, hatha yoga, yin yoga, pranayama, membresía de yoga" />
+
+  <!-- Google Fonts: Inter + EB Garamond -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet" />
+
+  <!-- Favicon & Estilos -->
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/platform.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body>
+
+  <!-- ====================================================================
+       1. LANDING PAGE PRINCIPAL (PÚBLICA)
+       ==================================================================== -->
+  <div id="view-landing">
+
+    <!-- Top Announcement Bar -->
+    <div class="top-bar">
+      <span class="top-bar-dot"></span>
+      <span>Namasté por Vale Manassero • +14 años de trayectoria | desde 2012 • <em>Cuerpo • Mente • Corazón</em></span>
+    </div>
+
+    <!-- Header Principal -->
+    <header class="site-header">
+      <div class="container header-container">
+        <a href="#hero" class="brand-logo" id="header-brand-logo" aria-label="Namasté - Espacio de Bienestar">
+          <img src="assets/images/logo_icon.png" alt="Namasté Isotipo" class="brand-icon-img" />
+          <div class="brand-text-wrap">
+            <span class="brand-title">Namasté</span>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="nav-links">
+            <li><a href="#filosofia" class="nav-link">Nuestra Esencia</a></li>
+            <li><a href="#beneficios" class="nav-link">Por Qué Nosotros</a></li>
+            <li><a href="#como-funciona" class="nav-link">Cómo Funciona</a></li>
+            <li><a href="#planes" class="nav-link">Membresías</a></li>
+            <li><a href="#testimonios" class="nav-link">Reseñas</a></li>
+            <li><a href="#faq" class="nav-link">Preguntas</a></li>
+          </ul>
+        </nav>
+
+        <div class="header-actions">
+          <button class="btn btn-text btn-access-login" id="nav-btn-login">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Acceso Alumnos
+          </button>
+          <a href="#planes" class="btn btn-primary btn-scroll-plans" id="nav-btn-start">
+            Comenzar Ahora
+          </a>
+          <button class="hamburger-btn" id="mobile-menu-toggle" aria-label="Abrir menú de navegación"
+            aria-expanded="false">
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Menú Hamburguesa Móvil (Drawer con scroll bloqueado) -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+    <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+      <div class="mobile-drawer-header">
+        <div class="mobile-drawer-brand">
+          <img src="assets/images/logo_icon.png" alt="Namasté" class="drawer-logo-img" />
+          <span class="drawer-brand-title">Namasté</span>
+        </div>
+        <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Cerrar menú">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mobile-drawer-body">
+        <nav class="mobile-drawer-nav">
+          <a href="#filosofia" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3c-1.8 3.5-3 6.5-3 9.5a3 3 0 0 0 6 0c0-3-1.2-6-3-9.5z"></path>
+                <path d="M6 13c1.5 3 4 5 6 5s4.5-2 6-5"></path>
+                <path d="M4 17c2 2.5 5 3.5 8 3.5s6-1 8-3.5"></path>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Nuestra Esencia</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#beneficios" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <polyline points="9 12 11 14 15 10"></polyline>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Por Qué Nosotros</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#como-funciona" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Cómo Funciona</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#planes" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3h12l4 6-10 12L2 9z"></path>
+                <path d="M11 3 8 9l4 12 4-12-3-6"></path>
+                <path d="M2 9h20"></path>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Membresías</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#testimonios" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <path d="M8 9h8"></path>
+                <path d="M8 13h5"></path>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Reseñas</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#faq" class="mobile-drawer-link">
+            <span class="drawer-link-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Preguntas</span>
+            <svg class="drawer-link-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#" class="mobile-drawer-link mobile-drawer-login btn-access-login">
+            <span class="drawer-link-icon lock-icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <span class="drawer-link-text">Acceso Alumnos</span>
+            <span class="drawer-login-tag">Entrar</span>
+          </a>
+        </nav>
+
+        <div class="mobile-drawer-footer">
+          <a href="#planes" class="btn btn-primary btn-scroll-plans mobile-drawer-cta">
+            Comenzar
+          </a>
+          <p class="mobile-drawer-tagline">
+            <span>Cuerpo · Mente · Corazón</span>
+            <span class="mobile-drawer-guide">Vale Manassero</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+      <div class="hero-bg-mobile" aria-hidden="true">
+        <img src="assets/images/hero.jpg" alt="" class="hero-bg-mobile-img" />
+        <div class="hero-bg-mobile-overlay"></div>
+      </div>
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <div class="hero-emblem-badge">
+            <img src="assets/images/logo_icon.png" alt="Emblema Namasté" class="hero-emblem-img" />
+            <span class="hero-emblem-text">Cuerpo • Mente • Corazón</span>
+          </div>
+          <h1 class="hero-title">
+            <span class="hero-title-line-1">Tu <span class="hero-word-garamond">SANTUARIO</span>,</span>
+            <span class="hero-title-line-2"><em>estés donde estés.</em></span>
+          </h1>
+          <p class="hero-description">
+            Prácticas conscientes de yoga y meditación guiadas por Vale Manassero para cultivar calma, vitalidad y
+            equilibrio diario.
+          </p>
+
+          <div class="hero-ctas">
+            <a href="#planes" class="btn btn-primary btn-scroll-plans" id="hero-cta-primary">
+              Comenzar
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
+
+          <div class="hero-trust-bar">
+            <div class="trust-card">
+              <span class="trust-number">+14 años</span>
+              <span class="trust-label">Trayectoria | Desde 2012</span>
+            </div>
+            <div class="trust-card">
+              <span class="trust-number">Valeria Manassero</span>
+              <span class="trust-label">Fundadora & Guía</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-image-card">
+            <img src="assets/images/hero.jpg" alt="Práctica de Yoga serena en Namasté" />
+          </div>
+          <div class="hero-floating-quote">
+            <p>«El yoga es el viaje del ser, a través del ser, hacia el ser.»</p>
+            <span>— El Bhagavad Gita</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Frase Diaria (Inspiración Consciente Full-Width) -->
+    <section class="daily-quote-section" id="cita-diaria" aria-label="Inspiración diaria">
+      <div class="daily-quote-bg" aria-hidden="true">
+        <img src="assets/images/quote_abstract_bg.jpg" alt="" class="daily-quote-bg-img" />
+        <div class="daily-quote-bg-overlay"></div>
+      </div>
+      <div class="daily-quote-watermark" aria-hidden="true">“</div>
+      <div class="container daily-quote-container">
+        <div class="daily-quote-inner">
+          <div class="daily-quote-header">
+            <span class="daily-quote-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </span>
+            <span class="daily-quote-label">Inspiración del Día</span>
+          </div>
+          <blockquote class="daily-quote-phrase">
+            <span id="daily-quote-text">La meditación es silencio interior.</span>
+          </blockquote>
+          <cite class="daily-quote-author" id="daily-quote-author">— Adyashanti</cite>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Filosofía: Nuestra Esencia (Diseño Limpio & Premium Editorial Zen) -->
+    <section class="philosophy-section" id="filosofia" aria-label="Nuestra Esencia">
+      <div class="container philosophy-container">
+        <div class="philosophy-content">
+          <div class="eyebrow">El Alma de Namasté</div>
+          <h2 class="philosophy-title">Nuestra Esencia</h2>
+          <div class="philosophy-divider" aria-hidden="true"></div>
+          <p class="philosophy-text">
+            Un espacio concebido para cultivar presencia, honrar tus ritmos y reencontrarte en el silencio. Más que una práctica física, un refugio consciente para volver a tu centro de calma cada día.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Beneficios -->
+    <section class="section-padding benefits-section" id="beneficios">
+      <div class="container">
+        <div class="section-header benefits-header">
+          <div class="eyebrow">Por Qué Practicar con Nosotros</div>
+          <h2 class="benefits-title">Beneficios de nuestra membresía</h2>
+          <p class="section-subtitle benefits-subtitle">
+            Todo lo que necesitas para sostener una<br class="hide-mobile" /> práctica consciente y constante desde donde estés.
+          </p>
+        </div>
+
+        <div class="benefits-slider-wrap">
+          <div class="benefits-grid" id="benefits-slider">
+            <div class="benefit-card">
+              <div class="benefit-icon-wrapper">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <h3>Flexibilidad Absoluta</h3>
+              <p>Sesiones de 15 a 60 minutos adaptadas a tu día. Activa tu cuerpo al despertar o suelta tensiones al descansar.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon-wrapper">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <h3>Nuevas Clases Semanales</h3>
+              <p>Tu biblioteca se renueva cada semana con nuevas prácticas de yoga, meditaciones y respiración consciente.</p>
+            </div>
+
+            <div class="benefit-card">
+              <div class="benefit-icon-wrapper olive">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <h3>Sin Permanencia ni Trabas</h3>
+              <p>Sin contratos ni ataduras. Puedes pausar o cancelar tu suscripción con un solo clic desde tu perfil cuando quieras.</p>
+            </div>
+          </div>
+
+          <div class="benefits-slider-hint">
+            <span class="benefits-drag-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              Desliza para ver más
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Cómo Funciona -->
+    <section class="section-padding steps-section" id="como-funciona">
+      <div class="container">
+        <div class="section-header">
+          <div class="eyebrow">Paso a Paso</div>
+          <h2 class="steps-title">Cómo comenzar</h2>
+          <p class="section-subtitle">
+            Un proceso simple y transparente para que en pocos minutos estés sobre tu esterilla.
+          </p>
+        </div>
+
+        <div class="steps-slider-wrap">
+          <div class="steps-grid" id="steps-slider">
+            <div class="step-card">
+              <div class="step-header-row">
+                <div class="step-number">01</div>
+                <span class="step-pill-tag">Paso 1</span>
+              </div>
+              <h3>Elige tu Membresía</h3>
+              <p>Selecciona el plan mensual que mejor resuene con tu ritmo actual de vida. Sin matrícula ni gastos ocultos.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-header-row">
+                <div class="step-number">02</div>
+                <span class="step-pill-tag">Paso 2</span>
+              </div>
+              <h3>Pago 100% Seguro</h3>
+              <p>Completa tu suscripción en nuestra pasarela encriptada. Aceptamos tarjetas internacionales y métodos locales.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-header-row">
+                <div class="step-number">03</div>
+                <span class="step-pill-tag">Paso 3</span>
+              </div>
+              <h3>Recibe tu Código</h3>
+              <p>Obtén en pantalla y en tu email tu código personal de alumno (ej: <code>NAMASTE-4821</code>) para ingresar al instante.</p>
+            </div>
+
+            <div class="step-card">
+              <div class="step-header-row">
+                <div class="step-number">04</div>
+                <span class="step-pill-tag">Paso 4</span>
+              </div>
+              <h3>Ingresa al Santuario</h3>
+              <p>Coloca tu código en la plataforma, despliega tu esterilla y comienza tu primera clase guiada hoy mismo.</p>
+            </div>
+          </div>
+
+          <div class="steps-slider-hint">
+            <span class="steps-drag-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              Desliza para ver más
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Planes y Membresías -->
+    <section class="section-padding plans-section" id="planes">
+      <div class="container">
+        <div class="section-header plans-header">
+          <div class="eyebrow">Membresías Conscientes</div>
+          <h2 class="plans-title">Elige tu espacio de práctica</h2>
+          <p class="section-subtitle plans-subtitle">
+            Cancela en cualquier momento con un clic. Acceso inmediato tras suscribirte.
+          </p>
+
+          <!-- Slide Selector Superior Mensual / Anual (Centrado y Limpio) -->
+          <div class="billing-switcher-container">
+            <div class="billing-switcher" role="radiogroup" aria-label="Frecuencia de pago">
+              <button type="button" class="billing-switch-btn active" data-cycle="monthly" id="btn-billing-monthly" role="radio" aria-checked="true">
+                Mensual
+              </button>
+              <button type="button" class="billing-switch-btn" data-cycle="annual" id="btn-billing-annual" role="radio" aria-checked="false">
+                Anual
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="plans-slider-wrap">
+          <div class="plans-grid" id="plans-slider">
+          <!-- Plan 1: Inicial (Plan Esencia) -->
+          <div class="pricing-card" data-plan="plan-esencia">
+            <div class="pricing-tier-tag">Inicial</div>
+            <div class="pricing-header">
+              <h3 class="pricing-plan-name">Plan Esencia</h3>
+              <p class="pricing-desc">Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.</p>
+              <div class="pricing-price-wrap">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount" id="price-esencia" data-price-monthly="19" data-price-annual="15.80">19</span>
+                <span class="pricing-period">/ mes</span>
+              </div>
+              <div class="pricing-subnote" id="subnote-esencia" data-note-monthly="Facturado mensualmente" data-note-annual="$190/año • ¡2 meses de regalo!">
+                Facturado mensualmente
+              </div>
+            </div>
+
+            <ul class="pricing-features-list">
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Acceso a +40 clases de Yoga Suave y Clásico</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Meditaciones guiadas y Yoga Relax nocturno</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>2 clases nuevas añadidas cada mes</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Acceso en móvil, tablet y computadora</span>
+              </li>
+            </ul>
+
+            <button class="btn btn-secondary btn-select-plan" data-plan-id="plan-esencia" id="btn-plan-esencia">
+              Elegir Plan Esencia
+            </button>
+          </div>
+
+          <!-- Plan 2: Intermedio (Plan Santuario - Recomendado) -->
+          <div class="pricing-card recommended" data-plan="plan-santuario">
+            <div class="pricing-badge-top">MÁS ELEGIDO</div>
+            <div class="pricing-tier-tag">Intermedio</div>
+            <div class="pricing-header">
+              <h3 class="pricing-plan-name">Plan Santuario</h3>
+              <p class="pricing-desc">La experiencia completa del Shala. Acceso total a todas las disciplinas.</p>
+              <div class="pricing-price-wrap">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount" id="price-santuario" data-price-monthly="29" data-price-annual="24.15">29</span>
+                <span class="pricing-period">/ mes</span>
+              </div>
+              <div class="pricing-subnote" id="subnote-santuario" data-note-monthly="Facturado mensualmente" data-note-annual="$290/año • ¡2 meses de regalo!">
+                Facturado mensualmente
+              </div>
+            </div>
+
+            <ul class="pricing-features-list">
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span><strong>Acceso ilimitado</strong> a +140 clases del Shala</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Vinyasa, Hatha, Yin Yoga, Relax y Pranayama</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Nuevas clases añadidas cada semana</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span><strong>Encuentros mensuales en vivo</strong> por Zoom</span>
+              </li>
+            </ul>
+
+            <button class="btn btn-primary btn-select-plan" data-plan-id="plan-santuario" id="btn-plan-santuario">
+              Unirme al Santuario
+            </button>
+          </div>
+
+          <!-- Plan 3: Premium (Plan Sadhana) -->
+          <div class="pricing-card" data-plan="plan-sadhana">
+            <div class="pricing-tier-tag">Premium</div>
+            <div class="pricing-header">
+              <h3 class="pricing-plan-name">Plan Sadhana</h3>
+              <p class="pricing-desc">Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.</p>
+              <div class="pricing-price-wrap">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount" id="price-sadhana" data-price-monthly="39" data-price-annual="32.50">39</span>
+                <span class="pricing-period">/ mes</span>
+              </div>
+              <div class="pricing-subnote" id="subnote-sadhana" data-note-monthly="Facturado mensualmente" data-note-annual="$390/año • ¡2 meses de regalo!">
+                Facturado mensualmente
+              </div>
+            </div>
+
+            <ul class="pricing-features-list">
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Todo lo de Plan Santuario sin restricciones</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Sesión individual de bienvenida (30 min por Zoom)</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Masterclasses y series de meditación avanzada</span>
+              </li>
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Cuaderno digital de Sadhana y soporte directo</span>
+              </li>
+            </ul>
+
+            <button class="btn btn-secondary btn-select-plan" data-plan-id="plan-sadhana" id="btn-plan-sadhana">
+              Elegir Plan Sadhana
+            </button>
+          </div>
+        </div>
+
+        <div class="plans-slider-hint">
+          <span class="plans-drag-hint">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            Desliza para ver más planes
+          </span>
+        </div>
+      </div>
+
+        <div class="guarantee-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span>Pago seguro SSL de 256 bits • Cancela en cualquier momento con 1 clic sin costo extra</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="section-padding testimonials-section" id="testimonios">
+      <div class="container">
+        <div class="section-header testimonials-header">
+          <div class="eyebrow">Voces del Shala</div>
+          <h2 class="testimonials-title">Lo que sienten nuestros alumnos</h2>
+          <p class="section-subtitle testimonials-subtitle">
+            Historias reales de alumnos que encontraron<br class="hide-mobile" /> en Namasté su rincón diario de
+            serenidad.
+          </p>
+        </div>
+
+        <div class="testimonials-slider-wrap">
+          <div class="testimonials-grid" id="testimonials-slider">
+            <div class="testimonial-card">
+              <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
+              <p class="testimonial-quote">
+                «Sentí de inmediato la calidez y el respeto pedagógico de las maestras. Namasté transformó mis mañanas
+                en un momento de verdadera calma.»
+              </p>
+              <div class="testimonial-author">
+                <div class="author-meta">
+                  <h4>Sofía Varela</h4>
+                  <span>Miembro hace 8 meses • Plan Santuario</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
+              <p class="testimonial-quote">
+                «Las clases de Yin Yoga nocturnas son mi salvavidas tras el trabajo. La forma en que te guían para
+                soltar tensiones es medicina pura.»
+              </p>
+              <div class="testimonial-author">
+                <div class="author-meta">
+                  <h4>Martín Rossi</h4>
+                  <span>Miembro hace 1 año • Sadhana Anual</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
+              <p class="testimonial-quote">
+                «El acceso es simple y directo. Despliego la esterilla en mi casa y realmente siento que entro a un
+                santuario de paz y cuidado personal.»
+              </p>
+              <div class="testimonial-author">
+                <div class="author-meta">
+                  <h4>Clara Linares</h4>
+                  <span>Miembro hace 5 meses • Plan Santuario</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="testimonial-stars" aria-hidden="true">★★★★★</div>
+              <p class="testimonial-quote">
+                «La voz y serenidad de Vale me acompañan a diario. Encontrar un espacio guiado con tanta presencia y
+                amor no tiene precio.»
+              </p>
+              <div class="testimonial-author">
+                <div class="author-meta">
+                  <h4>Lucía Benítez</h4>
+                  <span>Miembro hace 6 meses • Plan Santuario</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonials-slider-hint">
+            <span class="testimonials-drag-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              Desliza para ver más
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preguntas Frecuentes -->
+    <section class="section-padding" id="faq" style="background-color: var(--sand-50);">
+      <div class="container container-narrow">
+        <div class="section-header">
+          <div class="eyebrow">Respuestas Claras</div>
+          <h2>Preguntas frecuentes</h2>
+          <p class="section-subtitle">
+            Resolvemos tus dudas sobre cómo funciona la membresía y el acceso al santuario.
+          </p>
+        </div>
+
+        <div class="faq-container">
+          <div class="faq-item open">
+            <button class="faq-trigger">
+              <h4>¿Necesito experiencia o flexibilidad?</h4>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-content">
+              <p>No, para nada. La flexibilidad y la calma son el fruto de la práctica diaria. Encontrarás clases
+                guiadas paso a paso con adaptaciones seguras para cada cuerpo.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-trigger">
+              <h4>¿Cómo recibo mi código de acceso?</h4>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-content">
+              <p>Aparece en pantalla al instante de suscribirte y llega directo a tu correo electrónico. Puedes ingresar
+                de inmediato con un clic o desde Acceso Alumnos.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-trigger">
+              <h4>¿Puedo cancelar o pausar cuando quiera?</h4>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-content">
+              <p>Sí, tienes total libertad. Puedes pausar o cancelar la renovación automática desde tu perfil con un
+                solo clic, sin trámites complicados ni llamadas.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-trigger">
+              <h4>¿En qué dispositivos puedo practicar?</h4>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-content">
+              <p>La plataforma está 100% adaptada para celulares, tablets, computadoras y Smart TVs (AirPlay y
+                Chromecast). Practicas disponible las 24 horas a tu propio ritmo.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-trigger">
+              <h4>¿Qué materiales necesito para empezar?</h4>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="faq-content">
+              <p>Solo una esterilla (mat) y ropa cómoda. Para clases restaurativas o de Yin Yoga puedes sumar una manta
+                o cojín común que tengas en tu casa.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-compact-bottom">
+          <div class="footer-copy">
+            <span class="footer-copyright-text">© 2026 Namasté Escuela de Yoga. Todos los derechos reservados.</span>
+            <span class="footer-dev">Desarrollado por <a href="https://www.instagram.com/mgh.software/" target="_blank"
+                rel="noopener noreferrer" class="footer-dev-link">MGH</a></span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /#view-landing -->
+
+
+  <!-- ====================================================================
+       2. PLATAFORMA PRIVADA DE ALUMNOS (EL SANTUARIO VIRTUAL)
+       ==================================================================== -->
+  <div id="view-platform" class="platform-view" style="display: none;">
+
+    <!-- Platform Header -->
+    <header class="platform-header">
+      <div class="container platform-header-inner">
+        <div class="platform-nav-left">
+          <a href="#" class="brand-logo" id="btn-exit-to-landing" title="Regresar a la página principal">
+            <img src="assets/images/logo_icon.png" alt="Namasté" class="brand-icon-img" />
+            <div class="brand-text-wrap">
+              <span class="brand-title">Namasté</span>
+              <span class="brand-tagline">Cuerpo • Mente • Corazón</span>
+            </div>
+          </a>
+
+          <ul class="platform-links">
+            <li class="platform-nav-link active">Mi Santuario</li>
+            <li class="platform-nav-link"
+              onclick="document.getElementById('library-anchor').scrollIntoView({behavior:'smooth'})">Biblioteca de
+              Clases</li>
+          </ul>
+        </div>
+
+        <div class="platform-user-panel">
+          <div class="streak-badge" title="Días consecutivos de práctica">
+            🔥 <span id="header-streak-count">8 días racha</span>
+          </div>
+
+          <button class="user-profile-trigger" id="btn-open-user-profile" aria-label="Abrir perfil de alumno">
+            <div class="user-avatar-circle">SV</div>
+            <span class="user-profile-name" id="header-profile-name">Sofía</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Welcome Sanctuary Banner -->
+    <section class="sanctuary-banner">
+      <div class="container sanctuary-banner-grid">
+        <div class="greeting-box">
+          <div class="eyebrow">Vale Manassero • +14 años de trayectoria | desde 2012</div>
+          <h1 class="greeting-title">
+            Namasté, <span id="platform-user-greeting">Sofía</span>.
+          </h1>
+          <div class="greeting-sutra" id="platform-daily-quote">
+            «Cuerpo • Mente • Corazón — La quietud no es la ausencia de movimiento, sino el equilibrio en el centro.»
+          </div>
+
+          <div class="stats-ribbon">
+            <div class="stat-chip">
+              <strong id="stat-streak-days">8</strong>
+              <span>Días de racha</span>
+            </div>
+            <div class="stat-chip">
+              <strong id="stat-minutes-practiced">245</strong>
+              <span>Minutos meditados</span>
+            </div>
+            <div class="stat-chip">
+              <strong id="stat-classes-completed">7</strong>
+              <span>Clases completadas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerta de clase en vivo -->
+        <div class="live-class-card">
+          <div class="live-badge">
+            <span class="live-badge-dot"></span>
+            Próximo Encuentro en Directo
+          </div>
+          <h4 style="font-size: 1.15rem; color: var(--text-primary);">Satsang & Meditación de Luna Llena</h4>
+          <p style="font-size: 0.88rem; color: var(--text-secondary);">
+            Domingo 28 de Septiembre • 19:00 hs (vía Zoom exclusivo para miembros del Santuario)
+          </p>
+          <div style="margin-top: 0.5rem; display: flex; gap: 0.75rem;">
+            <button class="btn btn-olive" style="padding: 0.5rem 1rem; font-size: 0.82rem;"
+              onclick="alert('Enlace de Zoom reservado en tu calendario.')">
+              Agendar a mi calendario
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reanudación de Práctica (Última clase) -->
+    <div class="container resume-section" id="platform-resume-container">
+      <!-- Renderizado por JS si existe última clase reproducida -->
+    </div>
+
+    <!-- Biblioteca de Clases con Filtros -->
+    <main class="library-section" id="library-anchor">
+      <div class="container">
+
+        <!-- Barra de Filtros Multifunción -->
+        <div class="filter-toolbar">
+          <div class="filter-row-top">
+            <!-- Tabs de Disciplina -->
+            <div class="filter-tabs">
+              <button class="filter-tab-pill active" data-category="all">Todas</button>
+              <button class="filter-tab-pill" data-category="suave">Yoga Suave</button>
+              <button class="filter-tab-pill" data-category="clasico">Yoga Clásico</button>
+              <button class="filter-tab-pill" data-category="terapeutico">Yoga Terapéutico</button>
+              <button class="filter-tab-pill" data-category="ashtanga">Yoga Ashtanga</button>
+              <button class="filter-tab-pill" data-category="dinamico">Yoga Dinámico</button>
+              <button class="filter-tab-pill" data-category="relax">Yoga Relax</button>
+            </div>
+
+            <!-- Buscador -->
+            <div class="filter-search-box">
+              <svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="platform-search-input" class="filter-search-input"
+                placeholder="Buscar por título, profesor o foco..." />
+            </div>
+          </div>
+
+          <div class="filter-row-bottom">
+            <!-- Selector Duración -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Duración:</span>
+              <select id="filter-duration-select" class="filter-select">
+                <option value="all">Cualquier duración</option>
+                <option value="short">Cortas (10 a 20 min)</option>
+                <option value="medium">Medias (25 a 45 min)</option>
+                <option value="long">Completas (+50 min)</option>
+              </select>
+            </div>
+
+            <!-- Selector Nivel -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Nivel:</span>
+              <select id="filter-level-select" class="filter-select">
+                <option value="all">Todos los niveles</option>
+                <option value="Principiante">Principiante</option>
+                <option value="Multinivel">Multinivel</option>
+                <option value="Intermedio">Intermedio</option>
+              </select>
+            </div>
+
+            <!-- Checkbox Favoritas -->
+            <label class="filter-toggle-label">
+              <input type="checkbox" id="filter-toggle-favorites" />
+              <span>Solo mis favoritas</span>
+            </label>
+
+            <!-- Checkbox Nuevas -->
+            <label class="filter-toggle-label">
+              <input type="checkbox" id="filter-toggle-new" />
+              <span>Solo nuevas</span>
+            </label>
+
+            <span style="margin-left: auto; color: var(--text-muted); font-size: 0.85rem;" id="classes-count-label">
+              Mostrando 8 clases
+            </span>
+          </div>
+        </div>
+
+        <!-- Grid de Clases en la Plataforma -->
+        <div class="classes-catalog-grid" id="platform-classes-grid">
+          <!-- Generado dinámicamente con JS -->
+        </div>
+
+        <!-- Empty State si ningún filtro coincide -->
+        <div id="platform-empty-state" style="display: none; text-align: center; padding: 4rem 1rem;">
+          <p style="font-size: 1.25rem; font-family: var(--font-serif); margin-bottom: 0.75rem;">
+            No encontramos prácticas que coincidan con estos filtros.
+          </p>
+          <button class="btn btn-secondary"
+            onclick="document.getElementById('platform-search-input').value=''; document.querySelector('.filter-tab-pill[data-category=\'all\']').click();">
+            Limpiar filtros
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+  </div><!-- /#view-platform -->
+
+
+  <!-- ====================================================================
+       3. MODALES & PANELES OVERLAY
+       ==================================================================== -->
+
+  <!-- Modal 1: Login mediante Código Único de Alumno -->
+  <div class="modal-backdrop" id="modal-login">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Acceso al Santuario</h3>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-logo-center">
+          <img src="assets/images/logo.png" alt="Namasté" class="modal-logo-img" />
+        </div>
+        <p style="font-size: 0.95rem; margin-bottom: 1.5rem; text-align: center;">
+          Ingresa el código único que recibiste al suscribirte a tu membresía (o en tu comprobante de bienvenida).
+        </p>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="access-code-input">Código de Acceso del Alumno:</label>
+            <input type="text" id="access-code-input" class="form-input" placeholder="EJ: NAMASTE-ALUMNO" required
+              autocomplete="off" />
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;"
+            id="btn-submit-code-login">
+            Ingresar a la Plataforma
+          </button>
+
+          <div id="login-feedback" class="modal-feedback"></div>
+
+          <div
+            style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-medium); text-align: center;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              ¿Quieres probar la experiencia de alumno de inmediato?
+            </p>
+            <button type="button" class="btn btn-secondary" id="btn-use-demo-code"
+              style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+              🔑 Usar código de prueba (Sofía Varela)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Suscripción & Checkout Interactivo -->
+  <div class="modal-backdrop" id="modal-checkout">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="checkout-modal-title">Suscripción al Santuario</h3>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Contenedor del Formulario -->
+        <div id="checkout-form-container">
+          <div
+            style="background-color: var(--sand-50); border: 1px solid var(--border-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong id="checkout-plan-name"
+                style="font-family: var(--font-serif); font-size: 1.2rem; color: var(--text-primary);">Plan
+                Santuario</strong>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">Renovación mensual flexible</div>
+            </div>
+            <div id="checkout-plan-price"
+              style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: 600; color: var(--terracotta);">
+              $29/mes
+            </div>
+          </div>
+
+          <form id="checkout-form">
+            <div class="form-group">
+              <label for="checkout-name">Tu Nombre y Apellido:</label>
+              <input type="text" id="checkout-name" class="form-input" placeholder="Ej: Camila Ortega" required
+                value="Camila Ortega" />
+            </div>
+
+            <div class="form-group">
+              <label for="checkout-email">Tu Correo Electrónico (donde enviaremos tu código):</label>
+              <input type="email" id="checkout-email" class="form-input" placeholder="camila@ejemplo.com" required
+                value="camila@ejemplo.com" />
+            </div>
+
+            <div class="form-group">
+              <label>Método de Pago:</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.3rem;">
+                <label
+                  style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.8rem; border:1px solid var(--border-medium); border-radius:var(--radius-sm); font-size:0.85rem; cursor:pointer; background-color:#FFF;">
+                  <input type="radio" name="payment-method" value="card" checked />
+                  <span>💳 Tarjeta Débito/Crédito</span>
+                </label>
+                <label
+                  style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.8rem; border:1px solid var(--border-medium); border-radius:var(--radius-sm); font-size:0.85rem; cursor:pointer; background-color:#FFF;">
+                  <input type="radio" name="payment-method" value="mercadopago" />
+                  <span>🤝 MercadoPago</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Número de Tarjeta (Simulación segura):</label>
+              <input type="text" class="form-input" value="•••• •••• •••• 4242" readonly
+                style="color: var(--text-muted);" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem;">
+              Confirmar Suscripción y Obtener Código
+            </button>
+          </form>
+        </div>
+
+        <!-- Contenedor de Éxito y Código Generado -->
+        <div id="checkout-success-container" style="display: none; text-align: center;">
+          <img src="assets/images/logo.png" alt="Namasté"
+            style="width: 80px; height: 80px; object-fit: contain; margin: 0 auto 0.75rem auto; display: block; filter: drop-shadow(0 4px 12px rgba(192, 112, 83, 0.2));" />
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">¡Bienvenido/a a Namasté!</h3>
+          <p style="font-size: 0.95rem; color: var(--text-secondary);">
+            Gracias, <strong id="success-user-name">Camila</strong>. Tu suscripción a <strong
+              id="success-plan-name">Plan Santuario</strong> está confirmada y hemos enviado el comprobante a <span
+              id="success-user-email">camila@ejemplo.com</span>.
+          </p>
+
+          <div style="margin: 1.5rem 0;">
+            <div
+              style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.4rem;">
+              Tu Código Único de Alumno:
+            </div>
+            <div class="code-badge-preview" id="generated-access-code">NAMASTE-SANTUARIO-8492</div>
+            <button type="button" class="btn btn-secondary" id="btn-copy-code"
+              style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+              📋 Copiar código
+            </button>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Guarda este código para ingresar desde cualquier teléfono, tablet o computadora.
+          </p>
+
+          <button type="button" class="btn btn-primary" id="btn-enter-platform-direct" style="width: 100%;">
+            Entrar a la Plataforma Ahora →
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Reproductor Inmersivo de Video -->
+  <div class="player-modal-backdrop" id="modal-player">
+    <div class="player-modal-dialog">
+      <div class="player-video-wrapper">
+        <video id="player-video-element" controls playsinline></video>
+        <button class="player-close-floating" aria-label="Cerrar reproductor">✕</button>
+      </div>
+
+      <div class="player-details-scroll">
+        <div class="player-meta-header">
+          <div>
+            <div class="player-tags">
+              <span class="badge-tag" id="player-class-category">Vinyasa Flow</span>
+              <span class="badge-tag" id="player-class-level">Multinivel</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" id="player-class-duration">35 min</span>
+            </div>
+            <h2 id="player-class-title" style="font-size: 1.85rem; margin-top: 0.3rem;">Vinyasa Solar: Enraizamiento y
+              Vitalidad</h2>
+          </div>
+
+          <button class="btn btn-primary" id="btn-mark-class-complete">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 14 14"></polyline>
+            </svg>
+            Marcar práctica como completada
+          </button>
+        </div>
+
+        <p id="player-class-description" style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+          Descripción de la práctica...
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="player-props-box">
+            <h4>Accesorios Recomendados</h4>
+            <ul class="player-props-list" id="player-class-props">
+              <!-- Lista de accesorios -->
+            </ul>
+          </div>
+
+          <div class="player-props-box">
+            <h4>Intención de la Práctica</h4>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;" id="player-class-intentions">
+              <!-- Badges de intenciones -->
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: var(--text-muted); flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div
+              style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--sand-200); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--olive-dark);">
+              🧘‍♀️
+            </div>
+            <div>
+              <div style="font-weight: 600; color: var(--text-primary);" id="player-class-instructor">Valeria Morales
+              </div>
+              <div style="font-size: 0.78rem;" id="player-class-instructor-role">Maestra de Vinyasa</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <a href="https://open.spotify.com" target="_blank" rel="noopener" class="btn btn-secondary"
+              style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+              🎵 Playlist recomendada para la clase
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Lateral / Drawer de Perfil & Membresía -->
+  <div class="profile-drawer-backdrop" id="profile-drawer-backdrop">
+    <div class="profile-drawer">
+      <div class="profile-drawer-header">
+        <h3 style="font-size: 1.3rem;">Mi Espacio de Alumno</h3>
+        <button class="modal-close-btn drawer-close-btn" aria-label="Cerrar perfil">✕</button>
+      </div>
+
+      <div class="profile-drawer-body">
+        <div class="user-identity-card">
+          <div class="user-avatar-circle" style="width: 48px; height: 48px; font-size: 1.2rem;">SV</div>
+          <div>
+            <h4 id="drawer-user-name" style="font-size: 1.15rem;">Sofía Varela</h4>
+            <div id="drawer-user-email" style="font-size: 0.85rem; color: var(--text-muted);">sofia.varela@ejemplo.com
+            </div>
+          </div>
+        </div>
+
+        <div class="membership-status-card">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span
+              style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em;">Estado
+              de Membresía</span>
+            <span class="status-badge-active" id="drawer-membership-status">● Membresía Activa</span>
+          </div>
+
+          <div>
+            <div id="drawer-plan-name"
+              style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">
+              Plan Santuario</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+              Próxima renovación: <strong id="drawer-next-billing">22 Octubre 2026</strong>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              Miembro desde: <span id="drawer-member-since">Marzo 2026</span>
+            </div>
+          </div>
+
+          <div class="code-share-box">
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted);">Tu Código Único de
+              Acceso:</div>
+            <div class="code-share-text" id="drawer-access-code">NAMASTE-ALUMNO</div>
+            <button type="button" class="btn btn-secondary" id="btn-copy-drawer-code"
+              style="font-size: 0.8rem; padding: 0.35rem 0.8rem; width: 100%;">
+              Copiar código
+            </button>
+          </div>
+
+          <button type="button" class="btn btn-secondary" id="btn-toggle-pause-membership"
+            style="font-size: 0.85rem; padding: 0.6rem;">
+            Pausar temporalmente membresía
+          </button>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+          <button class="btn btn-secondary" id="btn-profile-logout"
+            style="width: 100%; color: #B93826; border-color: #F1D4CE;">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Navegación Inferior Móvil -->
+  <nav class="mobile-bottom-nav">
+    <ul class="mobile-nav-items">
+      <li>
+        <button class="mobile-nav-btn active" id="mobile-nav-home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Inicio</span>
+        </button>
+      </li>
+      <li>
+        <button class="mobile-nav-btn" id="mobile-nav-classes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Santuario</span>
+        </button>
+      </li>
+      <li>
+        <a href="#planes" class="mobile-nav-btn btn-scroll-plans">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+          </svg>
+          <span>Planes</span>
+        </a>
+      </li>
+      <li>
+        <button class="mobile-nav-btn" id="mobile-nav-profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Perfil</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="js/data/quotes.js"></script>
+  <script src="js/data/classes.js"></script>
+  <script src="js/data/plans.js"></script>
+  <script src="js/services/auth.js"></script>
+  <script src="js/services/membership.js"></script>
+  <script src="js/services/progress.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,75 @@
+/* ==========================================================================
+   NAMASTÉ - ESCUELA DE YOGA & SANTUARIO DIGITAL
+   Design Tokens & CSS Variables — Paleta Cálida "Color Hueso" & Orgánica
+   ========================================================================== */
+
+:root {
+  /* Bases y Fondos en Auténtico Color Hueso / Lino Cálido (Bone / Eggshell) */
+  --bg-canvas: #EFE8DC;          /* Fondo principal color hueso cálido auténtico */
+  --bg-canvas-alt: #E4DCCF;      /* Hueso alternativo / arena tostada suave */
+  --bg-surface: #F8F3EA;         /* Superficie de tarjetas: hueso claro / marfil suave */
+  --bg-surface-elevated: #FAF6EF;/* Superficie elevada sutil */
+  --bg-surface-dim: #DDD3C3;     /* Superficie hueso tenue */
+  
+  /* Texturas y Bordes */
+  --border-subtle: #DACFC0;      /* Borde hueso cálido */
+  --border-medium: #C7BBA8;      /* Borde medio orgánico */
+  --border-focus: #B65E42;
+
+  /* Terracota Cálido (Tierra & Arcilla suave) */
+  --terracotta: #B65E42;
+  --terracotta-dark: #9A4A31;
+  --terracotta-light: #CC7357;
+  --terracotta-soft: #E6D8CA;
+  --terracotta-glow: rgba(182, 94, 66, 0.18);
+
+  /* Verde Oliva & Salvia (Acento Vegetal y Serenidad) */
+  --olive: #4E5D49;
+  --olive-dark: #3C4938;
+  --olive-light: #677A60;
+  --olive-soft: #DFE5DC;
+  --olive-glow: rgba(78, 93, 73, 0.16);
+
+  /* Arenas y Lino */
+  --sand-50: #F5EFE5;
+  --sand-100: #E9E1D2;
+  --sand-200: #DAD0BE;
+  --sand-300: #C9BEAA;
+  --sand-400: #B5A790;
+
+  /* Tipografía y Contraste */
+  --text-primary: #2B231D;       /* Espresso profundo, cálido, no negro */
+  --text-secondary: #584C42;     /* Tierra intermedio para lectura fluida */
+  --text-muted: #88786B;         /* Metadatos y notas suaves */
+  --text-inverse: #F8F3EA;       /* Sobre fondos oscuros o terracota */
+  --gold-accent: #C29A56;
+
+  /* Tipografías - Inter en toda la web */
+  --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Radios */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
+  --radius-pill: 9999px;
+
+  /* Sombras y Elevaciones Etéreas */
+  --shadow-subtle: 0 2px 10px rgba(43, 35, 29, 0.04);
+  --shadow-card: 0 8px 24px rgba(43, 35, 29, 0.06);
+  --shadow-float: 0 16px 40px rgba(43, 35, 29, 0.09);
+  --shadow-active: 0 12px 32px rgba(182, 94, 66, 0.18);
+
+  /* Transiciones */
+  --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout */
+  --container-max: 1240px;
+  --container-narrow: 860px;
+  --header-height: 68px;
+  --mobile-nav-height: 64px;
+}
