@@ -421,13 +421,13 @@
   justify-content: space-between;
   gap: 0.85rem;
   margin-bottom: 1.85rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .platform-search-clean {
   position: relative;
   flex: 1;
-  min-width: 250px;
+  min-width: 0;
 }
 
 .platform-search-clean .filter-search-input {
@@ -437,6 +437,7 @@
   border: 1px solid var(--border-medium);
   background-color: var(--bg-surface);
   font-size: 0.88rem;
+  text-overflow: ellipsis;
   transition: all var(--transition-fast);
 }
 
@@ -467,6 +468,7 @@
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all var(--transition-fast);
   color: var(--text-secondary);
 }
@@ -1069,4 +1071,431 @@
 
 .show-mobile {
   display: none;
+}
+
+/* ==========================================================================
+   AUDITORÍA & MEJORAS DE FUNCIONALIDAD DEL PANEL DE ALUMNO
+   ========================================================================== */
+
+/* --- Banner de Membresía Pausada --- */
+.membership-paused-banner {
+  background: linear-gradient(90deg, #FDF5F2 0%, #FAECE7 100%);
+  border-bottom: 1px solid rgba(185, 56, 38, 0.25);
+  padding: 0.65rem 0;
+  color: #B93826;
+  font-size: 0.86rem;
+  animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.paused-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.paused-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+}
+
+.paused-banner-text svg {
+  flex-shrink: 0;
+}
+
+.btn-resume-banner {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.85rem;
+  background-color: #B93826;
+  color: #FFF;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.btn-resume-banner:hover {
+  background-color: #962B1D;
+  box-shadow: 0 2px 8px rgba(185, 56, 38, 0.3);
+}
+
+/* --- Botón Refrescar Cita Diaria --- */
+.btn-refresh-quote {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--terracotta);
+  padding: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-left: 0.4rem;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-refresh-quote:hover {
+  color: var(--terracotta-dark);
+  transform: rotate(90deg);
+}
+
+/* --- Flechas de Navegación de Carruseles --- */
+.carousel-arrow {
+  position: absolute;
+  top: 42%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-medium);
+  box-shadow: 0 4px 14px rgba(41, 36, 33, 0.12);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition-fast);
+  opacity: 0.92;
+}
+
+.carousel-arrow:hover {
+  background-color: var(--terracotta);
+  color: #FFF;
+  border-color: var(--terracotta);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 18px rgba(192, 112, 83, 0.25);
+}
+
+.carousel-arrow.prev {
+  left: -16px;
+}
+
+.carousel-arrow.next {
+  right: -16px;
+}
+
+/* --- Chips de Filtros Rápidos (Categorías) --- */
+.platform-filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.15rem 0.1rem 0.85rem 0.1rem;
+  margin-bottom: 1.25rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.platform-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 0.42rem 0.95rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-medium);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.filter-chip:hover {
+  border-color: var(--terracotta);
+  color: var(--text-primary);
+  background-color: var(--sand-50);
+}
+
+.filter-chip.active {
+  background-color: var(--terracotta);
+  color: #FFF;
+  border-color: var(--terracotta);
+  box-shadow: 0 2px 8px rgba(192, 112, 83, 0.25);
+}
+
+/* --- Tarjetas de Estadísticas Interactivas --- */
+.stat-compact-card {
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stat-compact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(41, 36, 33, 0.08);
+  border-color: var(--terracotta-light);
+}
+
+/* Streak badge clickable */
+.streak-badge {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.streak-badge:hover {
+  transform: scale(1.05);
+}
+
+/* --- Detalles de Encuentro en Vivo (Modal) --- */
+.live-event-details-box {
+  background-color: var(--sand-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.event-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.event-detail-row svg {
+  flex-shrink: 0;
+  color: var(--terracotta);
+  margin-top: 2px;
+}
+
+.event-detail-row code {
+  background-color: #FFF;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-medium);
+  font-size: 0.84rem;
+  color: var(--terracotta-dark);
+  font-weight: 600;
+}
+
+/* --- Opciones de Cambio de Plan (Modal) --- */
+.plan-change-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.plan-change-item {
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.25rem;
+  background-color: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.plan-change-item:hover {
+  border-color: var(--terracotta-light);
+  background-color: var(--sand-50);
+}
+
+.plan-change-item.current {
+  border-color: var(--terracotta);
+  background: linear-gradient(135deg, rgba(230, 126, 81, 0.05) 0%, rgba(138, 158, 139, 0.05) 100%);
+  box-shadow: 0 0 0 1px var(--terracotta);
+}
+
+.plan-change-item-info h4 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  margin: 0 0 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plan-change-item-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.plan-change-price {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--terracotta);
+  font-family: var(--font-serif);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --- Modal de Progreso del Alumno --- */
+.progress-stats-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.progress-metric-box {
+  background-color: var(--sand-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.65rem;
+  text-align: center;
+}
+
+.metric-big-num {
+  font-family: var(--font-serif);
+  font-size: 1.95rem;
+  font-weight: 700;
+  color: var(--terracotta);
+  line-height: 1;
+}
+
+.metric-caption {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  line-height: 1.3;
+}
+
+.completed-classes-scroll-list {
+  max-height: 230px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
+.completed-class-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background-color: var(--sand-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  gap: 0.75rem;
+}
+
+.completed-class-row-title {
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-repeat-practice {
+  font-size: 0.74rem;
+  padding: 0.25rem 0.65rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  color: var(--terracotta);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.btn-repeat-practice:hover {
+  background-color: var(--terracotta);
+  color: #FFF;
+  border-color: var(--terracotta);
+}
+
+/* --- Controles de Video Adicionales en el Reproductor --- */
+.video-extra-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--sand-50);
+  border-radius: var(--radius-sm);
+  margin-top: 0.65rem;
+}
+
+.video-ctrl-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.video-ctrl-btn {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all var(--transition-fast);
+}
+
+.video-ctrl-btn:hover {
+  background-color: var(--terracotta);
+  color: #FFF;
+  border-color: var(--terracotta);
+}
+
+/* --- Sistema de Notificaciones Toast --- */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.namaste-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-left: 4px solid var(--terracotta);
+  box-shadow: 0 8px 24px rgba(41, 36, 33, 0.16);
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+  max-width: 380px;
+}
+
+.namaste-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.namaste-toast-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--terracotta);
+  flex-shrink: 0;
 }

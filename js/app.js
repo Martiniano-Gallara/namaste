@@ -26,8 +26,41 @@ document.addEventListener('DOMContentLoaded', () => {
     login: document.getElementById('modal-login'),
     checkout: document.getElementById('modal-checkout'),
     player: document.getElementById('modal-player'),
-    profileDrawer: document.getElementById('profile-drawer-backdrop')
+    profileDrawer: document.getElementById('profile-drawer-backdrop'),
+    liveSession: document.getElementById('modal-live-session'),
+    changePlan: document.getElementById('modal-change-plan'),
+    progressDetails: document.getElementById('modal-progress-details'),
+    receipt: document.getElementById('modal-receipt')
   };
+
+  // Helper para generar iniciales del alumno
+  function getUserInitials(name) {
+    if (!name) return 'SV';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  // Sistema de Notificaciones Toast serenas
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `namaste-toast namaste-toast-${type}`;
+    toast.innerHTML = `
+      <svg class="namaste-toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
 
   // Citas diarias inspiracionales de yoga y presencia
   const DAILY_QUOTES = [
@@ -51,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPlatformFilters();
     setupPlayerControls();
     setupProfileDrawer();
+    setupPlatformFeatures();
     setupMobileNav();
     setupDailyQuote();
     setupHorizontalSliders();
@@ -442,14 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (input) {
       input.addEventListener('input', () => {
-        input.value = input.value.toUpperCase();
         feedback.style.display = 'none';
       });
     }
 
     if (demoBtn && input) {
       demoBtn.addEventListener('click', () => {
-        input.value = 'NAMASTE-ALUMNO';
+        input.value = 'sofia.varela@ejemplo.com';
         feedback.style.display = 'none';
       });
     }
@@ -457,8 +490,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const code = input.value;
-        const result = AuthService.loginWithCode(code);
+        const identifier = input.value;
+        const result = AuthService.login(identifier);
 
         if (result.success) {
           feedback.className = 'modal-feedback success';
@@ -565,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = originalText;
 
         if (result.success) {
+          AuthService.loginUser(result.member);
           showCheckoutSuccessScreen(result.member, result.plan);
         }
       });
@@ -575,24 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnEnterPlatformDirect) {
       btnEnterPlatformDirect.addEventListener('click', () => {
         closeModal(modals.checkout);
-        // Autenticar al usuario recién creado
-        if (state.lastCreatedUser) {
-          AuthService.loginWithCode(state.lastCreatedUser.accessCode);
-        }
         switchView('platform');
-      });
-    }
-
-    // Botón copiar código generado
-    const btnCopyCode = document.getElementById('btn-copy-code');
-    if (btnCopyCode) {
-      btnCopyCode.addEventListener('click', () => {
-        const codeText = document.getElementById('generated-access-code').textContent;
-        navigator.clipboard.writeText(codeText).then(() => {
-          const original = btnCopyCode.textContent;
-          btnCopyCode.textContent = '¡Copiado!';
-          setTimeout(() => { btnCopyCode.textContent = original; }, 2000);
-        });
+        showToast('¡Bienvenido/a a tu Santuario!', 'success');
       });
     }
   }
@@ -682,10 +700,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('checkout-form-container').style.display = 'none';
     document.getElementById('checkout-success-container').style.display = 'block';
 
-    document.getElementById('generated-access-code').textContent = member.accessCode;
-    document.getElementById('success-user-name').textContent = member.name;
-    document.getElementById('success-plan-name').textContent = plan.name;
-    document.getElementById('success-user-email').textContent = member.email;
+    const userNameEl = document.getElementById('success-user-name');
+    const planNameEl = document.getElementById('success-plan-name');
+    const userEmailEl = document.getElementById('success-user-email');
+
+    if (userNameEl) userNameEl.textContent = member.name;
+    if (planNameEl) planNameEl.textContent = plan.name;
+    if (userEmailEl) userEmailEl.textContent = member.email;
   }
 
   // ========================================================================
@@ -784,23 +805,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================================
   // PLATAFORMA PRIVADA (DASHBOARD & VIDEOTECA)
   // ========================================================================
+  // PLATAFORMA PRIVADA (DASHBOARD & SANTUARIO DE PRÁCTICA)
+  // ========================================================================
   function renderPlatformDashboard() {
     const user = AuthService.getCurrentUser();
     if (!user) return;
 
-    // Saludo y Sutra
+    // Saludo y Nombres dinámicos
+    const firstName = user.name ? user.name.split(' ')[0] : 'Alumno';
+    const initials = getUserInitials(user.name);
+
     const userNameEl = document.getElementById('platform-user-greeting');
-    if (userNameEl) {
-      userNameEl.textContent = user.name;
+    if (userNameEl) userNameEl.textContent = firstName;
+
+    const profileNameHeader = document.getElementById('header-profile-name');
+    if (profileNameHeader) profileNameHeader.textContent = firstName;
+
+    const headerAvatar = document.getElementById('header-user-avatar');
+    if (headerAvatar) headerAvatar.textContent = initials;
+
+    const drawerAvatar = document.getElementById('drawer-user-avatar');
+    if (drawerAvatar) drawerAvatar.textContent = initials;
+
+    // Inspiración Diaria
+    const phraseTextEl = document.getElementById('platform-quote-phrase-text');
+    const phraseAuthorEl = document.getElementById('platform-quote-phrase-author');
+    if (phraseTextEl && phraseAuthorEl) {
+      const quoteIndex = new Date().getDate() % DAILY_QUOTES_DATA.length;
+      const todayQuote = DAILY_QUOTES_DATA[quoteIndex];
+      phraseTextEl.textContent = todayQuote.text;
+      phraseAuthorEl.textContent = todayQuote.author.startsWith('—') ? todayQuote.author : `— ${todayQuote.author}`;
     }
 
-    const dailyQuoteEl = document.getElementById('platform-daily-quote');
-    if (dailyQuoteEl) {
-      const quoteIndex = new Date().getDate() % DAILY_QUOTES.length;
-      dailyQuoteEl.textContent = DAILY_QUOTES[quoteIndex];
-    }
-
-    // Métricas del Alumno
+    // Métricas Reales del Alumno
     const streakEl = document.getElementById('stat-streak-days');
     if (streakEl) streakEl.textContent = user.streakDays || 1;
 
@@ -811,12 +848,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (completedEl) completedEl.textContent = user.completedClassesCount || 0;
 
     const streakBadgeEl = document.getElementById('header-streak-count');
-    if (streakBadgeEl) streakBadgeEl.textContent = `${user.streakDays || 1} días racha`;
+    if (streakBadgeEl) streakBadgeEl.textContent = `${user.streakDays || 1} días`;
 
-    const profileNameHeader = document.getElementById('header-profile-name');
-    if (profileNameHeader) profileNameHeader.textContent = user.name.split(' ')[0];
+    // Banner de Membresía Pausada
+    const pausedBanner = document.getElementById('platform-paused-banner');
+    if (pausedBanner) {
+      pausedBanner.style.display = user.active === false ? 'block' : 'none';
+    }
 
-    // Reanudación de última clase
+    // Estado del Encuentro en Vivo
+    const liveCardLabel = document.getElementById('btn-live-card-label');
+    const liveBtn = document.getElementById('btn-open-live-modal');
+    const isAttending = localStorage.getItem('namaste_attending_live_' + (user.email || 'guest')) === 'true';
+    if (liveCardLabel) {
+      liveCardLabel.textContent = isAttending ? '✓ Agendado' : 'Agendar';
+    }
+    if (liveBtn) {
+      if (isAttending) {
+        liveBtn.classList.remove('btn-olive');
+        liveBtn.classList.add('btn-secondary');
+      } else {
+        liveBtn.classList.remove('btn-secondary');
+        liveBtn.classList.add('btn-olive');
+      }
+    }
+
+    // Reanudación de última clase practicada
     renderResumeCard();
 
     // Filtros y catálogo de clases
@@ -833,30 +890,35 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const durationSeconds = (lastPlayed.duration || 30) * 60;
+    const progressSeconds = lastPlayed.progressSeconds || 0;
+    const progressPct = Math.min(100, Math.max(8, Math.round((progressSeconds / durationSeconds) * 100)));
+    const remainingMinutes = Math.max(1, Math.round((durationSeconds - progressSeconds) / 60));
+
     resumeContainer.style.display = 'block';
     resumeContainer.innerHTML = `
       <div class="resume-card">
         <div class="resume-left">
           <img src="${lastPlayed.thumbnail}" alt="${lastPlayed.title}" class="resume-thumb" />
-          <div>
-            <div style="font-size:0.78rem; text-transform:uppercase; color:var(--terracotta); font-weight:600; letter-spacing:0.06em;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--terracotta); font-weight:600; letter-spacing:0.06em;">
               Continuar práctica
             </div>
-            <div class="resume-title">${lastPlayed.title}</div>
-            <div style="font-size:0.82rem; color:var(--text-muted);">
-              ${lastPlayed.instructor} • ${lastPlayed.duration} min
+            <div class="resume-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastPlayed.title}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ${lastPlayed.instructor} • Restan ${remainingMinutes} min (${progressPct}% completado)
             </div>
             <div class="resume-progress-bar">
-              <div class="resume-progress-fill" style="width: 55%;"></div>
+              <div class="resume-progress-fill" style="width: ${progressPct}%;"></div>
             </div>
           </div>
         </div>
         <div class="resume-right">
-          <button class="btn btn-primary btn-play-resume" data-class-id="${lastPlayed.id}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <button class="btn btn-primary btn-play-resume" data-class-id="${lastPlayed.id}" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
-            Reanudar sesión
+            <span>Reanudar sesión</span>
           </button>
         </div>
       </div>
@@ -865,24 +927,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const resumeBtn = resumeContainer.querySelector('.btn-play-resume');
     if (resumeBtn) {
       resumeBtn.addEventListener('click', () => {
-        openClassPlayer(lastPlayed);
+        openClassPlayer(lastPlayed, lastPlayed.progressSeconds || 0);
       });
     }
   }
 
   function setupPlatformFilters() {
-    // Categorías Tabs
-    const tabPills = document.querySelectorAll('.filter-tab-pill');
-    tabPills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        tabPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        state.activeCategoryFilter = pill.getAttribute('data-category');
-        renderPlatformClasses();
-      });
-    });
-
-    // Buscador
+    // Buscador interactivo
     const searchInput = document.getElementById('platform-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -891,25 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Duración
-    const durationSelect = document.getElementById('filter-duration-select');
-    if (durationSelect) {
-      durationSelect.addEventListener('change', (e) => {
-        state.activeDurationFilter = e.target.value;
-        renderPlatformClasses();
-      });
-    }
-
-    // Nivel
-    const levelSelect = document.getElementById('filter-level-select');
-    if (levelSelect) {
-      levelSelect.addEventListener('change', (e) => {
-        state.activeLevelFilter = e.target.value;
-        renderPlatformClasses();
-      });
-    }
-
-    // Checkbox Favoritas
+    // Toggle Solo Favoritas
     const favToggle = document.getElementById('filter-toggle-favorites');
     if (favToggle) {
       favToggle.addEventListener('change', (e) => {
@@ -918,12 +951,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Checkbox Nuevas
-    const newToggle = document.getElementById('filter-toggle-new');
-    if (newToggle) {
-      newToggle.addEventListener('change', (e) => {
-        state.onlyNew = e.target.checked;
-        renderPlatformClasses();
+    // Chips de categorías rápidas
+    const chipsContainer = document.getElementById('platform-filter-chips');
+    if (chipsContainer) {
+      chipsContainer.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          chipsContainer.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          state.activeCategoryFilter = chip.getAttribute('data-category') || 'all';
+          renderPlatformClasses();
+        });
       });
     }
   }
@@ -940,12 +977,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!yogaCarousel || !medCarousel) return;
 
     let filtered = CLASSES_DATA.filter(c => {
-      // Filtro Solo Favoritas
+      // 1. Filtro por Chip de Categoría
+      if (state.activeCategoryFilter && state.activeCategoryFilter !== 'all') {
+        if (state.activeCategoryFilter === 'completed') {
+          if (!ProgressService.isCompleted(c.id)) return false;
+        } else if (state.activeCategoryFilter === 'meditacion') {
+          if (c.category !== 'meditacion' && c.category !== 'relax') return false;
+        } else {
+          if (c.category !== state.activeCategoryFilter) return false;
+        }
+      }
+
+      // 2. Filtro Solo Favoritas
       if (state.onlyFavorites && !ProgressService.isFavorite(c.id)) {
         return false;
       }
 
-      // Búsqueda de texto
+      // 3. Búsqueda de texto en títulos, instructores, descripciones e intenciones
       if (state.searchQuery) {
         const query = state.searchQuery.toLowerCase();
         const matchTitle = (c.title || '').toLowerCase().includes(query);
@@ -992,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${c.isNew ? '<span class="badge-tag badge-new">Nueva</span>' : ''}
             <span class="class-duration-badge">${c.duration} min</span>
             
-            <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="Guardar en favoritas" aria-label="Favorito">
+            <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="${isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}" aria-label="Favorito">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
@@ -1062,6 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (svg) {
             svg.setAttribute('fill', isNowFav ? 'currentColor' : 'none');
           }
+          showToast(isNowFav ? 'Práctica guardada en tus favoritas' : 'Práctica eliminada de tus favoritas');
           if (state.onlyFavorites) {
             renderPlatformClasses();
           }
@@ -1073,17 +1122,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================================
   // REPRODUCTOR INMERSIVO DE VIDEO
   // ========================================================================
-  function openClassPlayer(classObj) {
+  function openClassPlayer(classObj, seekSeconds = 0) {
     state.activePlayingClass = classObj;
-    ProgressService.recordPlayProgress(classObj.id, 0);
+    ProgressService.recordPlayProgress(classObj.id, seekSeconds);
 
     const videoEl = document.getElementById('player-video-element');
     if (videoEl) {
       videoEl.src = classObj.videoUrl;
       videoEl.poster = classObj.thumbnail;
-      videoEl.play().catch(e => {
-        console.log('Video autoplay prevented, ready to play manually.', e);
-      });
+      videoEl.playbackRate = state.videoPlaybackRate || 1.0;
+
+      const onMetadataLoaded = () => {
+        if (seekSeconds > 0 && seekSeconds < videoEl.duration) {
+          videoEl.currentTime = seekSeconds;
+        }
+        videoEl.play().catch(e => {
+          console.log('Video autoplay prevented, listo para reproducir manual.', e);
+        });
+        updatePlayerTimeDisplay();
+      };
+
+      videoEl.addEventListener('loadedmetadata', onMetadataLoaded, { once: true });
     }
 
     // Datos de la clase
@@ -1094,6 +1153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('player-class-instructor').textContent = classObj.instructor;
     document.getElementById('player-class-instructor-role').textContent = classObj.instructorRole;
     document.getElementById('player-class-description').textContent = classObj.description;
+
+    // Resetear botón de velocidad a 1.0x
+    const speedBtn = document.getElementById('btn-player-speed');
+    if (speedBtn) speedBtn.textContent = `${state.videoPlaybackRate || 1.0}x`;
 
     // Props / Accesorios
     const propsListEl = document.getElementById('player-class-props');
@@ -1112,13 +1175,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Estado de botón Completada
-    const markCompleteBtn = document.getElementById('btn-mark-class-complete');
-    if (markCompleteBtn) {
-      const isDone = ProgressService.isCompleted(classObj.id);
-      updateMarkCompletedButton(isDone);
-    }
+    const isDone = ProgressService.isCompleted(classObj.id);
+    updateMarkCompletedButton(isDone);
 
     openModal(modals.player);
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function updatePlayerTimeDisplay() {
+    const videoEl = document.getElementById('player-video-element');
+    const indicator = document.getElementById('player-progress-indicator');
+    if (!videoEl || !indicator) return;
+    const cur = formatTime(videoEl.currentTime || 0);
+    const dur = formatTime(videoEl.duration || (state.activePlayingClass ? state.activePlayingClass.duration * 60 : 0));
+    indicator.textContent = `${cur} / ${dur}`;
   }
 
   function pauseActiveVideo() {
@@ -1129,6 +1204,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupPlayerControls() {
+    const videoEl = document.getElementById('player-video-element');
+
+    // Botón Marcar como completada
     const markCompleteBtn = document.getElementById('btn-mark-class-complete');
     if (markCompleteBtn) {
       markCompleteBtn.addEventListener('click', () => {
@@ -1136,6 +1214,59 @@ document.addEventListener('DOMContentLoaded', () => {
         ProgressService.markCompleted(state.activePlayingClass.id, state.activePlayingClass.duration);
         updateMarkCompletedButton(true);
         renderPlatformDashboard();
+        showToast('¡Felicitaciones! Has completado tu práctica consciente.', 'success');
+      });
+    }
+
+    if (videoEl) {
+      // Seguimiento en tiempo real del progreso del video
+      let lastSaveTime = 0;
+      videoEl.addEventListener('timeupdate', () => {
+        updatePlayerTimeDisplay();
+        const now = Math.floor(videoEl.currentTime);
+        if (state.activePlayingClass && now - lastSaveTime >= 3) {
+          lastSaveTime = now;
+          ProgressService.recordPlayProgress(state.activePlayingClass.id, now);
+        }
+      });
+
+      // Al finalizar el video, marcar automáticamente completada
+      videoEl.addEventListener('ended', () => {
+        if (state.activePlayingClass) {
+          ProgressService.markCompleted(state.activePlayingClass.id, state.activePlayingClass.duration);
+          updateMarkCompletedButton(true);
+          renderPlatformDashboard();
+          showToast('¡Práctica finalizada con éxito! Namasté.', 'success');
+        }
+      });
+    }
+
+    // Controles de salto y velocidad en el reproductor
+    const skipBackBtn = document.getElementById('btn-player-skip-back');
+    if (skipBackBtn && videoEl) {
+      skipBackBtn.addEventListener('click', () => {
+        videoEl.currentTime = Math.max(0, videoEl.currentTime - 10);
+      });
+    }
+
+    const skipFwdBtn = document.getElementById('btn-player-skip-fwd');
+    if (skipFwdBtn && videoEl) {
+      skipFwdBtn.addEventListener('click', () => {
+        videoEl.currentTime = Math.min(videoEl.duration || 9999, videoEl.currentTime + 10);
+      });
+    }
+
+    const speedBtn = document.getElementById('btn-player-speed');
+    const speeds = [1.0, 1.25, 0.85];
+    if (speedBtn && videoEl) {
+      speedBtn.addEventListener('click', () => {
+        let currentIdx = speeds.indexOf(state.videoPlaybackRate || 1.0);
+        currentIdx = (currentIdx + 1) % speeds.length;
+        const newSpeed = speeds[currentIdx];
+        state.videoPlaybackRate = newSpeed;
+        videoEl.playbackRate = newSpeed;
+        speedBtn.textContent = `${newSpeed}x`;
+        showToast(`Velocidad de reproducción: ${newSpeed}x`);
       });
     }
   }
@@ -1144,23 +1275,354 @@ document.addEventListener('DOMContentLoaded', () => {
     const markCompleteBtn = document.getElementById('btn-mark-class-complete');
     if (!markCompleteBtn) return;
     if (isDone) {
-      markCompleteBtn.className = 'btn btn-olive';
+      markCompleteBtn.className = 'btn btn-olive btn-complete-practice';
       markCompleteBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        Práctica completada con éxito
+        <span>Práctica completada ✓</span>
       `;
     } else {
-      markCompleteBtn.className = 'btn btn-primary';
+      markCompleteBtn.className = 'btn btn-primary btn-complete-practice';
       markCompleteBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 14 14"></polyline>
         </svg>
-        Marcar práctica como completada
+        <span>Marcar práctica como completada</span>
       `;
     }
+  }
+
+  // ========================================================================
+  // AUDITORÍA Y MEJORAS 100% FUNCIONALES DEL PANEL DE ALUMNO
+  // ========================================================================
+  function setupPlatformFeatures() {
+    // 1. Botón Logo para regresar al portal principal
+    const btnExit = document.getElementById('btn-exit-to-landing');
+    if (btnExit) {
+      btnExit.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('landing');
+        showToast('Has regresado a la portada principal.');
+      });
+    }
+
+    // 2. Enlaces del Header de la plataforma
+    const navSanctuary = document.getElementById('platform-nav-sanctuary');
+    if (navSanctuary) {
+      navSanctuary.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    const navLibrary = document.getElementById('platform-nav-library');
+    if (navLibrary) {
+      navLibrary.addEventListener('click', () => {
+        const anchor = document.getElementById('library-anchor');
+        if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    // 3. Botón de refrescar inspiración diaria
+    const btnRefreshQuote = document.getElementById('btn-refresh-quote');
+    if (btnRefreshQuote) {
+      btnRefreshQuote.addEventListener('click', () => {
+        const phraseTextEl = document.getElementById('platform-quote-phrase-text');
+        const phraseAuthorEl = document.getElementById('platform-quote-phrase-author');
+        if (!phraseTextEl || !phraseAuthorEl) return;
+
+        const currentText = phraseTextEl.textContent;
+        const availableQuotes = DAILY_QUOTES_DATA.filter(q => q.text !== currentText);
+        const randomQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)] || DAILY_QUOTES_DATA[0];
+
+        phraseTextEl.style.opacity = '0';
+        phraseAuthorEl.style.opacity = '0';
+
+        setTimeout(() => {
+          phraseTextEl.textContent = randomQuote.text;
+          phraseAuthorEl.textContent = randomQuote.author.startsWith('—') ? randomQuote.author : `— ${randomQuote.author}`;
+          phraseTextEl.style.opacity = '1';
+          phraseAuthorEl.style.opacity = '1';
+          showToast(`Inspiración: ${randomQuote.author}`);
+        }, 150);
+      });
+    }
+
+    // 4. Modal de Progreso del Alumno (Racha, Minutos, Clases)
+    const openProgressModal = () => {
+      const user = AuthService.getCurrentUser();
+      if (!user) return;
+
+      const progress = ProgressService.getProgressState();
+      const completedClasses = CLASSES_DATA.filter(c => progress.completed.includes(c.id));
+
+      const streakEl = document.getElementById('modal-metric-streak');
+      const minEl = document.getElementById('modal-metric-minutes');
+      const countEl = document.getElementById('modal-metric-classes');
+      const badgeCountEl = document.getElementById('modal-completed-count-badge');
+      const listContainer = document.getElementById('modal-completed-classes-list');
+
+      if (streakEl) streakEl.textContent = user.streakDays || 1;
+      if (minEl) minEl.textContent = user.totalMinutesPracticed || 0;
+      if (countEl) countEl.textContent = user.completedClassesCount || 0;
+      if (badgeCountEl) badgeCountEl.textContent = `${completedClasses.length} ${completedClasses.length === 1 ? 'clase' : 'clases'}`;
+
+      if (listContainer) {
+        if (completedClasses.length === 0) {
+          listContainer.innerHTML = `
+            <div style="text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.88rem;">
+              Aún no has completado ninguna sesión. ¡Elige una práctica del catálogo para iniciar tu registro!
+            </div>
+          `;
+        } else {
+          listContainer.innerHTML = completedClasses.map(c => `
+            <div class="completed-class-row">
+              <div class="completed-class-row-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--olive-dark)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>${c.title} (${c.duration} min)</span>
+              </div>
+              <button type="button" class="btn-repeat-practice" data-class-id="${c.id}">
+                Repetir práctica →
+              </button>
+            </div>
+          `).join('');
+
+          listContainer.querySelectorAll('.btn-repeat-practice').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const classId = btn.getAttribute('data-class-id');
+              const classObj = CLASSES_DATA.find(c => c.id === classId);
+              if (classObj) {
+                closeModal(modals.progressDetails);
+                openClassPlayer(classObj, 0);
+              }
+            });
+          });
+        }
+      }
+
+      openModal(modals.progressDetails);
+    };
+
+    ['platform-header-streak', 'stat-card-streak', 'stat-card-minutes', 'stat-card-classes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', openProgressModal);
+    });
+
+    // 5. Modal de Encuentro en Vivo (Satsang & Zoom)
+    const openLiveModal = (e) => {
+      if (e) e.preventDefault();
+      const user = AuthService.getCurrentUser();
+      const attendBtn = document.getElementById('btn-live-attend-toggle');
+      const attendText = document.getElementById('btn-live-attend-text');
+      const isAttending = localStorage.getItem('namaste_attending_live_' + (user ? user.email : 'guest')) === 'true';
+
+      if (attendText) {
+        attendText.textContent = isAttending ? '✓ Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
+      }
+      if (attendBtn) {
+        if (isAttending) {
+          attendBtn.classList.remove('btn-primary');
+          attendBtn.classList.add('btn-secondary');
+        } else {
+          attendBtn.classList.remove('btn-secondary');
+          attendBtn.classList.add('btn-primary');
+        }
+      }
+
+      openModal(modals.liveSession);
+    };
+
+    const btnLiveCard = document.getElementById('btn-open-live-modal');
+    if (btnLiveCard) btnLiveCard.addEventListener('click', openLiveModal);
+
+    const shortcutLive = document.getElementById('shortcut-live-link');
+    if (shortcutLive) {
+      shortcutLive.addEventListener('click', (e) => {
+        closeModal(modals.profileDrawer);
+        openLiveModal(e);
+      });
+    }
+
+    const btnAttendToggle = document.getElementById('btn-live-attend-toggle');
+    if (btnAttendToggle) {
+      btnAttendToggle.addEventListener('click', () => {
+        const user = AuthService.getCurrentUser();
+        const key = 'namaste_attending_live_' + (user ? user.email : 'guest');
+        const currentlyAttending = localStorage.getItem(key) === 'true';
+        const newAttendingState = !currentlyAttending;
+
+        localStorage.setItem(key, newAttendingState.toString());
+
+        const attendText = document.getElementById('btn-live-attend-text');
+        if (attendText) {
+          attendText.textContent = newAttendingState ? '✓ Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
+        }
+
+        if (newAttendingState) {
+          btnAttendToggle.classList.remove('btn-primary');
+          btnAttendToggle.classList.add('btn-secondary');
+          showToast('¡Asistencia confirmada para el Satsang de Luna Llena!', 'success');
+        } else {
+          btnAttendToggle.classList.remove('btn-secondary');
+          btnAttendToggle.classList.add('btn-primary');
+          showToast('Has cancelado tu confirmación de asistencia.');
+        }
+
+        renderPlatformDashboard();
+      });
+    }
+
+    // Copiar link de Zoom del encuentro
+    const btnCopyZoom = document.getElementById('btn-copy-zoom-link');
+    if (btnCopyZoom) {
+      btnCopyZoom.addEventListener('click', () => {
+        const zoomText = 'Encuentro Namasté: https://zoom.us/j/84920119283 (ID: 849 2011 9283 • Clave: NAMASTE)';
+        navigator.clipboard.writeText(zoomText).then(() => {
+          btnCopyZoom.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>¡Copiado!</span>
+          `;
+          showToast('Enlace y clave de Zoom copiados al portapapeles', 'success');
+          setTimeout(() => {
+            btnCopyZoom.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copiar Enlace Zoom</span>
+            `;
+          }, 2000);
+        });
+      });
+    }
+
+    // 6. Modal de Cambio de Plan en el Santuario
+    const openChangePlanModal = () => {
+      const user = AuthService.getCurrentUser();
+      if (!user) return;
+
+      const container = document.getElementById('plan-change-options');
+      if (container) {
+        container.innerHTML = PLANS_DATA.map(plan => {
+          const isCurrent = (user.planId === plan.id) || (user.planName && user.planName.toLowerCase().includes(plan.name.toLowerCase()));
+          return `
+            <div class="plan-change-item ${isCurrent ? 'current' : ''}">
+              <div class="plan-change-item-info">
+                <h4>
+                  ${plan.name}
+                  ${isCurrent ? '<span class="status-badge-active" style="font-size:0.7rem; padding:0.15rem 0.5rem;">Tu Plan Actual</span>' : ''}
+                </h4>
+                <p class="plan-change-item-desc">${plan.description}</p>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;">
+                  ${plan.features[0]} • ${plan.features[1]}
+                </div>
+              </div>
+              <div style="text-align: right; flex-shrink: 0;">
+                <div class="plan-change-price">$${plan.priceMonthly}/mes</div>
+                ${isCurrent ? `
+                  <button type="button" class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; cursor: default; margin-top: 0.35rem;">
+                    Activo
+                  </button>
+                ` : `
+                  <button type="button" class="btn btn-primary btn-sm btn-select-new-plan" data-plan-id="${plan.id}" data-plan-name="${plan.name}" style="margin-top: 0.35rem;">
+                    Elegir plan
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.querySelectorAll('.btn-select-new-plan').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const newPlanId = btn.getAttribute('data-plan-id');
+            const newPlanName = btn.getAttribute('data-plan-name');
+            AuthService.updateUserProfile({
+              planId: newPlanId,
+              planName: newPlanName
+            });
+            closeModal(modals.changePlan);
+            populateProfileDrawer();
+            renderPlatformDashboard();
+            showToast(`¡Tu membresía ha sido actualizada a ${newPlanName}!`, 'success');
+          });
+        });
+      }
+
+      openModal(modals.changePlan);
+    };
+
+    const btnDrawerChangePlan = document.getElementById('btn-drawer-change-plan');
+    if (btnDrawerChangePlan) {
+      btnDrawerChangePlan.addEventListener('click', () => {
+        closeModal(modals.profileDrawer);
+        openChangePlanModal();
+      });
+    }
+
+    // 7. Banner de Reactivación de Membresía
+    const btnBannerResume = document.getElementById('btn-banner-resume-membership');
+    if (btnBannerResume) {
+      btnBannerResume.addEventListener('click', () => {
+        MembershipService.toggleMembershipPause();
+        populateProfileDrawer();
+        renderPlatformDashboard();
+        showToast('¡Membresía reactivada con éxito! Bienvenido de nuevo a tu práctica.', 'success');
+      });
+    }
+
+    // 8. Modal de Comprobante / Recibo de Membresía
+    const btnReceipt = document.getElementById('btn-drawer-download-receipt');
+    if (btnReceipt) {
+      btnReceipt.addEventListener('click', () => {
+        const user = AuthService.getCurrentUser();
+        if (!user) return;
+
+        const contentArea = document.getElementById('receipt-content-area');
+        if (contentArea) {
+          contentArea.innerHTML = `
+            <div style="background-color: var(--sand-50); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; font-size: 0.88rem;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+                <div>
+                  <strong style="font-family:var(--font-serif); font-size:1.15rem; color:var(--text-primary);">Namasté Escuela de Yoga</strong>
+                  <div style="font-size:0.78rem; color:var(--text-muted);">Santuario Consciente Online</div>
+                </div>
+                <span class="status-badge-active">● Pagado</span>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:1rem;">
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Alumno:</span><br><strong>${user.name}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Código:</span><br><code>${user.accessCode}</code></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${user.planName || 'Plan Santuario'}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Renovación:</span><br><strong>${user.nextBillingDate || '22 Octubre 2026'}</strong></div>
+              </div>
+              <div style="border-top:1px dashed var(--border-medium); padding-top:0.75rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.82rem; color:var(--text-muted);">Método: Visa •••• 4242</span>
+                <strong style="font-size:1.1rem; color:var(--terracotta);">$29.00 USD</strong>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-top:1.25rem;">
+              <button type="button" class="btn btn-secondary" onclick="window.print()" style="flex:1; justify-content:center; font-size:0.84rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Imprimir / Guardar PDF</span>
+              </button>
+            </div>
+          `;
+        }
+
+        closeModal(modals.profileDrawer);
+        openModal(modals.receipt);
+      });
+    }
+
+    // 9. Flechas de navegación para carruseles horizontales
+    document.querySelectorAll('.carousel-arrow').forEach(arrowBtn => {
+      arrowBtn.addEventListener('click', () => {
+        const targetId = arrowBtn.getAttribute('data-target');
+        const carousel = document.getElementById(targetId);
+        if (!carousel) return;
+        const isNext = arrowBtn.classList.contains('next');
+        const scrollAmount = 315;
+        carousel.scrollBy({ left: isNext ? scrollAmount : -scrollAmount, behavior: 'smooth' });
+      });
+    });
   }
 
   // ========================================================================
@@ -1192,6 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
         AuthService.logout();
         closeModal(modals.profileDrawer);
         switchView('landing');
+        showToast('Sesión cerrada correctamente. ¡Hasta tu próxima práctica!');
       });
     }
 
@@ -1206,6 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>¡Copiado!</span>
           `;
+          showToast('Código de alumno copiado al portapapeles', 'success');
           setTimeout(() => {
             btnCopyDrawerCode.innerHTML = `
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -1220,21 +1684,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnTogglePause = document.getElementById('btn-toggle-pause-membership');
     if (btnTogglePause) {
       btnTogglePause.addEventListener('click', () => {
-        MembershipService.toggleMembershipPause();
+        const isNowActive = MembershipService.toggleMembershipPause();
         populateProfileDrawer();
-      });
-    }
-
-    // Cambiar de plan / Ver opciones
-    const btnChangePlan = document.getElementById('btn-drawer-change-plan');
-    if (btnChangePlan) {
-      btnChangePlan.addEventListener('click', () => {
-        closeModal(modals.profileDrawer);
-        switchView('landing');
-        setTimeout(() => {
-          const plansSection = document.getElementById('planes');
-          if (plansSection) plansSection.scrollIntoView({ behavior: 'smooth' });
-        }, 180);
+        renderPlatformDashboard();
+        showToast(isNowActive ? '¡Membresía reactivada con éxito!' : 'Membresía pausada preventivamente.');
       });
     }
 
@@ -1274,11 +1727,24 @@ document.addEventListener('DOMContentLoaded', () => {
       btnClearFilters.addEventListener('click', () => {
         state.searchQuery = '';
         state.onlyFavorites = false;
+        state.activeCategoryFilter = 'all';
+
         const searchInput = document.getElementById('platform-search-input');
         if (searchInput) searchInput.value = '';
+
         const favToggle = document.getElementById('filter-toggle-favorites');
         if (favToggle) favToggle.checked = false;
+
+        const chipsContainer = document.getElementById('platform-filter-chips');
+        if (chipsContainer) {
+          chipsContainer.querySelectorAll('.filter-chip').forEach(c => {
+            if (c.getAttribute('data-category') === 'all') c.classList.add('active');
+            else c.classList.remove('active');
+          });
+        }
+
         renderPlatformClasses();
+        showToast('Filtros restablecidos');
       });
     }
   }
@@ -1290,17 +1756,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameEl = document.getElementById('drawer-user-name');
     if (nameEl) nameEl.textContent = user.name;
 
+    const drawerAvatar = document.getElementById('drawer-user-avatar');
+    if (drawerAvatar) drawerAvatar.textContent = getUserInitials(user.name);
+
     const emailEl = document.getElementById('drawer-user-email');
     if (emailEl) emailEl.textContent = user.email;
 
     const codeEl = document.getElementById('drawer-access-code');
-    if (codeEl) codeEl.textContent = user.accessCode;
+    if (codeEl) codeEl.textContent = user.email || user.accessCode;
 
     const planNameEl = document.getElementById('drawer-plan-name');
     if (planNameEl) planNameEl.textContent = user.planName || 'Plan Santuario';
-
-    const memberSinceEl = document.getElementById('drawer-member-since');
-    if (memberSinceEl) memberSinceEl.textContent = user.memberSince || 'Marzo 2026';
 
     const nextBillingEl = document.getElementById('drawer-next-billing');
     if (nextBillingEl) nextBillingEl.textContent = user.nextBillingDate || '22 Octubre 2026';
@@ -1348,6 +1814,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupMobileNav() {
     const btnNavHome = document.getElementById('mobile-nav-home');
     const btnNavClasses = document.getElementById('mobile-nav-classes');
+    const btnNavPlans = document.getElementById('mobile-nav-plans');
     const btnNavProfile = document.getElementById('mobile-nav-profile');
 
     if (btnNavHome) {
@@ -1361,8 +1828,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = AuthService.getCurrentUser();
         if (user) {
           switchView('platform');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           openModal(modals.login);
+        }
+      });
+    }
+
+    if (btnNavPlans) {
+      btnNavPlans.addEventListener('click', (e) => {
+        if (state.currentView === 'platform') {
+          e.preventDefault();
+          // Abrir modal de gestión de planes para alumno activo
+          const changePlanBtn = document.getElementById('btn-drawer-change-plan');
+          if (changePlanBtn) changePlanBtn.click();
         }
       });
     }

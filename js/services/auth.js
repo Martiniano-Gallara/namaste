@@ -70,26 +70,33 @@ const AuthService = (() => {
     return !!getCurrentUser();
   };
 
-  const loginWithCode = (code) => {
-    if (!code || typeof code !== 'string') {
-      return { success: false, message: 'Por favor ingresa un código de acceso válido.' };
+  const login = (identifier) => {
+    if (!identifier || typeof identifier !== 'string') {
+      return { success: false, message: 'Por favor ingresa tu correo electrónico o datos de acceso.' };
     }
 
-    const cleanCode = code.trim().toUpperCase();
+    const clean = identifier.trim().toLowerCase();
     const allUsers = getStoredUsers();
-    const user = allUsers[cleanCode];
+
+    // 1. Buscar coincidencia por email registrado
+    let user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
+
+    // 2. O por código de acceso para compatibilidad
+    if (!user) {
+      user = allUsers[clean.toUpperCase()];
+    }
 
     if (!user) {
       return {
         success: false,
-        message: 'Código no reconocido. Verifica el código enviado a tu correo o prueba con el código demo "NAMASTE-ALUMNO".'
+        message: 'No encontramos una cuenta con ese correo. Puedes probar con la cuenta demo de Sofía o elegir un plan.'
       };
     }
 
     if (!user.active) {
       return {
         success: false,
-        message: 'Esta membresía se encuentra pausada o inactiva. Contacta con soporte@namasteyoga.com.'
+        message: 'Esta membresía se encuentra pausada o inactiva.'
       };
     }
 
@@ -99,6 +106,17 @@ const AuthService = (() => {
       return { success: true, user };
     } catch (e) {
       return { success: false, message: 'Error al iniciar sesión local.' };
+    }
+  };
+
+  const loginUser = (user) => {
+    if (!user) return { success: false };
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: user }));
+      return { success: true, user };
+    } catch (e) {
+      return { success: false, message: 'Error al iniciar sesión.' };
     }
   };
 
@@ -143,7 +161,9 @@ const AuthService = (() => {
   return {
     getCurrentUser,
     isAuthenticated,
-    loginWithCode,
+    login,
+    loginWithCode: login,
+    loginUser,
     logout,
     registerNewMember,
     updateUserProfile,

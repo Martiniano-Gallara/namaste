@@ -21,8 +21,8 @@
   <link rel="icon" type="image/png" href="assets/images/favicon.png" />
   <link rel="stylesheet" href="css/variables.css?v=2.5" />
   <link rel="stylesheet" href="css/main.css?v=2.5" />
-  <link rel="stylesheet" href="css/platform.css?v=2.5" />
-  <link rel="stylesheet" href="css/responsive.css?v=2.5" />
+  <link rel="stylesheet" href="css/platform.css?v=2.6" />
+  <link rel="stylesheet" href="css/responsive.css?v=2.6" />
 </head>
 
 <body>
@@ -228,7 +228,7 @@
           <div class="drawer-zen-quote">
             <span>«Cultiva calma, vitalidad y armonía en tu día a día estés donde estés.»</span>
           </div>
-          <div class="drawer-zen-author">Valeria Manassero · Guía Namasté</div>
+          <div class="drawer-zen-author">Guía Namasté</div>
         </div>
 
         <div class="mobile-drawer-footer">
@@ -237,7 +237,6 @@
           </a>
           <p class="mobile-drawer-tagline">
             <span>Cuerpo · Mente · Corazón</span>
-            <span class="mobile-drawer-guide">Valeria Manassero</span>
           </p>
         </div>
       </div>
@@ -432,9 +431,8 @@
                 <div class="step-number">01</div>
                 <span class="step-pill-tag">Paso 1</span>
               </div>
-              <h3>Elige tu Membresía</h3>
-              <p>Selecciona el plan mensual que mejor resuene con tu ritmo actual de vida. Sin matrícula ni gastos
-                ocultos.</p>
+              <h3>Elige el Plan</h3>
+              <p>Selecciona la membresía (Esencia, Santuario o Sadhana) que mejor resuene con tu ritmo y objetivos de práctica.</p>
             </div>
 
             <div class="step-card">
@@ -442,9 +440,8 @@
                 <div class="step-number">02</div>
                 <span class="step-pill-tag">Paso 2</span>
               </div>
-              <h3>Pago 100% Seguro</h3>
-              <p>Completa tu suscripción en nuestra pasarela encriptada. Aceptamos tarjetas internacionales y métodos
-                locales.</p>
+              <h3>Rellena tus Datos</h3>
+              <p>Completa un formulario breve con tu nombre y correo electrónico en menos de un minuto.</p>
             </div>
 
             <div class="step-card">
@@ -452,9 +449,8 @@
                 <div class="step-number">03</div>
                 <span class="step-pill-tag">Paso 3</span>
               </div>
-              <h3>Recibe tu Código</h3>
-              <p>Obtén en pantalla y en tu email tu código personal de alumno (ej: <code>NAMASTE-4821</code>) para
-                ingresar al instante.</p>
+              <h3>Paga el Plan</h3>
+              <p>Abona tu membresía en nuestra pasarela segura y protegida mediante tarjeta o tu método de pago preferido.</p>
             </div>
 
             <div class="step-card">
@@ -462,9 +458,8 @@
                 <div class="step-number">04</div>
                 <span class="step-pill-tag">Paso 4</span>
               </div>
-              <h3>Ingresa al Santuario</h3>
-              <p>Coloca tu código en la plataforma, despliega tu esterilla y comienza tu primera clase guiada hoy mismo.
-              </p>
+              <h3>Acceso Automático</h3>
+              <p>Tu cuenta se habilita al instante e ingresas directamente con tus datos al Santuario para comenzar tu práctica.</p>
             </div>
           </div>
 
@@ -808,14 +803,13 @@
 
           <div class="faq-item">
             <button class="faq-trigger">
-              <h4>¿Cómo recibo mi código de acceso?</h4>
+              <h4>¿Cómo accedo una vez suscripto/a?</h4>
               <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
             <div class="faq-content">
-              <p>Aparece en pantalla al instante de suscribirte y llega directo a tu correo electrónico. Puedes ingresar
-                de inmediato con un clic o desde Acceso Alumnos.</p>
+              <p>Tu cuenta se habilita de forma automática e inmediata al confirmar el pago. Accedes al instante al Santuario con tu correo electrónico registrado y recibes tu comprobante de bienvenida por email.</p>
             </div>
           </div>
 
@@ -882,6 +876,21 @@
        ==================================================================== -->
   <div id="view-platform" class="platform-view" style="display: none;">
 
+    <!-- Banner Informativo de Membresía en Pausa (Controlado dinámicamente) -->
+    <div class="membership-paused-banner" id="platform-paused-banner" style="display: none;">
+      <div class="container paused-banner-inner">
+        <div class="paused-banner-text">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>Tu membresía se encuentra en pausa preventiva. El acceso a las clases está temporalmente suspendido.</span>
+        </div>
+        <button type="button" class="btn-resume-banner" id="btn-banner-resume-membership">Reactivar Ahora</button>
+      </div>
+    </div>
+
     <!-- Platform Header Limpio & Adaptativo -->
     <header class="platform-header">
       <div class="container platform-header-inner">
@@ -894,15 +903,13 @@
           </a>
 
           <ul class="platform-links">
-            <li class="platform-nav-link active">Mi Santuario</li>
-            <li class="platform-nav-link"
-              onclick="document.getElementById('library-anchor').scrollIntoView({behavior:'smooth'})">Biblioteca de
-              Clases</li>
+            <li class="platform-nav-link active" id="platform-nav-sanctuary">Mi Santuario</li>
+            <li class="platform-nav-link" id="platform-nav-library">Biblioteca de Clases</li>
           </ul>
         </div>
 
         <div class="platform-user-panel">
-          <div class="streak-badge" title="Días consecutivos de práctica">
+          <div class="streak-badge" id="platform-header-streak" title="Ver resumen de tu camino y racha de práctica">
             <svg class="badge-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M12 2c-.6 3.2-3 5.4-4.8 7.5-1.8 2.2-2.7 4.5-2.7 6.8 0 4.2 3.4 7.7 7.5 7.7s7.5-3.5 7.5-7.7c0-3.8-2.6-6.7-4.2-9-1.3-1.8-2.1-3.6-2.3-5.3-.1 1.5-.7 2.7-1.7 3.5-1 0.8-1.5 2-1.5 3.3 0 1.2.9 2.2 2 2.2.3 0 .6-.1.8-.2-.3 1.8-1.8 3.2-3.6 3.2-2 0-3.7-1.7-3.7-3.7 0-1.8 1.1-3.5 2.5-4.8 1.4-1.3 2.5-2.5 2.5-4.2z" />
@@ -913,7 +920,7 @@
           <!-- Botón de Perfil en Desktop -->
           <button class="user-profile-trigger hide-mobile" id="btn-open-user-profile"
             aria-label="Abrir perfil de alumno">
-            <div class="user-avatar-circle">SV</div>
+            <div class="user-avatar-circle" id="header-user-avatar">SV</div>
             <span class="user-profile-name" id="header-profile-name">Sofía</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -948,6 +955,13 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
           <span>Inspiración de Hoy</span>
+          <button type="button" class="btn-refresh-quote" id="btn-refresh-quote" title="Obtener otra inspiración consciente">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
         </div>
         <blockquote class="platform-quote-phrase">
           «<span id="platform-quote-phrase-text">La meditación es silencio interior.</span>»
@@ -970,7 +984,7 @@
           </div>
 
           <div class="stats-compact-grid">
-            <div class="stat-compact-card">
+            <div class="stat-compact-card" id="stat-card-streak" title="Click para ver tus estadísticas y camino de práctica">
               <div class="stat-icon-wrap stat-icon-flame">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                   <path
@@ -983,7 +997,7 @@
               </div>
             </div>
 
-            <div class="stat-compact-card">
+            <div class="stat-compact-card" id="stat-card-minutes" title="Click para ver tus estadísticas y camino de práctica">
               <div class="stat-icon-wrap stat-icon-time">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -997,7 +1011,7 @@
               </div>
             </div>
 
-            <div class="stat-compact-card">
+            <div class="stat-compact-card" id="stat-card-classes" title="Click para ver tus estadísticas y camino de práctica">
               <div class="stat-icon-wrap stat-icon-lotus">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                   stroke-linecap="round" stroke-linejoin="round">
@@ -1014,7 +1028,7 @@
           </div>
         </div>
 
-        <!-- Alerta de clase en vivo compacta & elegante -->
+        <!-- Alerta de clase en vivo compacta & interactiva -->
         <div class="live-class-card">
           <div class="live-card-body">
             <div class="live-badge">
@@ -1026,14 +1040,14 @@
               Domingo 28 Sept • 19:00 hs (vía Zoom exclusivo)
             </p>
           </div>
-          <button class="btn btn-olive btn-live-action" onclick="alert('Enlace de Zoom reservado en tu calendario.')">
+          <button class="btn btn-olive btn-live-action" id="btn-open-live-modal" type="button" aria-label="Ver detalles del encuentro en vivo">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>Agendar</span>
+            <span id="btn-live-card-label">Agendar</span>
           </button>
         </div>
       </div>
@@ -1071,6 +1085,17 @@
           </label>
         </div>
 
+        <!-- Chips de Filtros Rápidos por Categoría -->
+        <div class="platform-filter-chips" id="platform-filter-chips">
+          <button type="button" class="filter-chip active" data-category="all">Todas las prácticas</button>
+          <button type="button" class="filter-chip" data-category="suave">Yoga Suave</button>
+          <button type="button" class="filter-chip" data-category="clasico">Yoga Clásico</button>
+          <button type="button" class="filter-chip" data-category="dinamico">Yoga Dinámico</button>
+          <button type="button" class="filter-chip" data-category="terapeutico">Terapéutico</button>
+          <button type="button" class="filter-chip" data-category="meditacion">Meditación & Calma</button>
+          <button type="button" class="filter-chip" data-category="completed">✓ Completadas</button>
+        </div>
+
         <!-- 1. SECCIÓN: PRÁCTICAS DE YOGA (Carrusel Horizontal Comprimido) -->
         <div class="classes-section-group" id="group-yoga">
           <div class="classes-group-header">
@@ -1090,16 +1115,22 @@
           </div>
 
           <div class="classes-slider-wrap">
+            <button type="button" class="carousel-arrow prev" data-target="carousel-yoga" aria-label="Ver clases de yoga anteriores">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
             <div class="classes-carousel" id="carousel-yoga">
               <!-- Clases de Yoga renderizadas dinámicamente -->
             </div>
+            <button type="button" class="carousel-arrow next" data-target="carousel-yoga" aria-label="Ver más clases de yoga">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
             <div class="classes-slider-hint">
               <span class="classes-drag-hint">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-                Desliza para ver más clases de yoga
+                Desliza o utiliza las flechas para explorar más clases de yoga
               </span>
             </div>
           </div>
@@ -1124,16 +1155,22 @@
           </div>
 
           <div class="classes-slider-wrap">
+            <button type="button" class="carousel-arrow prev" data-target="carousel-meditation" aria-label="Ver meditaciones anteriores">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
             <div class="classes-carousel" id="carousel-meditation">
               <!-- Clases de Meditación renderizadas dinámicamente -->
             </div>
+            <button type="button" class="carousel-arrow next" data-target="carousel-meditation" aria-label="Ver más meditaciones">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
             <div class="classes-slider-hint">
               <span class="classes-drag-hint">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-                Desliza para ver más meditaciones
+                Desliza o utiliza las flechas para explorar más meditaciones
               </span>
             </div>
           </div>
@@ -1159,7 +1196,7 @@
        3. MODALES & PANELES OVERLAY
        ==================================================================== -->
 
-  <!-- Modal 1: Login mediante Código Único de Alumno -->
+  <!-- Modal 1: Acceso de Alumnos -->
   <div class="modal-backdrop" id="modal-login">
     <div class="modal-dialog">
       <div class="modal-header">
@@ -1171,19 +1208,19 @@
           <img src="assets/images/logo.png" alt="Namasté" class="modal-logo-img" />
         </div>
         <p style="font-size: 0.95rem; margin-bottom: 1.5rem; text-align: center;">
-          Ingresa el código único que recibiste al suscribirte a tu membresía (o en tu comprobante de bienvenida).
+          Ingresa con tu correo electrónico registrado para acceder a tu santuario y continuar tu práctica.
         </p>
 
         <form id="login-form">
           <div class="form-group">
-            <label for="access-code-input">Código de Acceso del Alumno:</label>
-            <input type="text" id="access-code-input" class="form-input" placeholder="EJ: NAMASTE-ALUMNO" required
-              autocomplete="off" />
+            <label for="access-code-input">Correo Electrónico de Alumno:</label>
+            <input type="text" id="access-code-input" class="form-input" placeholder="ej: sofia.varela@ejemplo.com" required
+              autocomplete="email" />
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;"
             id="btn-submit-code-login">
-            Ingresar a la Plataforma
+            Ingresar al Santuario
           </button>
 
           <div id="login-feedback" class="modal-feedback"></div>
@@ -1199,7 +1236,7 @@
                 <circle cx="7.5" cy="15.5" r="4.5"></circle>
                 <path d="M21 2l-9.6 9.6M15.5 7.5l2.5 2.5M18.5 4.5L21 7"></path>
               </svg>
-              <span>Usar código de prueba (Sofía Varela)</span>
+              <span>Ingresar con cuenta demo (Sofía Varela)</span>
             </button>
           </div>
         </form>
@@ -1240,7 +1277,7 @@
             </div>
 
             <div class="form-group">
-              <label for="checkout-email">Tu Correo Electrónico (donde enviaremos tu código):</label>
+              <label for="checkout-email">Tu Correo Electrónico (para habilitar tu cuenta):</label>
               <input type="email" id="checkout-email" class="form-input" placeholder="camila@ejemplo.com" required
                 value="camila@ejemplo.com" />
             </div>
@@ -1276,44 +1313,28 @@
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem;">
-              Confirmar Suscripción y Obtener Código
+              Pagar y Activar Mi Cuenta
             </button>
           </form>
         </div>
 
-        <!-- Contenedor de Éxito y Código Generado -->
-        <div id="checkout-success-container" style="display: none; text-align: center;">
-          <img src="assets/images/logo.png" alt="Namasté"
-            style="width: 80px; height: 80px; object-fit: contain; margin: 0 auto 0.75rem auto; display: block; filter: drop-shadow(0 4px 12px rgba(192, 112, 83, 0.2));" />
-          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">¡Bienvenido/a a Namasté!</h3>
-          <p style="font-size: 0.95rem; color: var(--text-secondary);">
-            Gracias, <strong id="success-user-name">Camila</strong>. Tu suscripción a <strong
-              id="success-plan-name">Plan Santuario</strong> está confirmada y hemos enviado el comprobante a <span
-              id="success-user-email">camila@ejemplo.com</span>.
-          </p>
-
-          <div style="margin: 1.5rem 0;">
-            <div
-              style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.4rem;">
-              Tu Código Único de Alumno:
-            </div>
-            <div class="code-badge-preview" id="generated-access-code">NAMASTE-SANTUARIO-8492</div>
-            <button type="button" class="btn btn-secondary" id="btn-copy-code"
-              style="font-size: 0.82rem; padding: 0.4rem 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 0.5rem auto 0 auto;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>Copiar código</span>
-            </button>
+        <!-- Contenedor de Éxito: Cuenta Habilitada Automáticamente -->
+        <div id="checkout-success-container" style="display: none; text-align: center; padding: 0.5rem 0;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(106, 127, 98, 0.14); color: var(--olive); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.9rem auto;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
           </div>
-
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Guarda este código para ingresar desde cualquier teléfono, tablet o computadora.
+          <h3 style="font-size: 1.45rem; margin-bottom: 0.45rem;">¡Cuenta Habilitada con Éxito!</h3>
+          <p style="font-size: 0.94rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto 1.35rem auto; line-height: 1.5;">
+            Bienvenido/a, <strong id="success-user-name">Camila</strong>. Tu suscripción a <strong
+              id="success-plan-name">Plan Santuario</strong> ya está activa. Tu cuenta quedó vinculada a <span
+              id="success-user-email">camila@ejemplo.com</span> y enviamos tu comprobante oficial por correo.
           </p>
 
-          <button type="button" class="btn btn-primary" id="btn-enter-platform-direct" style="width: 100%;">
-            Entrar a la Plataforma Ahora →
+          <button type="button" class="btn btn-primary" id="btn-enter-platform-direct" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+            Ingresar a Mi Santuario Ahora →
           </button>
         </div>
 
@@ -1346,6 +1367,16 @@
             </svg>
             <span>Marcar práctica como completada</span>
           </button>
+        </div>
+
+        <!-- Barra de Control Rápido de Reproducción -->
+        <div class="video-extra-bar">
+          <div class="video-ctrl-btns">
+            <button type="button" class="video-ctrl-btn" id="btn-player-skip-back" title="Retroceder 10 segundos">⏪ 10s</button>
+            <button type="button" class="video-ctrl-btn" id="btn-player-speed" title="Velocidad de reproducción">1.0x</button>
+            <button type="button" class="video-ctrl-btn" id="btn-player-skip-fwd" title="Avanzar 10 segundos">10s ⏩</button>
+          </div>
+          <span style="font-size: 0.76rem; color: var(--text-muted);" id="player-progress-indicator">00:00 / 00:00</span>
         </div>
 
         <p id="player-class-description" class="player-description-text">
@@ -1382,8 +1413,8 @@
             </div>
           </div>
 
-          <a href="https://open.spotify.com" target="_blank" rel="noopener"
-            class="btn btn-secondary btn-spotify-playlist">
+          <a href="https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m" target="_blank" rel="noopener"
+            class="btn btn-secondary btn-spotify-playlist" title="Abrir lista de reproducción serena en Spotify">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18V5l12-2v13"></path>
               <circle cx="6" cy="18" r="3"></circle>
@@ -1407,7 +1438,7 @@
       <div class="profile-drawer-body">
         <!-- Identidad del Alumno -->
         <div class="user-identity-card">
-          <div class="user-avatar-circle" style="width: 44px; height: 44px; font-size: 1.15rem;">SV</div>
+          <div class="user-avatar-circle" id="drawer-user-avatar" style="width: 44px; height: 44px; font-size: 1.15rem;">SV</div>
           <div>
             <h4 id="drawer-user-name" style="font-size: 1.1rem; margin-bottom: 0.15rem;">Sofía Varela</h4>
             <div id="drawer-user-email" style="font-size: 0.84rem; color: var(--text-muted);">sofia.varela@ejemplo.com
@@ -1437,19 +1468,12 @@
             </div>
           </div>
 
-          <div class="code-share-box">
-            <div
-              style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
-              Código de Acceso del Alumno:</div>
-            <div class="code-share-text" id="drawer-access-code">NAMASTE-ALUMNO</div>
-            <button type="button" class="btn btn-secondary" id="btn-copy-drawer-code"
-              style="font-size: 0.8rem; padding: 0.4rem 0.8rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>Copiar código</span>
-            </button>
+          <div class="code-share-box" style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem;">
+            <div>
+              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em;">Cuenta Vinculada:</div>
+              <div id="drawer-access-code" style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); font-family: var(--font-sans);">sofia.varela@ejemplo.com</div>
+            </div>
+            <span class="status-badge-active" style="margin: 0;">● Activa</span>
           </div>
 
           <!-- Botones de Gestión de Suscripción -->
@@ -1461,7 +1485,7 @@
                   points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
                 </polygon>
               </svg>
-              <span>Cambiar de Plan / Mejorar a Sadhana</span>
+              <span>Gestionar Plan / Mejorar Membresía</span>
             </button>
             <button type="button" class="btn btn-secondary" id="btn-toggle-pause-membership"
               style="font-size: 0.82rem; padding: 0.55rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
@@ -1470,6 +1494,17 @@
                 <rect x="14" y="4" width="4" height="16"></rect>
               </svg>
               <span>Pausar o Cancelar Membresía</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-drawer-download-receipt"
+              style="font-size: 0.8rem; padding: 0.45rem 0.8rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <span>Ver Comprobante de Membresía</span>
             </button>
           </div>
         </div>
@@ -1505,8 +1540,7 @@
               </span>
               <span class="shortcut-arrow">→</span>
             </a>
-            <a href="#" class="drawer-shortcut-item" id="shortcut-live-link"
-              onclick="alert('Encuentro de Luna Llena agendado en tu calendario.'); return false;">
+            <a href="#" class="drawer-shortcut-item" id="shortcut-live-link">
               <span style="display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -1514,7 +1548,7 @@
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>Próximo Encuentro en Vivo</span>
+                <span>Próximo Encuentro en Vivo (Zoom)</span>
               </span>
               <span class="shortcut-arrow">→</span>
             </a>
@@ -1546,6 +1580,157 @@
     </div>
   </div>
 
+  <!-- Modal 4: Encuentro en Vivo & Satsang por Zoom -->
+  <div class="modal-backdrop" id="modal-live-session">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span class="live-badge-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#28a745; box-shadow:0 0 8px #28a745;"></span>
+          <h3 style="margin:0;">Encuentro en Directo</h3>
+        </div>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+        <div style="text-align: center; margin-bottom: 1.25rem;">
+          <span class="badge-tag" style="background:var(--terracotta-soft); color:var(--terracotta-dark); font-size:0.75rem; text-transform:uppercase;">Exclusivo Alumnos</span>
+          <h2 style="font-family: var(--font-serif); font-size: 1.45rem; margin: 0.5rem 0 0.35rem 0; color: var(--text-primary);">Satsang & Meditación de Luna Llena</h2>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">Guiado por Vale Manassero • Sala Virtual en Vivo</p>
+        </div>
+
+        <div class="live-event-details-box">
+          <div class="event-detail-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <div><strong>Fecha:</strong> Domingo 28 de Septiembre 2026, 19:00 hs (Arg / 00:00 Esp)</div>
+          </div>
+          <div class="event-detail-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <div><strong>Duración:</strong> 60 minutos (Práctica de meditación + diálogo abierto)</div>
+          </div>
+          <div class="event-detail-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+              <polyline points="17 2 12 7 7 2"></polyline>
+            </svg>
+            <div><strong>ID de Reunión:</strong> <code>849 2011 9283</code> &nbsp; <strong>Código:</strong> <code>NAMASTE</code></div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-primary" id="btn-live-attend-toggle" style="width: 100%; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span id="btn-live-attend-text">Confirmar mi Asistencia</span>
+          </button>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary" id="btn-copy-zoom-link" style="justify-content: center; font-size: 0.82rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copiar Enlace Zoom</span>
+            </button>
+            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Satsang+%26+Meditaci%C3%B3n+de+Luna+Llena+-+Namast%C3%A9&dates=20260928T220000Z/20260928T230000Z&details=Encuentro+mensual+exclusivo+para+alumnos+de+Namast%C3%A9+por+Zoom.+ID:+849+2011+9283.+C%C3%B3digo:+NAMASTE&location=Zoom+Online"
+              target="_blank" rel="noopener" class="btn btn-secondary" id="btn-add-google-calendar" style="justify-content: center; font-size: 0.82rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Google Calendar</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Cambio / Gestión de Plan de Alumno -->
+  <div class="modal-backdrop" id="modal-change-plan">
+    <div class="modal-dialog" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 style="margin:0;">Gestionar Mi Membresía</h3>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Elige el nivel de práctica que mejor se adapte a tu momento actual. La actualización es instantánea.
+        </p>
+
+        <div class="plan-change-list" id="plan-change-options">
+          <!-- Renderizado dinámicamente con PLANS_DATA -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Tu Camino de Práctica & Estadísticas -->
+  <div class="modal-backdrop" id="modal-progress-details">
+    <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <h3 style="margin:0;">Tu Camino de Práctica</h3>
+        </div>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+        <div class="progress-stats-summary-grid">
+          <div class="progress-metric-box">
+            <div class="metric-big-num" id="modal-metric-streak">8</div>
+            <div class="metric-caption">Días de Racha Consecutivos</div>
+          </div>
+          <div class="progress-metric-box">
+            <div class="metric-big-num" id="modal-metric-minutes">245</div>
+            <div class="metric-caption">Minutos en el Mat</div>
+          </div>
+          <div class="progress-metric-box">
+            <div class="metric-big-num" id="modal-metric-classes">7</div>
+            <div class="metric-caption">Sesiones Completadas</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
+            <span>Historial de Prácticas Realizadas</span>
+            <span id="modal-completed-count-badge" class="badge-tag" style="font-size: 0.75rem;">7 clases</span>
+          </h4>
+          <div id="modal-completed-classes-list" class="completed-classes-scroll-list">
+            <!-- Renderizado dinámico -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Comprobante Oficial de Membresía -->
+  <div class="modal-backdrop" id="modal-receipt">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="margin:0;">Comprobante de Membresía</h3>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 1.75rem;" id="receipt-content-area">
+        <!-- Renderizado dinámicamente con datos del alumno -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Flotante de Notificaciones Toast -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
   <!-- Barra de Navegación Inferior Móvil -->
   <nav class="mobile-bottom-nav">
     <ul class="mobile-nav-items">
@@ -1567,7 +1752,7 @@
         </button>
       </li>
       <li>
-        <a href="#planes" class="mobile-nav-btn btn-scroll-plans">
+        <a href="#planes" class="mobile-nav-btn btn-scroll-plans" id="mobile-nav-plans">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
             <line x1="1" y1="10" x2="23" y2="10"></line>
