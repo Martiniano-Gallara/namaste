@@ -433,14 +433,14 @@
     display: flex !important;
     flex-direction: column !important;
     gap: 0.65rem !important;
-    align-items: flex-start !important;
-    text-align: left !important;
+    align-items: center !important;
+    text-align: center !important;
     width: 100% !important;
   }
 
   .hero-emblem-badge {
-    align-self: flex-start !important;
-    margin: 0 0 0.25rem 0 !important;
+    align-self: center !important;
+    margin: 0 auto 0.25rem auto !important;
     padding: 0 !important;
     background: transparent !important;
     border: none !important;
@@ -448,6 +448,9 @@
     backdrop-filter: none !important;
     border-radius: 0 !important;
     gap: 0.45rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .hero-emblem-img {
@@ -466,17 +469,20 @@
     font-size: clamp(1.75rem, 7.8vw, 2.35rem) !important;
     line-height: 1.18 !important;
     margin-bottom: 0.2rem !important;
+    text-align: center !important;
   }
 
   .hero-title-line-1 {
     display: block !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
+    text-align: center !important;
   }
 
   .hero-title-line-2 {
     display: block !important;
     white-space: nowrap !important;
+    text-align: center !important;
   }
 
   .hero-title-line-2 em {
@@ -487,8 +493,9 @@
     font-size: 0.94rem !important;
     line-height: 1.55 !important;
     color: var(--text-secondary);
-    margin-bottom: 0 !important;
-    max-width: 100% !important;
+    margin: 0 auto !important;
+    max-width: 92% !important;
+    text-align: center !important;
   }
 
   /* Bloque inferior de acciones: botón Comenzar más abajo y datos de confianza */
@@ -1208,6 +1215,8 @@
 
   .hero-header-block {
     gap: 0.55rem !important;
+    align-items: center !important;
+    text-align: center !important;
   }
 
   .hero-actions-block {
@@ -1216,6 +1225,7 @@
 
   .hero-title {
     font-size: clamp(1.7rem, 7.8vw, 2.15rem) !important;
+    text-align: center !important;
   }
 
   .modal-dialog {
