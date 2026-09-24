@@ -436,6 +436,8 @@
     align-items: center !important;
     text-align: center !important;
     width: 100% !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
   }
 
   .hero-emblem-badge {
@@ -498,13 +500,14 @@
     text-align: center !important;
   }
 
-  /* Bloque inferior de acciones: botón Comenzar más abajo y datos de confianza */
+  /* Bloque inferior de acciones: botón Comenzar en la parte inferior y datos de confianza */
   .hero-actions-block {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.75rem !important;
     width: 100% !important;
-    margin-top: auto !important;
+    margin-top: 0 !important;
+    padding-top: 1rem !important;
   }
 
   /* 6. Solo botón comenzar */
@@ -1217,10 +1220,14 @@
     gap: 0.55rem !important;
     align-items: center !important;
     text-align: center !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
   }
 
   .hero-actions-block {
     gap: 0.65rem !important;
+    margin-top: 0 !important;
+    padding-top: 0.75rem !important;
   }
 
   .hero-title {
