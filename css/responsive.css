@@ -437,7 +437,7 @@
     width: 100% !important;
     margin-top: auto !important;
     margin-bottom: auto !important;
-    padding-top: clamp(2.5rem, 8vh, 4.5rem) !important;
+    padding-top: clamp(4.5rem, 13vh, 6.5rem) !important;
     box-sizing: border-box !important;
   }
 
@@ -1223,7 +1223,7 @@
     text-align: center !important;
     margin-top: auto !important;
     margin-bottom: auto !important;
-    padding-top: clamp(2.5rem, 8vh, 4.5rem) !important;
+    padding-top: clamp(4.5rem, 13vh, 6.5rem) !important;
   }
 
   .hero-actions-block {
