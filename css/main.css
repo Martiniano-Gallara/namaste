@@ -394,11 +394,13 @@ button, input, select, textarea {
   transition: width var(--transition-fast);
 }
 
-.nav-link:hover {
-  color: var(--text-primary);
+.nav-link:hover,
+.nav-link.active {
+  color: var(--terracotta);
 }
 
-.nav-link:hover::after {
+.nav-link:hover::after,
+.nav-link.active::after {
   width: 100%;
 }
 
@@ -495,9 +497,17 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
 }
 
-.drawer-logo-img {
+.mobile-drawer-brand:hover {
+  opacity: 0.85;
+}
+
+.drawer-logo-img,
+.drawer-brand-icon {
   width: 32px;
   height: 32px;
   object-fit: contain;
@@ -617,9 +627,39 @@ button, input, select, textarea {
   transform: translateX(3px);
 }
 
+/* Estado Activo */
+.mobile-drawer-link.active {
+  background-color: rgba(199, 107, 78, 0.08);
+}
+
+.mobile-drawer-link.active .drawer-link-icon {
+  background-color: var(--terracotta);
+  border-color: var(--terracotta);
+  color: #FFFFFF;
+  box-shadow: 0 3px 8px rgba(199, 107, 78, 0.28);
+}
+
+.mobile-drawer-link.active .drawer-link-text {
+  color: var(--terracotta);
+  font-weight: 600;
+}
+
+.mobile-drawer-link.active .drawer-link-arrow {
+  color: var(--terracotta);
+  opacity: 0.9;
+  transform: translateX(2px);
+}
+
+.drawer-nav-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.45rem 0.5rem;
+  opacity: 0.85;
+}
+
 /* Card Acceso Alumnos */
 .mobile-drawer-link.mobile-drawer-login {
-  margin-top: 0.55rem;
+  margin-top: 0.25rem;
   border: 1px solid rgba(199, 107, 78, 0.22);
   background: linear-gradient(135deg, #FFFFFF 0%, rgba(244, 237, 230, 0.75) 100%);
   box-shadow: 0 2px 8px rgba(199, 107, 78, 0.06);
@@ -656,8 +696,37 @@ button, input, select, textarea {
   color: #FFFFFF;
 }
 
+/* Tarjeta Zen Editorial en el Drawer */
+.drawer-zen-card {
+  margin: 0.85rem 0 0.4rem 0;
+  padding: 0.85rem 0.95rem;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(199, 107, 78, 0.14);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drawer-zen-quote {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.drawer-zen-author {
+  font-size: 0.68rem;
+  color: var(--terracotta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
 .mobile-drawer-footer {
-  margin-top: 1rem;
+  margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid var(--border-subtle);
   display: flex;
@@ -2050,7 +2119,7 @@ body.menu-open {
   background-color: rgba(36, 32, 30, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 200;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
