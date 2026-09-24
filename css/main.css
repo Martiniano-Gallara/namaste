@@ -718,6 +718,18 @@ body.menu-open {
   gap: 1.5rem;
 }
 
+.hero-header-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hero-actions-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 .hero-title {
   font-family: 'EB Garamond', Georgia, serif;
   font-size: clamp(1.85rem, 3vw, 2.6rem);
@@ -730,6 +742,8 @@ body.menu-open {
 
 .hero-title-line-1 {
   display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .hero-title-line-2 {
