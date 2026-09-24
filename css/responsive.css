@@ -363,11 +363,11 @@
     min-height: calc(100dvh - 60px) !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
     position: relative !important;
     overflow: hidden !important;
-    padding: 1.75rem 0 1.25rem 0 !important;
+    padding: 1.5rem 0 1.25rem 0 !important;
     background-color: #FAF8F5 !important;
+    box-sizing: border-box !important;
   }
 
   .hero-section::before,
@@ -410,23 +410,22 @@
   }
 
   .hero-grid {
-    position: relative;
-    z-index: 2;
+    position: relative !important;
+    z-index: 2 !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
     gap: 0 !important;
+    box-sizing: border-box !important;
   }
 
   .hero-content {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
-    gap: 1.5rem !important;
+    box-sizing: border-box !important;
   }
 
   .hero-header-block {
@@ -438,6 +437,8 @@
     width: 100% !important;
     margin-top: auto !important;
     margin-bottom: auto !important;
+    padding-top: clamp(2.5rem, 8vh, 4.5rem) !important;
+    box-sizing: border-box !important;
   }
 
   .hero-emblem-badge {
@@ -506,7 +507,7 @@
     flex-direction: column !important;
     gap: 0.75rem !important;
     width: 100% !important;
-    margin-top: 0 !important;
+    margin-top: auto !important;
     padding-top: 1rem !important;
   }
 
@@ -1213,7 +1214,7 @@
   }
 
   .hero-content {
-    gap: 1.25rem !important;
+    gap: 0 !important;
   }
 
   .hero-header-block {
@@ -1222,11 +1223,12 @@
     text-align: center !important;
     margin-top: auto !important;
     margin-bottom: auto !important;
+    padding-top: clamp(2.5rem, 8vh, 4.5rem) !important;
   }
 
   .hero-actions-block {
     gap: 0.65rem !important;
-    margin-top: 0 !important;
+    margin-top: auto !important;
     padding-top: 0.75rem !important;
   }
 
