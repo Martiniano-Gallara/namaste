@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDailyQuote();
     setupHorizontalSliders();
     setupBillingSwitcher();
+    setupScrollSpy();
 
     // Si ya existe sesión activa previa, podemos ofrecer ingresar directo o inicializar estado
     const currentUser = AuthService.getCurrentUser();
@@ -153,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupNavigation() {
-    // Botón de Acceso Alumnos en Header
+    // Botón de Acceso Alumnos en Header y enlaces de login
     document.querySelectorAll('.btn-access-login').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -175,7 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const plansSection = document.getElementById('planes');
         if (plansSection) {
-          plansSection.scrollIntoView({ behavior: 'smooth' });
+          const headerEl = document.querySelector('.site-header');
+          const headerHeight = headerEl ? headerEl.offsetHeight : 64;
+          const targetPos = plansSection.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 10);
+          window.scrollTo({ top: Math.max(0, targetPos), behavior: 'smooth' });
+          updateActiveLinks('#planes');
         }
       });
     });
@@ -186,17 +191,53 @@ document.addEventListener('DOMContentLoaded', () => {
       btnBackToHome.addEventListener('click', (e) => {
         e.preventDefault();
         switchView('landing');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        updateActiveLinks('#hero');
       });
     }
 
-    // Botón Volver al Shala desde el landing si ya está logueado
-    const navLogo = document.querySelector('.brand-logo');
-    if (navLogo) {
-      navLogo.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchView('landing');
+    // Botón Logo: ir al inicio y scroll suave arriba
+    document.querySelectorAll('.brand-logo, #header-brand-logo').forEach(logo => {
+      logo.addEventListener('click', (e) => {
+        const href = logo.getAttribute('href');
+        if (href === '#hero' || href === '#' || !href) {
+          e.preventDefault();
+          if (state.currentView === 'platform') {
+            switchView('landing');
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          updateActiveLinks('#hero');
+        }
       });
-    }
+    });
+
+    // Enlaces de navegación de escritorio (.nav-links .nav-link)
+    document.querySelectorAll('.site-header .nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          if (state.currentView === 'platform') {
+            switchView('landing');
+          }
+
+          if (href === '#hero' || href === '#inicio') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateActiveLinks('#hero');
+            return;
+          }
+
+          const target = document.querySelector(href);
+          if (target) {
+            const headerEl = document.querySelector('.site-header');
+            const headerHeight = headerEl ? headerEl.offsetHeight : 64;
+            const targetPos = target.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 10);
+            window.scrollTo({ top: Math.max(0, targetPos), behavior: 'smooth' });
+            updateActiveLinks(href);
+          }
+        }
+      });
+    });
 
     setupMobileDrawer();
   }
@@ -245,25 +286,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
     overlay.addEventListener('click', closeDrawer);
 
-    // Al hacer clic en un enlace del menú, cerrar y hacer scroll
-    drawer.querySelectorAll('.mobile-drawer-link, .mobile-drawer-cta').forEach(link => {
+    // Al hacer clic en un enlace del menú móvil, cerrar y hacer scroll suave preciso
+    drawer.querySelectorAll('.mobile-drawer-link, .mobile-drawer-cta, .mobile-drawer-brand').forEach(link => {
       link.addEventListener('click', (e) => {
         const href = link.getAttribute('href');
+
+        // Si es el botón de acceso login
+        if (link.classList.contains('btn-access-login')) {
+          e.preventDefault();
+          closeDrawer();
+          setTimeout(() => {
+            const user = AuthService.getCurrentUser();
+            if (user) {
+              switchView('platform');
+            } else {
+              openModal(modals.login);
+            }
+          }, 120);
+          return;
+        }
+
         closeDrawer();
-        if (href && href.startsWith('#') && href.length > 1) {
+
+        if (href && href.startsWith('#')) {
           e.preventDefault();
           if (state.currentView === 'platform') {
             switchView('landing');
           }
+
+          // Caso especial: Inicio / Top
+          if (href === '#hero' || href === '#inicio') {
+            setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 80);
+            updateActiveLinks('#hero');
+            return;
+          }
+
           const targetSection = document.querySelector(href);
           if (targetSection) {
             setTimeout(() => {
-              targetSection.scrollIntoView({ behavior: 'smooth' });
-            }, 180);
+              const headerEl = document.querySelector('.site-header');
+              const headerHeight = headerEl ? headerEl.offsetHeight : 64;
+              const targetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 10);
+              window.scrollTo({
+                top: Math.max(0, targetPosition),
+                behavior: 'smooth'
+              });
+            }, 80);
+            updateActiveLinks(href);
           }
         }
       });
     });
+  }
+
+  function updateActiveLinks(activeHref) {
+    if (!activeHref) return;
+    document.querySelectorAll('.mobile-drawer-link, .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === activeHref) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  function setupScrollSpy() {
+    const sections = ['#hero', '#filosofia', '#beneficios', '#como-funciona', '#planes', '#testimonios', '#faq'];
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+      if (ticking || state.currentView !== 'landing') return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const scrollPos = window.pageYOffset + 140;
+        let currentSection = '#hero';
+
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const el = document.querySelector(sections[i]);
+          if (el && el.offsetTop <= scrollPos) {
+            currentSection = sections[i];
+            break;
+          }
+        }
+
+        updateActiveLinks(currentSection);
+        ticking = false;
+      });
+    }, { passive: true });
   }
 
   // ========================================================================

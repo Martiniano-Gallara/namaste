@@ -2246,5 +2246,17 @@ body.menu-open {
   color: var(--olive);
 }
 
+/* Espaciado para navegación suave debajo del header fijo */
+section[id],
+#hero,
+#filosofia,
+#beneficios,
+#como-funciona,
+#planes,
+#testimonios,
+#faq {
+  scroll-margin-top: clamp(68px, 11vh, 88px);
+}
+
 
 
