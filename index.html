@@ -9,20 +9,22 @@
     content="Santuario online de yoga, meditación y prácticas conscientes. Membresías mensuales para cultivar tu bienestar diario con clases guiadas, sesiones en vivo y acompañamiento cercano." />
   <meta name="keywords"
     content="yoga online, escuela de yoga, clases de yoga en español, meditación guiada, vinyasa flow, hatha yoga, yin yoga, pranayama, membresía de yoga" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https: https://commondatastorage.googleapis.com; connect-src 'self';" />
 
-  <!-- Google Fonts: Inter + EB Garamond -->
+  <!-- Google Fonts: Plus Jakarta Sans + EB Garamond + Marcellus + Cormorant Garamond -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Marcellus&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <!-- Favicon & Estilos -->
   <link rel="icon" type="image/png" href="assets/images/favicon.png" />
-  <link rel="stylesheet" href="css/variables.css?v=2.5" />
-  <link rel="stylesheet" href="css/main.css?v=2.5" />
-  <link rel="stylesheet" href="css/platform.css?v=2.6" />
-  <link rel="stylesheet" href="css/responsive.css?v=2.6" />
+  <link rel="stylesheet" href="css/variables.css?v=3.5" />
+  <link rel="stylesheet" href="css/main.css?v=3.5" />
+  <link rel="stylesheet" href="css/platform.css?v=3.5" />
+  <link rel="stylesheet" href="css/responsive.css?v=3.5" />
 </head>
 
 <body>
@@ -46,6 +48,7 @@
           <img src="assets/images/logo_icon.png" alt="Namasté Isotipo" class="brand-icon-img" />
           <div class="brand-text-wrap">
             <span class="brand-title">Namasté</span>
+            <span class="brand-tagline">Yoga · Bienestar</span>
           </div>
         </a>
 
@@ -88,7 +91,10 @@
       <div class="mobile-drawer-header">
         <a href="#hero" class="mobile-drawer-brand mobile-drawer-link" aria-label="Ir al Inicio">
           <img src="assets/images/logo_icon.png" alt="Namasté" class="drawer-logo-img" />
-          <span class="drawer-brand-title">Namasté</span>
+          <div class="brand-text-wrap">
+            <span class="drawer-brand-title">Namasté</span>
+            <span class="brand-tagline">Yoga · Bienestar</span>
+          </div>
         </a>
         <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Cerrar menú">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -266,16 +272,6 @@
           </div>
 
           <div class="hero-actions-block">
-            <div class="hero-ctas">
-              <a href="#planes" class="btn btn-primary btn-scroll-plans" id="hero-cta-primary">
-                Comenzar
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </a>
-            </div>
-
             <div class="hero-trust-bar">
               <div class="trust-card">
                 <span class="trust-number">+14 años</span>
@@ -285,6 +281,16 @@
                 <span class="trust-number">Valeria Manassero</span>
                 <span class="trust-label">Fundadora & Guía</span>
               </div>
+            </div>
+
+            <div class="hero-ctas">
+              <a href="#planes" class="btn btn-primary btn-scroll-plans" id="hero-cta-primary">
+                Comenzar
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
             </div>
           </div>
         </div>
@@ -301,15 +307,15 @@
       </div>
     </section>
 
-    <!-- Frase Diaria (Inspiración Consciente Full-Width) -->
+    <!-- Frase Diaria (Inspiración Consciente) -->
     <section class="daily-quote-section" id="cita-diaria" aria-label="Inspiración diaria">
       <div class="daily-quote-bg" aria-hidden="true">
         <img src="assets/images/quote_abstract_bg.jpg" alt="" class="daily-quote-bg-img" />
         <div class="daily-quote-bg-overlay"></div>
       </div>
-      <div class="daily-quote-watermark" aria-hidden="true">“</div>
       <div class="container daily-quote-container">
         <div class="daily-quote-inner">
+          <div class="daily-quote-watermark" aria-hidden="true">“</div>
           <div class="daily-quote-header">
             <span class="daily-quote-icon">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -512,7 +518,7 @@
                 <div class="pricing-price-wrap">
                   <span class="pricing-currency">$</span>
                   <span class="pricing-amount" id="price-esencia" data-price-monthly="19"
-                    data-price-annual="15.80">19</span>
+                    data-price-annual="15.83">19</span>
                   <span class="pricing-period">/ mes</span>
                 </div>
                 <div class="pricing-subnote" id="subnote-esencia" data-note-monthly="Facturado mensualmente"
@@ -572,7 +578,7 @@
                 <div class="pricing-price-wrap">
                   <span class="pricing-currency">$</span>
                   <span class="pricing-amount" id="price-santuario" data-price-monthly="29"
-                    data-price-annual="24.15">29</span>
+                    data-price-annual="24.17">29</span>
                   <span class="pricing-period">/ mes</span>
                 </div>
                 <div class="pricing-subnote" id="subnote-santuario" data-note-monthly="Facturado mensualmente"
@@ -672,22 +678,6 @@
             </div>
           </div>
 
-          <div class="plans-slider-hint">
-            <span class="plans-drag-hint">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-              Desliza para ver más planes
-            </span>
-          </div>
-        </div>
-
-        <div class="guarantee-note">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <span>Pago seguro SSL de 256 bits • Cancela en cualquier momento con 1 clic sin costo extra</span>
         </div>
       </div>
     </section>
@@ -699,7 +689,7 @@
           <div class="eyebrow">Voces del Shala</div>
           <h2 class="testimonials-title">Lo que sienten nuestros alumnos</h2>
           <p class="section-subtitle testimonials-subtitle">
-            Historias reales de alumnos que encontraron<br class="hide-mobile" /> en Namasté su rincón diario de
+            Voces de practicantes que encontraron<br class="hide-mobile" /> en Namasté su rincón diario de
             serenidad.
           </p>
         </div>
@@ -714,7 +704,7 @@
               </p>
               <div class="testimonial-author">
                 <div class="author-meta">
-                  <h4>Sofía Varela</h4>
+                  <h4>Lucía Méndez</h4>
                   <span>Miembro hace 8 meses • Plan Santuario</span>
                 </div>
               </div>
@@ -858,6 +848,13 @@
     <!-- Footer -->
     <footer class="site-footer">
       <div class="container">
+        <div class="footer-legal-links" style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.85rem; font-size: 0.82rem;">
+          <a href="#" id="link-open-terms" class="footer-dev-link">Términos y Condiciones</a>
+          <span style="color:var(--border-medium);">•</span>
+          <a href="#" id="link-open-privacy" class="footer-dev-link">Política de Privacidad</a>
+          <span style="color:var(--border-medium);">•</span>
+          <a href="#" id="link-open-refunds" class="footer-dev-link">Políticas de Cancelación</a>
+        </div>
         <div class="footer-compact-bottom">
           <div class="footer-copy">
             <span class="footer-copyright-text">© 2026 Namasté Escuela de Yoga. Todos los derechos reservados.</span>
@@ -899,6 +896,7 @@
             <img src="assets/images/logo_icon.png" alt="Namasté" class="brand-icon-img" />
             <div class="brand-text-wrap">
               <span class="brand-title">Namasté</span>
+              <span class="brand-tagline">Santuario Digital</span>
             </div>
           </a>
 
@@ -1006,7 +1004,7 @@
                 </svg>
               </div>
               <div class="stat-compact-info">
-                <strong id="stat-minutes-practiced">245</strong>
+                <strong id="stat-minutes-practiced">0</strong>
                 <span class="stat-compact-label">Minutos</span>
               </div>
             </div>
@@ -1028,28 +1026,6 @@
           </div>
         </div>
 
-        <!-- Alerta de clase en vivo compacta & interactiva -->
-        <div class="live-class-card">
-          <div class="live-card-body">
-            <div class="live-badge">
-              <span class="live-badge-dot"></span>
-              Encuentro en Directo
-            </div>
-            <h4 class="live-card-title">Satsang & Meditación de Luna Llena</h4>
-            <p class="live-card-meta">
-              Domingo 28 Sept • 19:00 hs (vía Zoom exclusivo)
-            </p>
-          </div>
-          <button class="btn btn-olive btn-live-action" id="btn-open-live-modal" type="button" aria-label="Ver detalles del encuentro en vivo">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span id="btn-live-card-label">Agendar</span>
-          </button>
-        </div>
       </div>
     </section>
 
@@ -1197,10 +1173,10 @@
        ==================================================================== -->
 
   <!-- Modal 1: Acceso de Alumnos -->
-  <div class="modal-backdrop" id="modal-login">
+  <div class="modal-backdrop" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Acceso al Santuario</h3>
+        <h3 id="login-modal-title">Acceso al Santuario</h3>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
       <div class="modal-body">
@@ -1245,7 +1221,7 @@
   </div>
 
   <!-- Modal 2: Suscripción & Checkout Interactivo -->
-  <div class="modal-backdrop" id="modal-checkout">
+  <div class="modal-backdrop" id="modal-checkout" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="checkout-modal-title">Suscripción al Santuario</h3>
@@ -1272,14 +1248,12 @@
           <form id="checkout-form">
             <div class="form-group">
               <label for="checkout-name">Tu Nombre y Apellido:</label>
-              <input type="text" id="checkout-name" class="form-input" placeholder="Ej: Camila Ortega" required
-                value="Camila Ortega" />
+              <input type="text" id="checkout-name" class="form-input" placeholder="Ej: Tu Nombre y Apellido" required />
             </div>
 
             <div class="form-group">
               <label for="checkout-email">Tu Correo Electrónico (para habilitar tu cuenta):</label>
-              <input type="email" id="checkout-email" class="form-input" placeholder="camila@ejemplo.com" required
-                value="camila@ejemplo.com" />
+              <input type="email" id="checkout-email" class="form-input" placeholder="tu@email.com" required />
             </div>
 
             <div class="form-group">
@@ -1343,7 +1317,7 @@
   </div>
 
   <!-- Modal 3: Reproductor Inmersivo de Video / Detalle de Clase Optimizado -->
-  <div class="player-modal-backdrop" id="modal-player">
+  <div class="player-modal-backdrop" id="modal-player" role="dialog" aria-modal="true" aria-labelledby="player-class-title">
     <div class="player-modal-dialog">
       <div class="player-video-wrapper">
         <video id="player-video-element" controls playsinline preload="metadata"></video>
@@ -1429,9 +1403,9 @@
 
   <!-- Panel Lateral / Drawer de Perfil & Gestión de Membresía -->
   <div class="profile-drawer-backdrop" id="profile-drawer-backdrop">
-    <div class="profile-drawer">
+    <div class="profile-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-profile-title">
       <div class="profile-drawer-header">
-        <h3 style="font-size: 1.25rem;">Mi Espacio & Membresía</h3>
+        <h3 id="drawer-profile-title" style="font-size: 1.25rem;">Mi Espacio & Membresía</h3>
         <button class="modal-close-btn drawer-close-btn" aria-label="Cerrar perfil">✕</button>
       </div>
 
@@ -1581,12 +1555,12 @@
   </div>
 
   <!-- Modal 4: Encuentro en Vivo & Satsang por Zoom -->
-  <div class="modal-backdrop" id="modal-live-session">
+  <div class="modal-backdrop" id="modal-live-session" role="dialog" aria-modal="true" aria-labelledby="live-modal-title">
     <div class="modal-dialog" style="max-width: 520px;">
       <div class="modal-header">
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <span class="live-badge-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#28a745; box-shadow:0 0 8px #28a745;"></span>
-          <h3 style="margin:0;">Encuentro en Directo</h3>
+          <h3 id="live-modal-title" style="margin:0;">Encuentro en Directo</h3>
         </div>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
@@ -1605,7 +1579,7 @@
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <div><strong>Fecha:</strong> Domingo 28 de Septiembre 2026, 19:00 hs (Arg / 00:00 Esp)</div>
+            <div id="live-event-date-text"><strong>Fecha:</strong> Próximo Domingo, 19:00 hs (Arg / 00:00 Esp)</div>
           </div>
           <div class="event-detail-row">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1619,7 +1593,7 @@
               <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
               <polyline points="17 2 12 7 7 2"></polyline>
             </svg>
-            <div><strong>ID de Reunión:</strong> <code>849 2011 9283</code> &nbsp; <strong>Código:</strong> <code>NAMASTE</code></div>
+            <div><strong>Acceso:</strong> <code>Exclusivo para alumnos activos del Shala</code></div>
           </div>
         </div>
 
@@ -1639,8 +1613,7 @@
               </svg>
               <span>Copiar Enlace Zoom</span>
             </button>
-            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Satsang+%26+Meditaci%C3%B3n+de+Luna+Llena+-+Namast%C3%A9&dates=20260928T220000Z/20260928T230000Z&details=Encuentro+mensual+exclusivo+para+alumnos+de+Namast%C3%A9+por+Zoom.+ID:+849+2011+9283.+C%C3%B3digo:+NAMASTE&location=Zoom+Online"
-              target="_blank" rel="noopener" class="btn btn-secondary" id="btn-add-google-calendar" style="justify-content: center; font-size: 0.82rem;">
+            <a href="#" target="_blank" rel="noopener" class="btn btn-secondary" id="btn-add-google-calendar" style="justify-content: center; font-size: 0.82rem;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -1656,10 +1629,10 @@
   </div>
 
   <!-- Modal 5: Cambio / Gestión de Plan de Alumno -->
-  <div class="modal-backdrop" id="modal-change-plan">
+  <div class="modal-backdrop" id="modal-change-plan" role="dialog" aria-modal="true" aria-labelledby="change-plan-modal-title">
     <div class="modal-dialog" style="max-width: 560px;">
       <div class="modal-header">
-        <h3 style="margin:0;">Gestionar Mi Membresía</h3>
+        <h3 id="change-plan-modal-title" style="margin:0;">Gestionar Mi Membresía</h3>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
       <div class="modal-body" style="padding: 1.5rem 1.75rem;">
@@ -1675,29 +1648,29 @@
   </div>
 
   <!-- Modal 6: Tu Camino de Práctica & Estadísticas -->
-  <div class="modal-backdrop" id="modal-progress-details">
+  <div class="modal-backdrop" id="modal-progress-details" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
     <div class="modal-dialog" style="max-width: 540px;">
       <div class="modal-header">
         <div style="display:flex; align-items:center; gap:0.6rem;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
-          <h3 style="margin:0;">Tu Camino de Práctica</h3>
+          <h3 id="progress-modal-title" style="margin:0;">Tu Camino de Práctica</h3>
         </div>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
       <div class="modal-body" style="padding: 1.5rem 1.75rem;">
         <div class="progress-stats-summary-grid">
           <div class="progress-metric-box">
-            <div class="metric-big-num" id="modal-metric-streak">8</div>
+            <div class="metric-big-num" id="modal-metric-streak">0</div>
             <div class="metric-caption">Días de Racha Consecutivos</div>
           </div>
           <div class="progress-metric-box">
-            <div class="metric-big-num" id="modal-metric-minutes">245</div>
+            <div class="metric-big-num" id="modal-metric-minutes">0</div>
             <div class="metric-caption">Minutos en el Mat</div>
           </div>
           <div class="progress-metric-box">
-            <div class="metric-big-num" id="modal-metric-classes">7</div>
+            <div class="metric-big-num" id="modal-metric-classes">0</div>
             <div class="metric-caption">Sesiones Completadas</div>
           </div>
         </div>
@@ -1705,7 +1678,7 @@
         <div style="margin-top: 1.5rem;">
           <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
             <span>Historial de Prácticas Realizadas</span>
-            <span id="modal-completed-count-badge" class="badge-tag" style="font-size: 0.75rem;">7 clases</span>
+            <span id="modal-completed-count-badge" class="badge-tag" style="font-size: 0.75rem;">0 clases</span>
           </h4>
           <div id="modal-completed-classes-list" class="completed-classes-scroll-list">
             <!-- Renderizado dinámico -->
@@ -1716,14 +1689,35 @@
   </div>
 
   <!-- Modal 7: Comprobante Oficial de Membresía -->
-  <div class="modal-backdrop" id="modal-receipt">
+  <div class="modal-backdrop" id="modal-receipt" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
     <div class="modal-dialog" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 style="margin:0;">Comprobante de Membresía</h3>
+        <h3 id="receipt-modal-title" style="margin:0;">Comprobante de Membresía</h3>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
       <div class="modal-body" style="padding: 1.5rem 1.75rem;" id="receipt-content-area">
         <!-- Renderizado dinámicamente con datos del alumno -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Términos, Privacidad y Políticas de Cancelación -->
+  <div class="modal-backdrop" id="modal-legal" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
+    <div class="modal-dialog" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="legal-modal-title" style="margin:0;">Información Legal & Privacidad</h3>
+        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem 1.75rem; max-height: 70vh; overflow-y: auto; font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary);">
+        <h4 style="color: var(--text-primary); margin-top: 0; font-size: 1.05rem;">1. Identificación del Prestador</h4>
+        <p><strong>Namasté Escuela de Yoga</strong>, espacio fundado y dirigido por Valeria Manassero (+14 años de trayectoria docente, Córdoba, Argentina). Contacto directo: contacto@namaste-yoga.com.</p>
+
+        <h4 style="color: var(--text-primary); margin-top: 1.25rem; font-size: 1.05rem;">2. Política de Privacidad & Protección de Datos</h4>
+        <p>En cumplimiento con las directivas de protección de datos personales (Ley 25.326), los datos recabados (nombre y correo electrónico) son utilizados exclusivamente para la gestión de la membresía, el acceso a la plataforma online y la comunicación de eventos de práctica. No se comercializan ni comparten datos con terceros.</p>
+
+        <h4 style="color: var(--text-primary); margin-top: 1.25rem; font-size: 1.05rem;">3. Membresías, Cancelación y Reembolsos</h4>
+        <p>Las suscripciones a los planes Esencia, Santuario y Sadhana se renuevan de forma periódica (mensual o anual según la elección del alumno). Puedes <strong>pausar o cancelar la renovación automática en cualquier momento</strong> desde tu perfil sin costo alguno ni penalizaciones.</p>
+        <p>Si experimentas algún inconveniente o deseas solicitar asistencia dentro de los primeros 14 días posteriores al alta, nuestro equipo de acompañamiento atiende de forma directa cada consulta.</p>
       </div>
     </div>
   </div>
@@ -1772,14 +1766,14 @@
     </ul>
   </nav>
 
-  <!-- Scripts -->
-  <script src="js/data/quotes.js"></script>
-  <script src="js/data/classes.js"></script>
-  <script src="js/data/plans.js"></script>
-  <script src="js/services/auth.js"></script>
-  <script src="js/services/membership.js"></script>
-  <script src="js/services/progress.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Scripts con Versionado Consistente -->
+  <script src="js/data/quotes.js?v=3.5"></script>
+  <script src="js/data/classes.js?v=3.5"></script>
+  <script src="js/data/plans.js?v=3.5"></script>
+  <script src="js/services/auth.js?v=3.5"></script>
+  <script src="js/services/membership.js?v=3.5"></script>
+  <script src="js/services/progress.js?v=3.5"></script>
+  <script src="js/app.js?v=3.5"></script>
 </body>
 
 </html>

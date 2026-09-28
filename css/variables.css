@@ -44,9 +44,11 @@
   --text-inverse: #F8F3EA;       /* Sobre fondos oscuros o terracota */
   --gold-accent: #C29A56;
 
-  /* Tipografías - Inter en toda la web */
-  --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Tipografías — Opción 1: Editorial Zen & Santuario de Lujo */
+  --font-brand: 'Marcellus', 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --font-serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Radios */
   --radius-xs: 4px;

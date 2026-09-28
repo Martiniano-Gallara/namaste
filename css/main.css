@@ -28,7 +28,7 @@ body {
 /* --- Tipografía --- */
 h1, h2, h3, h4, .serif-title {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 700;
   line-height: 1.25;
   color: var(--text-primary);
   letter-spacing: -0.015em;
@@ -36,19 +36,20 @@ h1, h2, h3, h4, .serif-title {
 
 h1 {
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 300;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: clamp(1.55rem, 2.8vw, 2.15rem);
-  font-weight: 300;
+  font-size: clamp(1.75rem, 3.2vw, 2.45rem);
+  font-weight: 700;
   letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 h3 {
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
@@ -104,6 +105,21 @@ button, input, select, textarea {
   text-align: center;
   max-width: 720px;
   margin: 0 auto clamp(2.5rem, 5vw, 4rem) auto;
+}
+
+.section-header h2,
+.benefits-title,
+.philosophy-title,
+.steps-title,
+.plans-title,
+.testimonials-title,
+.faq-header h2,
+.classes-group-title {
+  font-family: var(--font-serif);
+  font-weight: 700 !important;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .eyebrow {
@@ -248,55 +264,73 @@ button, input, select, textarea {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  font-family: var(--font-sans);
+  gap: 0.85rem;
   color: var(--text-primary);
-  text-transform: uppercase;
   flex-shrink: 0;
   text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.brand-logo:hover {
+  opacity: 0.96;
 }
 
 .brand-icon-img {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   mix-blend-mode: multiply;
   filter: drop-shadow(0 2px 8px rgba(182, 94, 66, 0.22));
   flex-shrink: 0;
-  transition: transform var(--transition-fast);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .brand-logo:hover .brand-icon-img {
-  transform: scale(1.06) rotate(1deg);
+  transform: scale(1.08) rotate(1.5deg);
 }
 
 .brand-text-wrap {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.14rem;
   white-space: nowrap;
 }
 
 .brand-title {
-  font-size: 0.92rem;
+  font-family: var(--font-brand);
+  font-size: 1.34rem;
   font-weight: 400;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   color: var(--text-primary);
+  text-transform: uppercase;
   white-space: nowrap;
   line-height: 1;
+  transition: color var(--transition-fast), letter-spacing var(--transition-fast);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.brand-logo:hover .brand-title {
+  color: var(--terracotta);
 }
 
 .brand-tagline {
   font-family: var(--font-sans);
-  font-size: 0.6rem;
-  font-weight: 400;
+  font-size: 0.58rem;
+  font-weight: 500;
   color: var(--terracotta);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   white-space: nowrap;
-  opacity: 0.8;
+  opacity: 0.88;
   line-height: 1;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.brand-logo:hover .brand-tagline {
+  opacity: 1;
+  color: var(--terracotta-dark);
 }
 
 .hero-bg-mobile {
@@ -515,12 +549,15 @@ button, input, select, textarea {
 }
 
 .drawer-brand-title {
-  font-family: var(--font-sans);
-  font-size: 1.15rem;
-  font-weight: 500;
+  font-family: var(--font-brand);
+  font-size: 1.25rem;
+  font-weight: 400;
   color: var(--text-primary);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .mobile-drawer-close {
@@ -774,6 +811,10 @@ body.menu-open {
   overflow: hidden;
 }
 
+.hero-bg-mobile {
+  display: none;
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
@@ -846,23 +887,24 @@ body.menu-open {
   letter-spacing: 0.01em;
 }
 
+.hero-trust-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 1.15rem;
+  margin-bottom: 0.5rem;
+  padding-top: 0;
+  border-top: none;
+}
+
 .hero-ctas {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-top: 0.5rem;
+  margin-top: 0.65rem;
   flex-wrap: wrap;
-}
-
-.hero-trust-bar {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.65rem;
-  width: 100%;
-  max-width: 480px;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border-subtle);
-  margin-top: 0.75rem;
 }
 
 .trust-card {
@@ -969,15 +1011,15 @@ body.menu-open {
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding: clamp(2.8rem, 5.5vw, 4.4rem) 1.25rem;
-  background-color: #faf7f2;
-  border-top: 1px solid var(--border-subtle);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: clamp(3.2rem, 6.5vw, 5rem) 1.25rem;
+  background: linear-gradient(180deg, #F8F4EC 0%, #EFE7DA 50%, #F8F4EC 100%);
+  border-top: 1px solid rgba(182, 94, 66, 0.16);
+  border-bottom: 1px solid rgba(182, 94, 66, 0.16);
   z-index: 5;
   text-align: center;
 }
 
-/* Fondo abstracto zen para la frase de ancho completo */
+/* Fondo abstracto zen para la frase */
 .daily-quote-bg {
   position: absolute;
   inset: 0;
@@ -993,7 +1035,7 @@ body.menu-open {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  opacity: 0.38;
+  opacity: 0.32;
   filter: saturate(1.1) contrast(1.02);
 }
 
@@ -1002,54 +1044,78 @@ body.menu-open {
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 255, 255, 0.45) 0%,
-    rgba(252, 248, 243, 0.75) 55%,
-    rgba(250, 245, 238, 0.92) 100%
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(248, 244, 236, 0.7) 55%,
+    rgba(240, 232, 220, 0.88) 100%
   );
 }
 
-/* Marca de agua tipográfica serena en el fondo */
+.daily-quote-container {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Tarjeta destacada de inspiración: Marco santuario con bordes cálidos y brillo sutil */
+.daily-quote-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(253, 248, 242, 0.93) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(182, 94, 66, 0.28);
+  border-radius: var(--radius-xl);
+  padding: clamp(2.2rem, 5vw, 3rem) clamp(1.4rem, 4vw, 2.75rem);
+  box-shadow: 0 14px 38px -10px rgba(182, 94, 66, 0.14), 0 4px 18px rgba(43, 35, 29, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Línea de acento superior terracota */
+.daily-quote-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 5%, var(--terracotta) 50%, transparent 95%);
+  opacity: 0.85;
+}
+
+/* Marca de agua tipográfica serena en el centro de la tarjeta */
 .daily-quote-watermark {
   position: absolute;
   top: -1.2rem;
   left: 50%;
   transform: translateX(-50%);
   font-family: 'EB Garamond', Georgia, serif;
-  font-size: clamp(6.5rem, 14vw, 11rem);
+  font-size: clamp(6rem, 14vw, 9.5rem);
   line-height: 1;
   color: var(--terracotta);
-  opacity: 0.08;
+  opacity: 0.07;
   pointer-events: none;
   user-select: none;
   z-index: 1;
 }
 
-.daily-quote-container {
+/* Encabezado sutil editorial (Pill destacado con terracota cálido) */
+.daily-quote-header {
   position: relative;
   z-index: 2;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.daily-quote-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Encabezado sutil editorial */
-.daily-quote-header {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.28rem 0.95rem;
-  background: rgba(255, 255, 255, 0.9);
+  gap: 0.5rem;
+  padding: 0.32rem 1.05rem;
+  background: linear-gradient(135deg, rgba(182, 94, 66, 0.10) 0%, rgba(204, 115, 87, 0.16) 100%);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(199, 107, 78, 0.22);
+  border: 1px solid rgba(182, 94, 66, 0.32);
   border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(44, 38, 35, 0.04);
+  box-shadow: 0 2px 8px rgba(182, 94, 66, 0.08);
 }
 
 .daily-quote-icon {
@@ -1062,24 +1128,26 @@ body.menu-open {
 
 .daily-quote-label {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--terracotta);
+  color: var(--terracotta-dark);
 }
 
 /* Frase principal con tipografía EB Garamond */
 .daily-quote-phrase {
-  margin: 0.35rem 0 0.15rem 0;
+  position: relative;
+  z-index: 2;
+  margin: 0.25rem 0 0.1rem 0;
   padding: 0;
   font-family: 'EB Garamond', Georgia, serif;
   font-size: clamp(1.4rem, 3.4vw, 2.15rem);
-  font-weight: 400;
+  font-weight: 500;
   font-style: italic;
-  line-height: 1.35;
+  line-height: 1.38;
   color: var(--text-primary);
-  max-width: 720px;
+  max-width: 680px;
 }
 
 .daily-quote-phrase span::before {
@@ -1089,7 +1157,7 @@ body.menu-open {
   font-family: 'EB Garamond', Georgia, serif;
   font-weight: 600;
   margin-right: 0.18rem;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .daily-quote-phrase span::after {
@@ -1099,18 +1167,34 @@ body.menu-open {
   font-family: 'EB Garamond', Georgia, serif;
   font-weight: 600;
   margin-left: 0.18rem;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
-/* Autor con guion largo y espaciado refinado */
+/* Autor con guion largo y separador superior */
 .daily-quote-author {
+  position: relative;
+  z-index: 2;
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-style: normal;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--terracotta-dark);
+  margin-top: 0.25rem;
+  padding-top: 0.65rem;
+}
+
+.daily-quote-author::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 1.5px;
+  background: rgba(182, 94, 66, 0.35);
+  border-radius: 2px;
 }
 
 /* --- Sección Nuestra Esencia (Diseño Limpio & Premium Editorial Zen) --- */
@@ -1147,9 +1231,9 @@ body.menu-open {
 }
 
 .philosophy-title {
-  font-family: 'EB Garamond', Georgia, serif;
+  font-family: var(--font-serif);
   font-size: clamp(2.3rem, 4.8vw, 3.4rem);
-  font-weight: 500;
+  font-weight: 700 !important;
   letter-spacing: -0.02em;
   color: var(--text-primary);
   line-height: 1.15;
@@ -1236,7 +1320,7 @@ body.menu-open {
 
 .benefit-card h3 {
   font-size: 1.15rem;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .benefit-card p {
@@ -1406,6 +1490,7 @@ body.menu-open {
 .steps-section {
   position: relative;
   overflow: hidden;
+  padding-top: clamp(2.5rem, 5vw, 4.5rem);
 }
 
 .steps-slider-wrap {

@@ -30,8 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
     liveSession: document.getElementById('modal-live-session'),
     changePlan: document.getElementById('modal-change-plan'),
     progressDetails: document.getElementById('modal-progress-details'),
-    receipt: document.getElementById('modal-receipt')
+    receipt: document.getElementById('modal-receipt'),
+    legal: document.getElementById('modal-legal')
   };
+
+  // Función para escapar HTML y prevenir vulnerabilidades de DOM XSS
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   // Helper para generar iniciales del alumno
   function getUserInitials(name) {
@@ -52,8 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
-      <span>${message}</span>
+      <span class="namaste-toast-text"></span>
     `;
+    const span = toast.querySelector('.namaste-toast-text');
+    if (span) span.textContent = message;
     container.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {
@@ -62,13 +76,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3200);
   }
 
-  // Citas diarias inspiracionales de yoga y presencia
-  const DAILY_QUOTES = [
-    "«El yoga no se trata de tocarte los dedos de los pies, sino de lo que aprendes en el camino hacia abajo.»",
-    "«La quietud no es la ausencia de movimiento, sino el perfecto equilibrio en el centro.»",
-    "«Respira y recuerda que este instante es el único lugar donde la vida sucede.»",
-    "«Tu práctica es un santuario personal de regreso a casa, a tu cuerpo y a tu paz.»"
-  ];
+  // Helper para calcular la fecha dinámica del próximo Satsang en vivo
+  function getNextSatsangEvent() {
+    const now = new Date();
+    const nextSunday = new Date(now);
+    const dayOfWeek = now.getDay();
+    const daysUntilSunday = dayOfWeek === 0 ? (now.getHours() >= 19 ? 7 : 0) : (7 - dayOfWeek);
+    nextSunday.setDate(now.getDate() + daysUntilSunday);
+    nextSunday.setHours(19, 0, 0, 0);
+
+    const endSunday = new Date(nextSunday);
+    endSunday.setHours(20, 0, 0, 0);
+
+    const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const formatted = `Domingo ${nextSunday.getDate()} de ${monthsEs[nextSunday.getMonth()]} ${nextSunday.getFullYear()}, 19:00 hs (Arg / 00:00 Esp)`;
+
+    const toGCalString = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const gCalDates = `${toGCalString(nextSunday)}/${toGCalString(endSunday)}`;
+
+    return {
+      dateText: formatted,
+      gCalDates
+    };
+  }
 
   // ========================================================================
   // INICIALIZACIÓN
@@ -452,6 +482,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Abrir modal legal desde el footer
+    ['link-open-terms', 'link-open-privacy', 'link-open-refunds'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal(modals.legal);
+        });
+      }
+    });
+
     // Cerrar con Escape
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -527,12 +568,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginNavBtn = document.querySelector('.btn-access-login');
     if (loginNavBtn) {
       if (user) {
+        const firstName = escapeHtml((user.name || '').split(' ')[0] || 'Alumno');
         loginNavBtn.innerHTML = `
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Mi Santuario (${user.name.split(' ')[0]})
+          Mi Santuario (${firstName})
         `;
         loginNavBtn.classList.add('btn-olive');
       } else {
@@ -585,13 +627,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const planId = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.id : 'plan-santuario';
         const isAnnual = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
         const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29;
+        const paymentRadio = checkoutForm.querySelector('input[name="payment-method"]:checked');
+        const paymentMethod = paymentRadio ? paymentRadio.value : 'card';
 
         const result = await MembershipService.processCheckout({
           name,
           email,
           planId,
           isAnnual,
-          amount
+          amount,
+          paymentMethod
         });
 
         submitBtn.disabled = false;
@@ -752,14 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <h3 class="class-card-title">${c.title}</h3>
           <p class="class-card-desc">${c.description}</p>
-          <div class="class-card-footer">
-            <div class="instructor-info">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              <span>${c.instructor}</span>
-            </div>
+          <div class="class-card-footer" style="justify-content: flex-end;">
             <button class="btn-text btn-access-login" style="cursor:pointer; font-size: 0.85rem;">
               Ver práctica →
             </button>
@@ -827,14 +865,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerAvatar = document.getElementById('drawer-user-avatar');
     if (drawerAvatar) drawerAvatar.textContent = initials;
 
-    // Inspiración Diaria
+    // Inspiración Diaria consistente
     const phraseTextEl = document.getElementById('platform-quote-phrase-text');
     const phraseAuthorEl = document.getElementById('platform-quote-phrase-author');
     if (phraseTextEl && phraseAuthorEl) {
-      const quoteIndex = new Date().getDate() % DAILY_QUOTES_DATA.length;
-      const todayQuote = DAILY_QUOTES_DATA[quoteIndex];
-      phraseTextEl.textContent = todayQuote.text;
-      phraseAuthorEl.textContent = todayQuote.author.startsWith('—') ? todayQuote.author : `— ${todayQuote.author}`;
+      const todayQuote = typeof getQuoteOfTheDay === 'function' ? getQuoteOfTheDay() : (typeof DAILY_QUOTES_DATA !== 'undefined' ? DAILY_QUOTES_DATA[0] : null);
+      if (todayQuote) {
+        phraseTextEl.textContent = todayQuote.text;
+        phraseAuthorEl.textContent = todayQuote.author.startsWith('—') ? todayQuote.author : `— ${todayQuote.author}`;
+      }
     }
 
     // Métricas Reales del Alumno
@@ -892,21 +931,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const durationSeconds = (lastPlayed.duration || 30) * 60;
     const progressSeconds = lastPlayed.progressSeconds || 0;
-    const progressPct = Math.min(100, Math.max(8, Math.round((progressSeconds / durationSeconds) * 100)));
+    const progressPct = Math.min(100, Math.max(0, Math.round((progressSeconds / durationSeconds) * 100)));
     const remainingMinutes = Math.max(1, Math.round((durationSeconds - progressSeconds) / 60));
 
     resumeContainer.style.display = 'block';
     resumeContainer.innerHTML = `
       <div class="resume-card">
         <div class="resume-left">
-          <img src="${lastPlayed.thumbnail}" alt="${lastPlayed.title}" class="resume-thumb" />
+          <img src="${escapeHtml(lastPlayed.thumbnail)}" alt="${escapeHtml(lastPlayed.title)}" class="resume-thumb" />
           <div style="flex: 1; min-width: 0;">
             <div style="font-size:0.75rem; text-transform:uppercase; color:var(--terracotta); font-weight:600; letter-spacing:0.06em;">
               Continuar práctica
             </div>
-            <div class="resume-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastPlayed.title}</div>
+            <div class="resume-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(lastPlayed.title)}</div>
             <div style="font-size:0.8rem; color:var(--text-muted);">
-              ${lastPlayed.instructor} • Restan ${remainingMinutes} min (${progressPct}% completado)
+              Restan ${remainingMinutes} min (${progressPct}% completado)
             </div>
             <div class="resume-progress-bar">
               <div class="resume-progress-fill" style="width: ${progressPct}%;"></div>
@@ -914,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         <div class="resume-right">
-          <button class="btn btn-primary btn-play-resume" data-class-id="${lastPlayed.id}" type="button">
+          <button class="btn btn-primary btn-play-resume" data-class-id="${escapeHtml(lastPlayed.id)}" type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 3 19 12 5 21 5 3"></polygon>
             </svg>
@@ -1063,24 +1102,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 class="class-card-title">${c.title}</h3>
             <p class="class-card-desc">${c.description}</p>
             
-            <div class="class-card-footer">
-              <div class="instructor-info">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>${c.instructor}</span>
-              </div>
-
-              ${isDone ? `
+            ${isDone ? `
+              <div class="class-card-footer" style="justify-content: flex-end;">
                 <span class="completed-check-badge">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                   Completada
                 </span>
-              ` : ''}
-            </div>
+              </div>
+            ` : ''}
           </div>
         </article>
       `;
@@ -1123,7 +1154,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // REPRODUCTOR INMERSIVO DE VIDEO
   // ========================================================================
   function openClassPlayer(classObj, seekSeconds = 0) {
+    const user = AuthService.getCurrentUser();
+
+    // 1. Bloqueo si la membresía está pausada (NAM-008, NAM-011)
+    if (user && user.active === false) {
+      showToast('Tu membresía se encuentra en pausa. Reactívala desde tu perfil o el aviso superior para disfrutar de esta práctica.', 'warning');
+      return;
+    }
+
+    // 2. Control de acceso por plan (Plan Esencia accede a yoga suave, clásico, relax y meditación)
+    if (user && user.planId === 'plan-esencia') {
+      const allowed = ['suave', 'clasico', 'relax', 'meditacion'];
+      if (!allowed.includes(classObj.category)) {
+        showToast(`La práctica "${classObj.title}" requiere Plan Santuario o Sadhana. Puedes mejorar tu plan desde tu perfil.`, 'warning');
+        return;
+      }
+    }
+
     state.activePlayingClass = classObj;
+    state.lastSaveTime = seekSeconds;
     ProgressService.recordPlayProgress(classObj.id, seekSeconds);
 
     const videoEl = document.getElementById('player-video-element');
@@ -1162,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const propsListEl = document.getElementById('player-class-props');
     if (propsListEl) {
       propsListEl.innerHTML = classObj.props.map(prop => `
-        <li class="player-prop-chip">✓ ${prop}</li>
+        <li class="player-prop-chip">✓ ${escapeHtml(prop)}</li>
       `).join('');
     }
 
@@ -1170,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const intentionsEl = document.getElementById('player-class-intentions');
     if (intentionsEl) {
       intentionsEl.innerHTML = classObj.intentions.map(int => `
-        <span class="badge-tag">${int}</span>
+        <span class="badge-tag">${escapeHtml(int)}</span>
       `).join('');
     }
 
@@ -1219,14 +1268,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (videoEl) {
-      // Seguimiento en tiempo real del progreso del video
-      let lastSaveTime = 0;
+      // Seguimiento en tiempo real del progreso del video por sesión
       videoEl.addEventListener('timeupdate', () => {
         updatePlayerTimeDisplay();
         const now = Math.floor(videoEl.currentTime);
-        if (state.activePlayingClass && now - lastSaveTime >= 3) {
-          lastSaveTime = now;
-          ProgressService.recordPlayProgress(state.activePlayingClass.id, now);
+        if (state.activePlayingClass) {
+          const lastSave = state.lastSaveTime || 0;
+          if (now - lastSave >= 3 || lastSave > now) {
+            state.lastSaveTime = now;
+            ProgressService.recordPlayProgress(state.activePlayingClass.id, now);
+          }
         }
       });
 
@@ -1417,6 +1468,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const attendText = document.getElementById('btn-live-attend-text');
       const isAttending = localStorage.getItem('namaste_attending_live_' + (user ? user.email : 'guest')) === 'true';
 
+      const satsang = getNextSatsangEvent();
+      const liveDateEl = document.getElementById('live-event-date-text');
+      if (liveDateEl) {
+        liveDateEl.innerHTML = `<strong>Fecha:</strong> ${satsang.dateText}`;
+      }
+      const gCalBtn = document.getElementById('btn-add-google-calendar');
+      if (gCalBtn) {
+        gCalBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Satsang+%26+Meditaci%C3%B3n+-+Namast%C3%A9&dates=${satsang.gCalDates}&details=Encuentro+mensual+exclusivo+para+alumnos+de+Namast%C3%A9+por+Zoom.+Acceso+directo+desde+el+Santuario.&location=Zoom+Online`;
+      }
+
       if (attendText) {
         attendText.textContent = isAttending ? '✓ Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
       }
@@ -1477,13 +1538,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCopyZoom = document.getElementById('btn-copy-zoom-link');
     if (btnCopyZoom) {
       btnCopyZoom.addEventListener('click', () => {
-        const zoomText = 'Encuentro Namasté: https://zoom.us/j/84920119283 (ID: 849 2011 9283 • Clave: NAMASTE)';
+        const satsang = getNextSatsangEvent();
+        const zoomText = `Encuentro Namasté (${satsang.dateText}): https://zoom.us/j/demo-namaste-shala (Acceso exclusivo a alumnos verificados)`;
         navigator.clipboard.writeText(zoomText).then(() => {
           btnCopyZoom.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>¡Copiado!</span>
           `;
-          showToast('Enlace y clave de Zoom copiados al portapapeles', 'success');
+          showToast('Enlace del encuentro copiado al portapapeles', 'success');
           setTimeout(() => {
             btnCopyZoom.innerHTML = `
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -1535,9 +1597,13 @@ document.addEventListener('DOMContentLoaded', () => {
           btn.addEventListener('click', () => {
             const newPlanId = btn.getAttribute('data-plan-id');
             const newPlanName = btn.getAttribute('data-plan-name');
+            const planObj = PLANS_DATA.find(p => p.id === newPlanId);
+            const currentUser = AuthService.getCurrentUser();
+            const newAmount = currentUser && currentUser.isAnnual ? (planObj.priceAnnualTotal || planObj.priceMonthly * 10) : (planObj ? planObj.priceMonthly : 29);
             AuthService.updateUserProfile({
               planId: newPlanId,
-              planName: newPlanName
+              planName: newPlanName,
+              billedAmount: newAmount
             });
             closeModal(modals.changePlan);
             populateProfileDrawer();
@@ -1576,6 +1642,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = AuthService.getCurrentUser();
         if (!user) return;
 
+        let amount = user.billedAmount;
+        let methodText = user.paymentMethod === 'mercadopago' ? 'MercadoPago' : 'Tarjeta Débito/Crédito';
+        if (!amount) {
+          try {
+            const txs = JSON.parse(localStorage.getItem('namaste_transactions') || '[]');
+            const userTx = [...txs].reverse().find(t => (t.userEmail && t.userEmail.toLowerCase() === (user.email || '').toLowerCase()) || t.accessCode === user.accessCode);
+            if (userTx) {
+              amount = userTx.amount;
+              if (userTx.paymentMethod) {
+                methodText = userTx.paymentMethod === 'mercadopago' ? 'MercadoPago' : 'Tarjeta Débito/Crédito';
+              }
+            }
+          } catch (e) {}
+        }
+        if (!amount) {
+          amount = user.planId === 'plan-esencia' ? 19 : (user.planId === 'plan-sadhana' ? 39 : 29);
+        }
+        const formattedAmount = `$${Number(amount).toFixed(2)} USD`;
+
         const contentArea = document.getElementById('receipt-content-area');
         if (contentArea) {
           contentArea.innerHTML = `
@@ -1588,23 +1673,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="status-badge-active">● Pagado</span>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:1rem;">
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Alumno:</span><br><strong>${user.name}</strong></div>
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Código:</span><br><code>${user.accessCode}</code></div>
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${user.planName || 'Plan Santuario'}</strong></div>
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Renovación:</span><br><strong>${user.nextBillingDate || '22 Octubre 2026'}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Alumno:</span><br><strong>${escapeHtml(user.name)}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Código:</span><br><code>${escapeHtml(user.accessCode)}</code></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${escapeHtml(user.planName || 'Plan Santuario')}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Renovación:</span><br><strong>${escapeHtml(user.nextBillingDate || 'Próximo mes')}</strong></div>
               </div>
               <div style="border-top:1px dashed var(--border-medium); padding-top:0.75rem; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.82rem; color:var(--text-muted);">Método: Visa •••• 4242</span>
-                <strong style="font-size:1.1rem; color:var(--terracotta);">$29.00 USD</strong>
+                <span style="font-size:0.82rem; color:var(--text-muted);">Método: ${escapeHtml(methodText)}</span>
+                <strong style="font-size:1.1rem; color:var(--terracotta);">${escapeHtml(formattedAmount)}</strong>
               </div>
             </div>
             <div style="display:flex; gap:0.5rem; margin-top:1.25rem;">
-              <button type="button" class="btn btn-secondary" onclick="window.print()" style="flex:1; justify-content:center; font-size:0.84rem;">
+              <button type="button" class="btn btn-secondary" id="btn-print-receipt" style="flex:1; justify-content:center; font-size:0.84rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 <span>Imprimir / Guardar PDF</span>
               </button>
             </div>
           `;
+          const printBtn = document.getElementById('btn-print-receipt');
+          if (printBtn) {
+            printBtn.addEventListener('click', () => window.print());
+          }
         }
 
         closeModal(modals.profileDrawer);
@@ -1662,8 +1751,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCopyDrawerCode = document.getElementById('btn-copy-drawer-code');
     if (btnCopyDrawerCode) {
       btnCopyDrawerCode.addEventListener('click', () => {
-        const codeEl = document.getElementById('drawer-access-code');
-        const code = codeEl ? codeEl.textContent : 'NAMASTE-ALUMNO';
+        const user = AuthService.getCurrentUser();
+        const code = (user && user.accessCode) || 'NAMASTE-ALUMNO';
         navigator.clipboard.writeText(code).then(() => {
           btnCopyDrawerCode.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -1684,6 +1773,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnTogglePause = document.getElementById('btn-toggle-pause-membership');
     if (btnTogglePause) {
       btnTogglePause.addEventListener('click', () => {
+        const user = AuthService.getCurrentUser();
+        if (user && user.active) {
+          const confirmed = confirm('¿Deseas pausar temporalmente tu membresía? El acceso a las clases quedará suspendido hasta que decidas reactivarla.');
+          if (!confirmed) return;
+        }
         const isNowActive = MembershipService.toggleMembershipPause();
         populateProfileDrawer();
         renderPlatformDashboard();
@@ -1763,7 +1857,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (emailEl) emailEl.textContent = user.email;
 
     const codeEl = document.getElementById('drawer-access-code');
-    if (codeEl) codeEl.textContent = user.email || user.accessCode;
+    if (codeEl) codeEl.textContent = user.accessCode || user.email;
 
     const planNameEl = document.getElementById('drawer-plan-name');
     if (planNameEl) planNameEl.textContent = user.planName || 'Plan Santuario';

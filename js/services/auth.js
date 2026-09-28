@@ -125,23 +125,62 @@ const AuthService = (() => {
     window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: null }));
   };
 
-  const registerNewMember = (name, email, planId, planName) => {
-    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+  const registerNewMember = (name, email, planId, planName, options = {}) => {
+    const cleanEmail = (email || 'alumno@namaste.com').trim().toLowerCase();
+    const cleanName = (name || 'Practicante de Namasté').trim();
+    const isAnnual = !!options.isAnnual;
+    const amount = options.amount || 29;
+    const paymentMethod = options.paymentMethod || 'card';
+
+    const now = new Date();
+    const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const memberSince = `${monthsEs[now.getMonth()]} ${now.getFullYear()}`;
+
+    const billingDate = new Date(now);
+    if (isAnnual) {
+      billingDate.setFullYear(billingDate.getFullYear() + 1);
+    } else {
+      billingDate.setMonth(billingDate.getMonth() + 1);
+    }
+    const nextBillingDate = `${billingDate.getDate()} de ${monthsEs[billingDate.getMonth()]} de ${billingDate.getFullYear()}`;
+
+    const allUsers = getStoredUsers();
+    // Prevenir duplicados si el correo ya existe
+    let existingUser = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === cleanEmail);
+
+    if (existingUser) {
+      existingUser.name = cleanName || existingUser.name;
+      existingUser.planId = planId;
+      existingUser.planName = planName;
+      existingUser.active = true;
+      existingUser.isAnnual = isAnnual;
+      existingUser.billedAmount = amount;
+      existingUser.paymentMethod = paymentMethod;
+      existingUser.nextBillingDate = nextBillingDate;
+      saveUserRecord(existingUser);
+      return existingUser;
+    }
+
+    const randomDigits = Math.floor(100000 + Math.random() * 900000);
     const planTag = planId.includes('santuario') ? 'SANTUARIO' : (planId.includes('sadhana') ? 'SADHANA' : 'ESENCIA');
     const newCode = `NAMASTE-${planTag}-${randomDigits}`;
 
     const newUser = {
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name: cleanName,
+      email: cleanEmail,
       accessCode: newCode,
       planId: planId,
       planName: planName,
-      memberSince: 'Septiembre 2026',
-      nextBillingDate: '22 Octubre 2026',
+      isAnnual: isAnnual,
+      billedAmount: amount,
+      paymentMethod: paymentMethod,
+      memberSince: memberSince,
+      nextBillingDate: nextBillingDate,
       active: true,
       streakDays: 1,
       totalMinutesPracticed: 0,
-      completedClassesCount: 0
+      completedClassesCount: 0,
+      lastPracticeDate: null
     };
 
     saveUserRecord(newUser);

@@ -15,13 +15,15 @@ const MembershipService = (() => {
 
     const selectedPlan = PLANS_DATA.find(p => p.id === planId) || PLANS_DATA[1];
     const planDisplayName = `${selectedPlan.name} (${isAnnual ? 'Anual • 2 meses gratis' : 'Mensual'})`;
+    const finalAmount = amount || (isAnnual ? (selectedPlan.priceAnnualTotal || selectedPlan.priceMonthly * 10) : selectedPlan.priceMonthly);
 
     // Registra al nuevo alumno en el sistema de autenticación
     const newMember = AuthService.registerNewMember(
       name || 'Practicante de Namasté',
       email || 'alumno@namaste.com',
       selectedPlan.id,
-      planDisplayName
+      planDisplayName,
+      { isAnnual: !!isAnnual, amount: finalAmount, paymentMethod: paymentMethod || 'credit_card' }
     );
 
     // Guarda evento de transacción simulada
