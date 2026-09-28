@@ -10,6 +10,7 @@
  * - Yoga Ashtanga
  * - Yoga Dinámico
  * - Yoga Relax
+ * - Meditación & Pranayama
  */
 
 const CLASSES_DATA = [
@@ -30,7 +31,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 520,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm",
     demoPoster: "assets/images/shala.jpg"
   },
   {
@@ -49,7 +50,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 310,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm",
     demoPoster: "assets/images/hero.jpg"
   },
 
@@ -70,7 +71,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 740,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm",
     demoPoster: "assets/images/hatha.jpg"
   },
   {
@@ -89,7 +90,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 430,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm",
     demoPoster: "assets/images/shala.jpg"
   },
 
@@ -110,7 +111,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 890,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm",
     demoPoster: "assets/images/yin.jpg"
   },
   {
@@ -129,7 +130,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 615,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm",
     demoPoster: "assets/images/meditation.jpg"
   },
 
@@ -150,7 +151,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 460,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e3/The_Flow_of_Breath_-_Ashtanga_Yoga_Demo_-_Ty_Landrum.webm",
     demoPoster: "assets/images/vinyasa.jpg"
   },
   {
@@ -169,7 +170,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 380,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e3/The_Flow_of_Breath_-_Ashtanga_Yoga_Demo_-_Ty_Landrum.webm",
     demoPoster: "assets/images/hero.jpg"
   },
 
@@ -190,7 +191,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: true,
     viewsCount: 940,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm",
     demoPoster: "assets/images/vinyasa.jpg"
   },
   {
@@ -209,7 +210,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: false,
     viewsCount: 580,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm",
     demoPoster: "assets/images/hero.jpg"
   },
 
@@ -230,7 +231,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 810,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm",
     demoPoster: "assets/images/yin.jpg"
   },
   {
@@ -249,7 +250,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 720,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm",
     demoPoster: "assets/images/meditation.jpg"
   },
 
@@ -270,7 +271,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: true,
     viewsCount: 980,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm",
     demoPoster: "assets/images/meditation.jpg"
   },
   {
@@ -289,7 +290,7 @@ const CLASSES_DATA = [
     isNew: false,
     featured: true,
     viewsCount: 840,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm",
     demoPoster: "assets/images/pranayama.jpg"
   },
   {
@@ -308,7 +309,7 @@ const CLASSES_DATA = [
     isNew: true,
     featured: false,
     viewsCount: 1120,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm",
     demoPoster: "assets/images/yin.jpg"
   },
   {
@@ -327,10 +328,54 @@ const CLASSES_DATA = [
     isNew: false,
     featured: false,
     viewsCount: 670,
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    videoUrl: "https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm",
     demoPoster: "assets/images/shala.jpg"
   }
 ];
+
+// Classes Service with protected streaming & API integration
+const ClassesService = (() => {
+  const getAllClasses = () => CLASSES_DATA;
+
+  const getClassById = (id) => CLASSES_DATA.find(c => c.id === id) || null;
+
+  const getClassStreamUrl = async (classId) => {
+    const classObj = getClassById(classId);
+    if (!classObj) return null;
+
+    // Try server protected streaming endpoint if available
+    try {
+      const token = typeof AuthService !== 'undefined' ? AuthService.getToken() : null;
+      if (token && window.location.protocol.startsWith('http')) {
+        const response = await fetch(`/api/classes/${encodeURIComponent(classId)}/stream`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.streamUrl) return data.streamUrl;
+        } else if (response.status === 403) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.message || 'Membresía pausada o nivel insuficiente');
+        }
+      }
+    } catch (e) {
+      if (e.message && e.message.includes('Membresía')) {
+        throw e;
+      }
+      // Silently proceed to fallback stream if offline
+    }
+
+    return classObj.videoUrl;
+  };
+
+  return {
+    getAllClasses,
+    getClassById,
+    getClassStreamUrl
+  };
+})();
 
 // Horario Oficial del Shala
 const SCHEDULE_DATA = [
@@ -346,5 +391,5 @@ const SCHEDULE_DATA = [
 ];
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CLASSES_DATA, SCHEDULE_DATA };
+  module.exports = { CLASSES_DATA, SCHEDULE_DATA, ClassesService };
 }

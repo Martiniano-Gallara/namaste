@@ -40,21 +40,24 @@ Puedes acceder a la versión interactiva y boceto/mockup en:
 
 ---
 
-## 🚀 Despliegue Local
+## 🚀 Ejecución del Servidor y API REST
 
 1. Clona el repositorio:
    ```bash
    git clone https://github.com/Martiniano-Gallara/namaste.git
    cd namaste
    ```
-2. Inicia un servidor web local (por ejemplo con Python):
+2. Inicia el servidor de producción (Node.js nativo sin dependencias):
    ```bash
-   python -m http.server 3000
+   npm start
+   # o bien:
+   node server.js
    ```
 3. Abre tu navegador en:
    ```
    http://localhost:3000/
    ```
+   La API REST estará activa en `http://localhost:3000/api/health` con persistencia centralizada en base de datos (`data/database.json`).
 
 ---
 

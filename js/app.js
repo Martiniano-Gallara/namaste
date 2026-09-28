@@ -604,6 +604,37 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Formato dinámico para campos de tarjeta
+    const cardInput = document.getElementById('checkout-card-number');
+    if (cardInput) {
+      cardInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
+        e.target.value = val.match(/.{1,4}/g)?.join(' ') || val;
+      });
+    }
+
+    const expiryInput = document.getElementById('checkout-card-expiry');
+    if (expiryInput) {
+      expiryInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 3) {
+          e.target.value = val.substring(0, 2) + '/' + val.substring(2);
+        } else {
+          e.target.value = val;
+        }
+      });
+    }
+
+    // Alternar campos según método de pago
+    const cardFieldsGroup = document.getElementById('card-fields-group');
+    document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (cardFieldsGroup) {
+          cardFieldsGroup.style.display = e.target.value === 'mercadopago' ? 'none' : 'block';
+        }
+      });
+    });
+
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
       checkoutForm.addEventListener('submit', async (e) => {
@@ -619,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
             <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
           </svg>
-          Preparando tu espacio...
+          Procesando con pasarela segura...
         `;
 
         const name = document.getElementById('checkout-name').value;
@@ -628,7 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAnnual = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
         const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29;
         const paymentRadio = checkoutForm.querySelector('input[name="payment-method"]:checked');
-        const paymentMethod = paymentRadio ? paymentRadio.value : 'card';
+        const methodType = paymentRadio ? paymentRadio.value : 'card';
+        const cardNum = cardInput ? cardInput.value.replace(/\s/g, '') : '';
+        const last4 = cardNum.length >= 4 ? cardNum.slice(-4) : '4242';
+        const paymentMethod = methodType === 'mercadopago' ? 'MercadoPago' : `Tarjeta •••• ${last4}`;
 
         const result = await MembershipService.processCheckout({
           name,
@@ -1177,21 +1211,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const videoEl = document.getElementById('player-video-element');
     if (videoEl) {
-      videoEl.src = classObj.videoUrl;
       videoEl.poster = classObj.thumbnail;
       videoEl.playbackRate = state.videoPlaybackRate || 1.0;
 
-      const onMetadataLoaded = () => {
-        if (seekSeconds > 0 && seekSeconds < videoEl.duration) {
-          videoEl.currentTime = seekSeconds;
-        }
-        videoEl.play().catch(e => {
-          console.log('Video autoplay prevented, listo para reproducir manual.', e);
-        });
-        updatePlayerTimeDisplay();
-      };
+      // Cargar stream protegido desde API o stream directo verificado
+      ClassesService.getClassStreamUrl(classObj.id).then(streamUrl => {
+        if (!streamUrl) return;
+        videoEl.src = streamUrl;
 
-      videoEl.addEventListener('loadedmetadata', onMetadataLoaded, { once: true });
+        const onMetadataLoaded = () => {
+          if (seekSeconds > 0 && seekSeconds < videoEl.duration) {
+            videoEl.currentTime = seekSeconds;
+          }
+          videoEl.play().catch(e => {
+            console.log('Video autoplay prevented, listo para reproducir manual.', e);
+          });
+          updatePlayerTimeDisplay();
+        };
+
+        videoEl.addEventListener('loadedmetadata', onMetadataLoaded, { once: true });
+      }).catch(err => {
+        showToast(err.message || 'Membresía inactiva o nivel insuficiente para esta práctica.', 'warning');
+      });
     }
 
     // Datos de la clase

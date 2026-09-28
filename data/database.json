@@ -1,0 +1,126 @@
+{
+  "users": {
+    "usr-sofia": {
+      "id": "usr-sofia",
+      "email": "sofia.varela@ejemplo.com",
+      "name": "Sofía Varela",
+      "accessCode": "NAMASTE-ALUMNO",
+      "planId": "plan-santuario",
+      "planName": "Plan Santuario",
+      "active": true,
+      "isAnnual": false,
+      "memberSince": "Marzo 2026",
+      "nextBillingDate": "28 Octubre 2026",
+      "paymentMethod": "Visa •••• 4242",
+      "billedAmount": 29,
+      "createdAt": "2026-03-01T10:00:00Z"
+    },
+    "usr-invitado": {
+      "id": "usr-invitado",
+      "email": "invitado@namaste.com",
+      "name": "Practicante Inicial",
+      "accessCode": "NAMASTE-ESENCIA",
+      "planId": "plan-esencia",
+      "planName": "Plan Esencia",
+      "active": true,
+      "isAnnual": false,
+      "memberSince": "Septiembre 2026",
+      "nextBillingDate": "28 Octubre 2026",
+      "paymentMethod": "Mastercard •••• 5555",
+      "billedAmount": 19,
+      "createdAt": "2026-09-01T10:00:00Z"
+    },
+    "usr-a80a8ab2": {
+      "id": "usr-a80a8ab2",
+      "email": "elena@ejemplo.com",
+      "name": "Elena Rostova",
+      "accessCode": "NAMASTE-SADHANA-30419F",
+      "planId": "plan-sadhana",
+      "planName": "Plan Sadhana",
+      "active": true,
+      "isAnnual": true,
+      "memberSince": "septiembre de 2026",
+      "nextBillingDate": "28 de septiembre de 2027",
+      "paymentMethod": "Tarjeta •••• 9999",
+      "billedAmount": 390,
+      "createdAt": "2026-09-28T19:59:21.646Z"
+    }
+  },
+  "sessions": {
+    "73cc6b76-b46b-416d-8522-6f51d7cf73b5": {
+      "userId": "usr-sofia",
+      "createdAt": 1790625561639,
+      "expiresAt": 1793217561639
+    },
+    "a365e393-bd0b-4d00-8f47-7dc09685c5c6": {
+      "userId": "usr-a80a8ab2",
+      "createdAt": 1790625561661,
+      "expiresAt": 1793217561661
+    },
+    "f5363117-f3e3-4a9a-bbe0-7c900657c925": {
+      "userId": "usr-sofia",
+      "createdAt": 1790625578459,
+      "expiresAt": 1793217578459
+    }
+  },
+  "progress": {
+    "usr-sofia": {
+      "streakDays": 8,
+      "lastStreakDate": "2026-09-28",
+      "totalMinutes": 245,
+      "favorites": [
+        "cls-dinamico-01",
+        "cls-terapeutico-01"
+      ],
+      "completed": [
+        "cls-suave-01",
+        "cls-clasico-01"
+      ],
+      "lastPlayed": {
+        "classId": "cls-dinamico-01",
+        "progressSeconds": 480,
+        "timestamp": "2026-09-28T14:30:00Z"
+      }
+    },
+    "usr-invitado": {
+      "streakDays": 1,
+      "lastStreakDate": "2026-09-28",
+      "totalMinutes": 35,
+      "favorites": [
+        "cls-suave-01"
+      ],
+      "completed": [
+        "cls-suave-01"
+      ],
+      "lastPlayed": {
+        "classId": "cls-suave-01",
+        "progressSeconds": 120,
+        "timestamp": "2026-09-28T12:00:00Z"
+      }
+    },
+    "usr-a80a8ab2": {
+      "streakDays": 1,
+      "lastStreakDate": "2026-09-28",
+      "totalMinutes": 0,
+      "favorites": [],
+      "completed": [],
+      "lastPlayed": null
+    }
+  },
+  "transactions": [
+    {
+      "id": "tx_a62f8677e042baaa",
+      "receiptNumber": "REC-2026-743715",
+      "userId": "usr-a80a8ab2",
+      "email": "elena@ejemplo.com",
+      "planId": "plan-sadhana",
+      "planName": "Plan Sadhana",
+      "amount": 390,
+      "currency": "USD",
+      "status": "succeeded",
+      "isAnnual": true,
+      "paymentMethod": "Tarjeta •••• 9999",
+      "timestamp": "2026-09-28T19:59:21.646Z"
+    }
+  ]
+}

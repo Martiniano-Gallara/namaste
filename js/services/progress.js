@@ -1,5 +1,6 @@
 /**
  * NAMASTÉ - Servicio de Progreso, Favoritos e Historial de Práctica
+ * Sincronizado centralmente con la API REST (/api/progress) y soporte offline.
  */
 
 const ProgressService = (() => {
@@ -44,11 +45,26 @@ const ProgressService = (() => {
     }
   };
 
-  const saveProgressState = (state) => {
+  const saveProgressState = (state, syncServer = true) => {
     try {
       const key = getProgressStorageKey();
       localStorage.setItem(key, JSON.stringify(state));
       window.dispatchEvent(new CustomEvent('namaste:progress-changed', { detail: state }));
+
+      // Sincronizar con el servidor en segundo plano
+      if (syncServer && typeof AuthService !== 'undefined') {
+        const token = AuthService.getToken();
+        if (token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+          fetch('/api/progress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(state)
+          }).catch(() => {});
+        }
+      }
     } catch (e) {
       console.warn('Error saving progress state', e);
     }
@@ -92,7 +108,6 @@ const ProgressService = (() => {
         if (!lastDate) {
           newStreak = user.streakDays || 1;
         } else if (lastDate === today) {
-          // Ya practicó hoy: no sumar racha repetidamente en el mismo día
           newStreak = user.streakDays || 1;
         } else {
           const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -135,6 +150,32 @@ const ProgressService = (() => {
     };
   };
 
+  // Carga inicial desde servidor al autenticarse
+  const fetchProgressFromServer = async () => {
+    if (typeof AuthService === 'undefined') return;
+    const token = AuthService.getToken();
+    if (!token || typeof window === 'undefined' || !window.location.protocol.startsWith('http')) return;
+    try {
+      const response = await fetch('/api/progress', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.progress) {
+          saveProgressState(data.progress, false);
+        }
+      }
+    } catch (e) {
+      // Ignorar si offline
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('namaste:auth-changed', () => {
+      setTimeout(fetchProgressFromServer, 300);
+    });
+  }
+
   return {
     getProgressState,
     isFavorite,
@@ -142,7 +183,8 @@ const ProgressService = (() => {
     isCompleted,
     markCompleted,
     recordPlayProgress,
-    getLastPlayed
+    getLastPlayed,
+    fetchProgressFromServer
   };
 })();
 

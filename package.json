@@ -1,0 +1,20 @@
+{
+  "name": "namaste-yoga",
+  "version": "1.0.0",
+  "description": "Namasté — Espacio de Yoga y Bienestar Consciente. Plataforma digital y Shala online.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "yoga",
+    "shala",
+    "meditation",
+    "wellness",
+    "antigravity"
+  ],
+  "author": "Namasté Yoga Team",
+  "license": "ISC"
+}
