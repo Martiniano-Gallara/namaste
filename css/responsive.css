@@ -1188,11 +1188,14 @@
     text-overflow: ellipsis !important;
   }
 
-  .platform-fav-pill {
-    padding: 0.45rem 0.75rem !important;
-    font-size: 0.78rem !important;
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
+  .btn-filter-trigger {
+    padding: 0.48rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .filter-popover-menu {
+    max-width: calc(100vw - 1.5rem) !important;
+    width: 290px !important;
   }
 
   /* Carruseles Horizontales de Yoga y Meditación en Móvil */
@@ -1215,6 +1218,7 @@
 
   .classes-group-subtitle {
     font-size: 0.76rem !important;
+    white-space: nowrap !important;
   }
 
   .classes-group-count {
@@ -1314,7 +1318,8 @@
   }
 
   .progress-stats-summary-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
   }
 
   .toast-container {

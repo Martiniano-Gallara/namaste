@@ -73,16 +73,19 @@ const DAILY_QUOTES_DATA = [
 
 /**
  * Obtiene la cita correspondiente para el día actual
- * Cambia automáticamente a las 00:00 de cada nuevo día
+ * Cambia automáticamente a las 00:00 de cada nuevo día según la fecha del calendario local
  */
 function getQuoteOfTheDay() {
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const diff = (now - startOfYear) + ((startOfYear.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
-  const oneDay = 1000 * 60 * 60 * 24;
-  const dayOfYear = Math.floor(diff / oneDay);
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const date = now.getDate();
   
-  const index = Math.abs(dayOfYear + (now.getFullYear() * 13)) % DAILY_QUOTES_DATA.length;
+  // Identificador de día calendario a las 00:00:00 local
+  const dayStartTimestamp = new Date(year, month, date, 0, 0, 0, 0).getTime();
+  const dayNumber = Math.floor(dayStartTimestamp / (1000 * 60 * 60 * 24));
+  
+  const index = Math.abs(dayNumber) % DAILY_QUOTES_DATA.length;
   return DAILY_QUOTES_DATA[index];
 }
 

@@ -171,9 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Configura la Cita del Día con rotación automática cada 24 horas
+   * Configura la Cita del Día con rotación automática a las 00:00 hs de cada nuevo día
    * Se muestra tanto en la landing como en la parte superior del panel del alumno
    */
+  let midnightQuoteTimeout = null;
+
   function setupDailyQuote() {
     if (typeof getQuoteOfTheDay !== 'function') return;
     const quote = getQuoteOfTheDay();
@@ -190,7 +192,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const platformAuthorEl = document.getElementById('platform-quote-phrase-author');
     if (platformTextEl) platformTextEl.textContent = quote.text;
     if (platformAuthorEl) platformAuthorEl.textContent = quote.author.startsWith('—') ? quote.author : `— ${quote.author}`;
+
+    // Programar actualización automática exactamente a las 00:00:00 hs
+    scheduleMidnightQuoteUpdate();
   }
+
+  function scheduleMidnightQuoteUpdate() {
+    if (midnightQuoteTimeout) clearTimeout(midnightQuoteTimeout);
+
+    const now = new Date();
+    // Próxima medianoche 00:00:00 exacta local
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 50);
+    const msUntilMidnight = Math.max(1000, nextMidnight.getTime() - now.getTime());
+
+    midnightQuoteTimeout = setTimeout(() => {
+      setupDailyQuote();
+    }, msUntilMidnight);
+  }
+
+  // Actualizar automáticamente si el usuario regresa a la pestaña al día siguiente
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      setupDailyQuote();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    setupDailyQuote();
+  });
 
   // ========================================================================
   // NAVEGACIÓN Y VISTAS
@@ -859,7 +888,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>• ${c.level}</span>
           </div>
           <h3 class="class-card-title">${c.title}</h3>
-          <p class="class-card-desc">${c.description}</p>
           <div class="class-card-footer" style="justify-content: flex-end;">
             <button class="btn-text btn-access-login" style="cursor:pointer; font-size: 0.85rem;">
               Ver práctica →
@@ -1034,6 +1062,111 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function updateFilterActiveIndicator() {
+    const badge = document.getElementById('filter-active-badge');
+    const triggerBtn = document.getElementById('btn-filter-trigger');
+    let activeCount = 0;
+    if (state.activeCategoryFilter && state.activeCategoryFilter !== 'all') activeCount++;
+    if (state.onlyFavorites) activeCount++;
+
+    if (badge) {
+      if (activeCount > 0) {
+        badge.textContent = activeCount;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    if (triggerBtn) {
+      if (activeCount > 0) {
+        triggerBtn.classList.add('has-active-filters');
+      } else {
+        triggerBtn.classList.remove('has-active-filters');
+      }
+    }
+  }
+
+  function resetAllFilters() {
+    state.activeCategoryFilter = 'all';
+    state.onlyFavorites = false;
+
+    const chipsContainer = document.getElementById('platform-filter-chips');
+    if (chipsContainer) {
+      chipsContainer.querySelectorAll('.filter-chip').forEach(c => {
+        if (c.getAttribute('data-category') === 'all') c.classList.add('active');
+        else c.classList.remove('active');
+      });
+    }
+
+    const favToggle = document.getElementById('filter-toggle-favorites');
+    if (favToggle) favToggle.checked = false;
+
+    updateFilterActiveIndicator();
+    renderPlatformClasses();
+  }
+
+  function updateFilterOptionsVisibility() {
+    const progress = (typeof ProgressService !== 'undefined') ? ProgressService.getProgressState() : { favorites: [], completed: [] };
+    const favCount = (progress.favorites || []).length;
+    const completedCount = (progress.completed || []).length;
+
+    // 1. Ocultar o mostrar chips de categorías según existencia real de prácticas
+    const chips = document.querySelectorAll('#platform-filter-chips .filter-chip');
+    chips.forEach(chip => {
+      const cat = chip.getAttribute('data-category');
+      if (cat === 'all') {
+        chip.style.display = '';
+        return;
+      }
+
+      if (cat === 'completed') {
+        if (completedCount === 0) {
+          chip.style.display = 'none';
+          if (state.activeCategoryFilter === 'completed') {
+            resetAllFilters();
+          }
+        } else {
+          chip.style.display = '';
+        }
+        return;
+      }
+
+      let count = 0;
+      if (cat === 'meditacion') {
+        count = CLASSES_DATA.filter(c => c.category === 'meditacion' || c.category === 'relax').length;
+      } else {
+        count = CLASSES_DATA.filter(c => c.category === cat).length;
+      }
+
+      if (count === 0) {
+        chip.style.display = 'none';
+        if (state.activeCategoryFilter === cat) {
+          resetAllFilters();
+        }
+      } else {
+        chip.style.display = '';
+      }
+    });
+
+    // 2. Ocultar bloque de Favoritas si el usuario no tiene ninguna favorita guardada
+    const favSection = document.getElementById('filter-section-favorites');
+    const favToggle = document.getElementById('filter-toggle-favorites');
+    if (favSection) {
+      if (favCount === 0) {
+        favSection.style.display = 'none';
+        if (state.onlyFavorites) {
+          state.onlyFavorites = false;
+          if (favToggle) favToggle.checked = false;
+          renderPlatformClasses();
+        }
+      } else {
+        favSection.style.display = '';
+      }
+    }
+
+    updateFilterActiveIndicator();
+  }
+
   function setupPlatformFilters() {
     // Buscador interactivo
     const searchInput = document.getElementById('platform-search-input');
@@ -1049,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (favToggle) {
       favToggle.addEventListener('change', (e) => {
         state.onlyFavorites = e.target.checked;
+        updateFilterActiveIndicator();
         renderPlatformClasses();
       });
     }
@@ -1061,10 +1195,55 @@ document.addEventListener('DOMContentLoaded', () => {
           chipsContainer.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           state.activeCategoryFilter = chip.getAttribute('data-category') || 'all';
+          updateFilterActiveIndicator();
           renderPlatformClasses();
         });
       });
     }
+
+    // Control del botón desplegable y popover de filtros
+    const filterWrapper = document.getElementById('filter-dropdown-wrapper');
+    const filterTrigger = document.getElementById('btn-filter-trigger');
+    const resetFiltersBtn = document.getElementById('btn-reset-filters');
+
+    if (filterTrigger && filterWrapper) {
+      filterTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = filterWrapper.classList.toggle('open');
+        filterTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (isOpen) updateFilterOptionsVisibility();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!filterWrapper.contains(e.target)) {
+          filterWrapper.classList.remove('open');
+          filterTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && filterWrapper.classList.contains('open')) {
+          filterWrapper.classList.remove('open');
+          filterTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetAllFilters();
+        showToast('Filtros restablecidos');
+      });
+    }
+
+    // Sincronizar dinámicamente si cambian las clases completadas o favoritas
+    window.addEventListener('namaste:progress-changed', () => {
+      updateFilterOptionsVisibility();
+    });
+
+    // Evaluar visibilidad inicial
+    updateFilterOptionsVisibility();
   }
 
   function renderPlatformClasses() {
@@ -1163,7 +1342,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <span>• ${c.level}</span>
             </div>
             <h3 class="class-card-title">${c.title}</h3>
-            <p class="class-card-desc">${c.description}</p>
             
             ${isDone ? `
               <div class="class-card-footer" style="justify-content: flex-end;">
@@ -1445,30 +1623,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 3. Botón de refrescar inspiración diaria
-    const btnRefreshQuote = document.getElementById('btn-refresh-quote');
-    if (btnRefreshQuote) {
-      btnRefreshQuote.addEventListener('click', () => {
-        const phraseTextEl = document.getElementById('platform-quote-phrase-text');
-        const phraseAuthorEl = document.getElementById('platform-quote-phrase-author');
-        if (!phraseTextEl || !phraseAuthorEl) return;
-
-        const currentText = phraseTextEl.textContent;
-        const availableQuotes = DAILY_QUOTES_DATA.filter(q => q.text !== currentText);
-        const randomQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)] || DAILY_QUOTES_DATA[0];
-
-        phraseTextEl.style.opacity = '0';
-        phraseAuthorEl.style.opacity = '0';
-
-        setTimeout(() => {
-          phraseTextEl.textContent = randomQuote.text;
-          phraseAuthorEl.textContent = randomQuote.author.startsWith('—') ? randomQuote.author : `— ${randomQuote.author}`;
-          phraseTextEl.style.opacity = '1';
-          phraseAuthorEl.style.opacity = '1';
-          showToast(`Inspiración: ${randomQuote.author}`);
-        }, 150);
-      });
-    }
 
     // 4. Modal de Progreso del Alumno (Racha, Minutos, Clases)
     const openProgressModal = () => {
@@ -1484,27 +1638,59 @@ document.addEventListener('DOMContentLoaded', () => {
       const badgeCountEl = document.getElementById('modal-completed-count-badge');
       const listContainer = document.getElementById('modal-completed-classes-list');
 
-      if (streakEl) streakEl.textContent = user.streakDays || 1;
+      const streak = user.streakDays || 1;
+      if (streakEl) streakEl.textContent = streak;
       if (minEl) minEl.textContent = user.totalMinutesPracticed || 0;
       if (countEl) countEl.textContent = user.completedClassesCount || 0;
       if (badgeCountEl) badgeCountEl.textContent = `${completedClasses.length} ${completedClasses.length === 1 ? 'clase' : 'clases'}`;
 
+      // Mensaje consciente de racha
+      const streakBannerText = document.getElementById('modal-streak-banner-text');
+      if (streakBannerText) {
+        if (streak >= 7) {
+          streakBannerText.textContent = `¡Gran disciplina! Llevas ${streak} días consecutivos cultivando presencia.`;
+        } else if (streak > 1) {
+          streakBannerText.textContent = `¡Excelente camino! Sumas ${streak} días seguidos de práctica en el Shala.`;
+        } else {
+          streakBannerText.textContent = `Cada instante en el mat siembra serenidad y autoconocimiento.`;
+        }
+      }
+
       if (listContainer) {
         if (completedClasses.length === 0) {
           listContainer.innerHTML = `
-            <div style="text-align: center; padding: 1.5rem 1rem; color: var(--text-muted); font-size: 0.88rem;">
-              Aún no has completado ninguna sesión. ¡Elige una práctica del catálogo para iniciar tu registro!
+            <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem; background: var(--sand-50); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
+              <div style="font-size: 1.6rem; margin-bottom: 0.35rem;">🧘</div>
+              <strong style="display: block; color: var(--text-primary); margin-bottom: 0.25rem;">Aún no tienes prácticas registradas</strong>
+              <span>Elige cualquier sesión del catálogo para iniciar tu camino hoy mismo.</span>
             </div>
           `;
         } else {
           listContainer.innerHTML = completedClasses.map(c => `
-            <div class="completed-class-row">
-              <div class="completed-class-row-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--olive-dark)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <span>${c.title} (${c.duration} min)</span>
+            <div class="completed-class-card">
+              <div class="completed-class-card-main">
+                <div class="completed-class-check-circle" title="Sesión completada">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div class="completed-class-info">
+                  <h5 class="completed-class-name">${c.title}</h5>
+                  <div class="completed-class-submeta">
+                    <span class="completed-class-chip">${c.categoryLabel}</span>
+                    <span>•</span>
+                    <span>${c.duration} min</span>
+                    <span>•</span>
+                    <span>${c.level}</span>
+                  </div>
+                </div>
               </div>
-              <button type="button" class="btn-repeat-practice" data-class-id="${c.id}">
-                Repetir práctica →
+              <button type="button" class="btn-repeat-practice" data-class-id="${c.id}" title="Volver a practicar esta clase">
+                <span>Repetir</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
               </button>
             </div>
           `).join('');
@@ -1885,29 +2071,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Limpiar filtros cuando no hay resultados
+    // Limpiar filtros cuando no hay resultados (Empty state button)
     const btnClearFilters = document.getElementById('btn-clear-platform-filters');
     if (btnClearFilters) {
       btnClearFilters.addEventListener('click', () => {
         state.searchQuery = '';
-        state.onlyFavorites = false;
-        state.activeCategoryFilter = 'all';
-
         const searchInput = document.getElementById('platform-search-input');
         if (searchInput) searchInput.value = '';
-
-        const favToggle = document.getElementById('filter-toggle-favorites');
-        if (favToggle) favToggle.checked = false;
-
-        const chipsContainer = document.getElementById('platform-filter-chips');
-        if (chipsContainer) {
-          chipsContainer.querySelectorAll('.filter-chip').forEach(c => {
-            if (c.getAttribute('data-category') === 'all') c.classList.add('active');
-            else c.classList.remove('active');
-          });
-        }
-
-        renderPlatformClasses();
+        resetAllFilters();
         showToast('Filtros restablecidos');
       });
     }
@@ -1943,15 +2114,15 @@ document.addEventListener('DOMContentLoaded', () => {
         statusBadge.className = 'status-badge-active';
         statusBadge.style.backgroundColor = '';
         statusBadge.style.color = '';
-        statusBadge.textContent = '● Membresía Activa';
+        statusBadge.textContent = '● Activa';
       }
       if (pauseBtn) {
         pauseBtn.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="6" y="4" width="4" height="16"></rect>
             <rect x="14" y="4" width="4" height="16"></rect>
           </svg>
-          <span>Pausar o Cancelar Membresía</span>
+          <span>Pausar Membresía</span>
         `;
       }
     } else {
@@ -1963,10 +2134,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (pauseBtn) {
         pauseBtn.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
-          <span>Reactivar mi membresía</span>
+          <span>Reactivar Plan</span>
         `;
       }
     }

@@ -958,13 +958,6 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
           <span>Inspiración de Hoy</span>
-          <button type="button" class="btn-refresh-quote" id="btn-refresh-quote" title="Obtener otra inspiración consciente">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <polyline points="1 20 1 14 7 14"></polyline>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-            </svg>
-          </button>
         </div>
         <blockquote class="platform-quote-phrase">
           «<span id="platform-quote-phrase-text">La meditación es silencio interior.</span>»
@@ -1043,7 +1036,7 @@
     <main class="library-section" id="library-anchor">
       <div class="container">
 
-        <!-- Barra de Búsqueda y Filtro Rápido Limpia y Compacta -->
+        <!-- Barra de Búsqueda con Botón de Filtros Unificado -->
         <div class="platform-quick-bar">
           <div class="filter-search-box platform-search-clean">
             <svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1054,27 +1047,61 @@
               placeholder="Buscar práctica por estilo, foco o intención..." />
           </div>
 
-          <label class="filter-toggle-label platform-fav-pill" title="Mostrar solo prácticas guardadas">
-            <input type="checkbox" id="filter-toggle-favorites" />
-            <svg class="fav-pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
-              <polygon
-                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-              </polygon>
-            </svg>
-            <span>Solo favoritas</span>
-          </label>
-        </div>
+          <!-- Botón Desplegable de Filtros Comprimido y Resumido -->
+          <div class="filter-dropdown-wrapper" id="filter-dropdown-wrapper">
+            <button type="button" class="btn-filter-trigger" id="btn-filter-trigger" aria-expanded="false" aria-haspopup="true" title="Filtrar prácticas">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+              <span>Filtros</span>
+              <span class="filter-active-badge" id="filter-active-badge" style="display: none;"></span>
+            </button>
 
-        <!-- Chips de Filtros Rápidos por Categoría -->
-        <div class="platform-filter-chips" id="platform-filter-chips">
-          <button type="button" class="filter-chip active" data-category="all">Todas las prácticas</button>
-          <button type="button" class="filter-chip" data-category="suave">Yoga Suave</button>
-          <button type="button" class="filter-chip" data-category="clasico">Yoga Clásico</button>
-          <button type="button" class="filter-chip" data-category="dinamico">Yoga Dinámico</button>
-          <button type="button" class="filter-chip" data-category="terapeutico">Terapéutico</button>
-          <button type="button" class="filter-chip" data-category="meditacion">Meditación & Calma</button>
-          <button type="button" class="filter-chip" data-category="completed">✓ Completadas</button>
+            <!-- Menú Flotante / Popover de Filtros -->
+            <div class="filter-popover-menu" id="filter-popover-menu">
+              <div class="filter-popover-header">
+                <span class="filter-popover-title">Filtros</span>
+                <button type="button" class="btn-reset-filters" id="btn-reset-filters">Restablecer</button>
+              </div>
+
+              <div class="filter-popover-body">
+                <!-- Estilos y Disciplinas -->
+                <div class="filter-popover-section">
+                  <span class="filter-section-label">Estilo</span>
+                  <div class="filter-chips-grid" id="platform-filter-chips">
+                    <button type="button" class="filter-chip active" data-category="all">Todas</button>
+                    <button type="button" class="filter-chip" data-category="suave">Yoga Suave</button>
+                    <button type="button" class="filter-chip" data-category="clasico">Yoga Clásico</button>
+                    <button type="button" class="filter-chip" data-category="dinamico">Yoga Dinámico</button>
+                    <button type="button" class="filter-chip" data-category="terapeutico">Terapéutico</button>
+                    <button type="button" class="filter-chip" data-category="ashtanga">Ashtanga</button>
+                    <button type="button" class="filter-chip" data-category="meditacion">Meditación & Calma</button>
+                    <button type="button" class="filter-chip" data-category="completed" id="filter-chip-completed">✓ Completadas</button>
+                  </div>
+                </div>
+
+                <!-- Favoritas (se oculta dinámicamente si no hay favoritas) -->
+                <div class="filter-popover-section" id="filter-section-favorites">
+                  <span class="filter-section-label">Preferencias</span>
+                  <label class="filter-toggle-label platform-fav-pill" id="filter-fav-pill-container" title="Mostrar solo prácticas guardadas">
+                    <input type="checkbox" id="filter-toggle-favorites" />
+                    <svg class="fav-pill-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Solo favoritas</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 1. SECCIÓN: PRÁCTICAS DE YOGA (Carrusel Horizontal Comprimido) -->
@@ -1090,7 +1117,7 @@
                 </svg>
                 <h2 class="classes-group-title">Clases de Yoga</h2>
               </div>
-              <p class="classes-group-subtitle">Yoga Suave, Clásico, Dinámico, Terapéutico y Ashtanga</p>
+              <p class="classes-group-subtitle">Yoga Suave, Clásico y Dinámico</p>
             </div>
             <span class="classes-group-count" id="yoga-classes-count">10 prácticas</span>
           </div>
@@ -1111,7 +1138,7 @@
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-                Desliza o utiliza las flechas para explorar más clases de yoga
+                <span>Desliza o utiliza las flechas para explorar más clases de yoga</span>
               </span>
             </div>
           </div>
@@ -1130,7 +1157,7 @@
                 </svg>
                 <h2 class="classes-group-title">Meditación & Calma</h2>
               </div>
-              <p class="classes-group-subtitle">Mindfulness, Pranayama guiado, Sosiego Mental y Yoga Relax</p>
+              <p class="classes-group-subtitle">Mindfulness, Pranayama y Relax</p>
             </div>
             <span class="classes-group-count" id="meditation-classes-count">6 prácticas</span>
           </div>
@@ -1151,7 +1178,7 @@
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-                Desliza o utiliza las flechas para explorar más meditaciones
+                <span>Desliza o utiliza las flechas para explorar más meditaciones</span>
               </span>
             </div>
           </div>
@@ -1448,112 +1475,59 @@
           </div>
         </div>
 
-        <!-- Tarjeta de Gestión de Membresía -->
+        <!-- Tarjeta de Gestión de Membresía (Diseño Compacto y Optimizado) -->
         <div class="membership-status-card">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span
-              style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em;">Tu
-              Membresía</span>
+          <div class="drawer-membership-header">
+            <div>
+              <span class="drawer-membership-tag">Tu Membresía</span>
+              <div id="drawer-plan-name" class="drawer-plan-title">Plan Santuario</div>
+            </div>
             <span class="status-badge-active" id="drawer-membership-status">● Activa</span>
           </div>
 
-          <div>
-            <div id="drawer-plan-name"
-              style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: 600; color: var(--text-primary);">
-              Plan Santuario
+          <div class="drawer-membership-details">
+            <div class="drawer-detail-item">
+              <span class="drawer-detail-label">Próxima renovación</span>
+              <span class="drawer-detail-value"><strong id="drawer-next-billing">22 Octubre 2026</strong> <span class="drawer-meta-dim">($29/mes)</span></span>
             </div>
-            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
-              Próxima renovación: <strong id="drawer-next-billing">22 Octubre 2026</strong> ($29/mes)
+            <div class="drawer-detail-item">
+              <span class="drawer-detail-label">Método de pago</span>
+              <span class="drawer-detail-value">•••• 4242 (Visa)</span>
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem;">
-              Método de pago: <strong>•••• 4242 (Visa)</strong>
+            <div class="drawer-detail-item">
+              <span class="drawer-detail-label">Cuenta vinculada</span>
+              <span class="drawer-detail-value drawer-access-code-text" id="drawer-access-code">sofia.varela@ejemplo.com</span>
             </div>
-          </div>
-
-          <div class="code-share-box" style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 0.85rem;">
-            <div>
-              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.06em;">Cuenta Vinculada:</div>
-              <div id="drawer-access-code" style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); font-family: var(--font-sans);">sofia.varela@ejemplo.com</div>
-            </div>
-            <span class="status-badge-active" style="margin: 0;">● Activa</span>
           </div>
 
           <!-- Botones de Gestión de Suscripción -->
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
-            <button type="button" class="btn btn-primary" id="btn-drawer-change-plan"
-              style="font-size: 0.84rem; padding: 0.6rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="drawer-membership-actions">
+            <button type="button" class="btn btn-primary btn-drawer-main" id="btn-drawer-change-plan">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon
                   points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
                 </polygon>
               </svg>
               <span>Gestionar Plan / Mejorar Membresía</span>
             </button>
-            <button type="button" class="btn btn-secondary" id="btn-toggle-pause-membership"
-              style="font-size: 0.82rem; padding: 0.55rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-              <span>Pausar o Cancelar Membresía</span>
-            </button>
-            <button type="button" class="btn btn-secondary" id="btn-drawer-download-receipt"
-              style="font-size: 0.8rem; padding: 0.45rem 0.8rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.45rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <span>Ver Comprobante de Membresía</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Accesos Rápidos de Navegación del Alumno -->
-        <div class="drawer-shortcuts-box">
-          <div
-            style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.08em; margin-bottom: 0.5rem;">
-            Accesos Rápidos
-          </div>
-          <div class="drawer-shortcuts-list">
-            <a href="#group-yoga" class="drawer-shortcut-item" id="shortcut-yoga-link">
-              <span style="display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 3c-1.8 3.5-3 6.5-3 9.5a3 3 0 0 0 6 0c0-3-1.2-6-3-9.5z"></path>
-                  <path d="M6 13c1.5 3 4 5 6 5s4.5-2 6-5"></path>
-                  <path d="M4 17c2 2.5 5 3.5 8 3.5s6-1 8-3.5"></path>
+            <div class="drawer-action-row">
+              <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-toggle-pause-membership">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
                 </svg>
-                <span>Clases de Yoga</span>
-              </span>
-              <span class="shortcut-arrow">→</span>
-            </a>
-            <a href="#group-meditation" class="drawer-shortcut-item" id="shortcut-meditation-link">
-              <span style="display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9"></circle>
-                  <path d="M12 7v5l3 3"></path>
-                  <path d="M8 17a4 4 0 0 1 8 0"></path>
+                <span>Pausar Membresía</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-drawer-download-receipt">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
                 </svg>
-                <span>Meditación & Calma</span>
-              </span>
-              <span class="shortcut-arrow">→</span>
-            </a>
-            <a href="#" class="drawer-shortcut-item" id="shortcut-live-link">
-              <span style="display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span>Próximo Encuentro en Vivo (Zoom)</span>
-              </span>
-              <span class="shortcut-arrow">→</span>
-            </a>
+                <span>Comprobante</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1675,43 +1649,77 @@
     </div>
   </div>
 
-  <!-- Modal 6: Tu Camino de Práctica & Estadísticas -->
+  <!-- Modal 6: Tu Camino de Práctica & Estadísticas (Diseño Mejorado) -->
   <div class="modal-backdrop" id="modal-progress-details" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
-    <div class="modal-dialog" style="max-width: 540px;">
-      <div class="modal-header">
-        <div style="display:flex; align-items:center; gap:0.6rem;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <h3 id="progress-modal-title" style="margin:0;">Tu Camino de Práctica</h3>
+    <div class="modal-dialog modal-dialog-progress">
+      <div class="progress-modal-header">
+        <div class="progress-modal-title-group">
+          <div class="progress-modal-icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="progress-modal-titles">
+            <h3 id="progress-modal-title">Tu Camino de Práctica</h3>
+            <span>Constancia, tiempo y sesiones en tu shala</span>
+          </div>
         </div>
         <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
       </div>
-      <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+      <div class="modal-body" style="padding: 1.35rem 1.5rem;">
+        
+        <!-- 3 Métricas en 3 columnas compactas con iconos -->
         <div class="progress-stats-summary-grid">
           <div class="progress-metric-box">
+            <div class="progress-metric-icon terracotta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-.6 3.2-3 5.4-4.8 7.5-1.8 2.2-2.7 4.5-2.7 6.8 0 4.2 3.4 7.7 7.5 7.7s7.5-3.5 7.5-7.7c0-3.8-2.6-6.7-4.2-9-1.3-1.8-2.1-3.6-2.3-5.3-.1 1.5-.7 2.7-1.7 3.5-1 0.8-1.5 2-1.5 3.3 0 1.2.9 2.2 2 2.2.3 0 .6-.1.8-.2-.3 1.8-1.8 3.2-3.6 3.2-2 0-3.7-1.7-3.7-3.7 0-1.8 1.1-3.5 2.5-4.8 1.4-1.3 2.5-2.5 2.5-4.2z"/>
+              </svg>
+            </div>
             <div class="metric-big-num" id="modal-metric-streak">0</div>
-            <div class="metric-caption">Días de Racha Consecutivos</div>
+            <div class="metric-caption">Días de Racha</div>
           </div>
+
           <div class="progress-metric-box">
+            <div class="progress-metric-icon olive">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
             <div class="metric-big-num" id="modal-metric-minutes">0</div>
-            <div class="metric-caption">Minutos en el Mat</div>
+            <div class="metric-caption">Minutos en Mat</div>
           </div>
+
           <div class="progress-metric-box">
+            <div class="progress-metric-icon gold">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
             <div class="metric-big-num" id="modal-metric-classes">0</div>
-            <div class="metric-caption">Sesiones Completadas</div>
+            <div class="metric-caption">Completadas</div>
           </div>
         </div>
 
-        <div style="margin-top: 1.5rem;">
-          <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
-            <span>Historial de Prácticas Realizadas</span>
-            <span id="modal-completed-count-badge" class="badge-tag" style="font-size: 0.75rem;">0 clases</span>
-          </h4>
+        <!-- Mensaje / Hito Consciente -->
+        <div class="progress-streak-banner" id="modal-streak-banner">
+          <span class="progress-streak-banner-icon">🌿</span>
+          <span id="modal-streak-banner-text">¡Hermosa constancia! Cada minuto en el mat cultiva presencia y serenidad.</span>
+        </div>
+
+        <!-- Historial de Clases -->
+        <div class="progress-history-wrap">
+          <div class="progress-history-header">
+            <h4>Historial de Sesiones</h4>
+            <span id="modal-completed-count-badge" class="progress-history-pill">0 clases</span>
+          </div>
           <div id="modal-completed-classes-list" class="completed-classes-scroll-list">
             <!-- Renderizado dinámico -->
           </div>
         </div>
+
       </div>
     </div>
   </div>
