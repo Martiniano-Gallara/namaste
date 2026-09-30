@@ -482,12 +482,41 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Tabs del modal legal y navegación contextual
+    const legalTabBtns = document.querySelectorAll('.legal-tab-btn');
+    const legalTabPanes = document.querySelectorAll('.legal-tab-pane');
+
+    function switchLegalTab(targetTab) {
+      legalTabBtns.forEach(b => {
+        const isCurrent = b.getAttribute('data-tab') === targetTab;
+        b.classList.toggle('active', isCurrent);
+        b.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+      });
+      legalTabPanes.forEach(pane => {
+        pane.classList.toggle('active', pane.getAttribute('id') === `tab-pane-${targetTab}`);
+      });
+    }
+
+    legalTabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        if (targetTab) switchLegalTab(targetTab);
+      });
+    });
+
     // Abrir modal legal desde el footer
-    ['link-open-terms', 'link-open-privacy', 'link-open-refunds'].forEach(id => {
+    const legalLinkMap = {
+      'link-open-terms': 'terms',
+      'link-open-privacy': 'privacy',
+      'link-open-refunds': 'cancellation'
+    };
+
+    Object.entries(legalLinkMap).forEach(([id, tabName]) => {
       const el = document.getElementById(id);
       if (el) {
         el.addEventListener('click', (e) => {
           e.preventDefault();
+          switchLegalTab(tabName);
           openModal(modals.legal);
         });
       }
