@@ -39,11 +39,41 @@
       "planName": "Plan Sadhana",
       "active": true,
       "isAnnual": true,
-      "memberSince": "septiembre de 2026",
-      "nextBillingDate": "28 de septiembre de 2027",
+      "memberSince": "Septiembre 2026",
+      "nextBillingDate": "28 Septiembre 2027",
       "paymentMethod": "Tarjeta •••• 9999",
       "billedAmount": 390,
       "createdAt": "2026-09-28T19:59:21.646Z"
+    },
+    "usr-mateo": {
+      "id": "usr-mateo",
+      "email": "mateo.benitez@ejemplo.com",
+      "name": "Mateo Benítez",
+      "accessCode": "NAMASTE-ESENCIA-77AB",
+      "planId": "plan-esencia",
+      "planName": "Plan Esencia",
+      "active": true,
+      "isAnnual": false,
+      "memberSince": "Agosto 2026",
+      "nextBillingDate": "15 Octubre 2026",
+      "paymentMethod": "Visa Débito •••• 1088",
+      "billedAmount": 19,
+      "createdAt": "2026-08-15T14:20:00Z"
+    },
+    "usr-lucia": {
+      "id": "usr-lucia",
+      "email": "lucia.morales@ejemplo.com",
+      "name": "Lucía Morales",
+      "accessCode": "NAMASTE-SANTUARIO-552C",
+      "planId": "plan-santuario",
+      "planName": "Plan Santuario",
+      "active": false,
+      "isAnnual": false,
+      "memberSince": "Junio 2026",
+      "nextBillingDate": "Pausada (sin cobro)",
+      "paymentMethod": "Mastercard •••• 3141",
+      "billedAmount": 29,
+      "createdAt": "2026-06-10T11:00:00Z"
     }
   },
   "sessions": {
@@ -99,11 +129,50 @@
       }
     },
     "usr-a80a8ab2": {
-      "streakDays": 1,
+      "streakDays": 3,
       "lastStreakDate": "2026-09-28",
-      "totalMinutes": 0,
-      "favorites": [],
-      "completed": [],
+      "totalMinutes": 110,
+      "favorites": [
+        "cls-ashtanga-01"
+      ],
+      "completed": [
+        "cls-ashtanga-01"
+      ],
+      "lastPlayed": {
+        "classId": "cls-ashtanga-01",
+        "progressSeconds": 1800,
+        "timestamp": "2026-09-29T10:15:00Z"
+      }
+    },
+    "usr-mateo": {
+      "streakDays": 12,
+      "lastStreakDate": "2026-09-30",
+      "totalMinutes": 310,
+      "favorites": [
+        "cls-suave-01",
+        "cls-suave-02"
+      ],
+      "completed": [
+        "cls-suave-01",
+        "cls-suave-02",
+        "cls-clasico-01"
+      ],
+      "lastPlayed": {
+        "classId": "cls-suave-02",
+        "progressSeconds": 900,
+        "timestamp": "2026-09-30T18:20:00Z"
+      }
+    },
+    "usr-lucia": {
+      "streakDays": 4,
+      "lastStreakDate": "2026-09-15",
+      "totalMinutes": 95,
+      "favorites": [
+        "cls-terapeutico-01"
+      ],
+      "completed": [
+        "cls-terapeutico-01"
+      ],
       "lastPlayed": null
     }
   },
@@ -121,6 +190,90 @@
       "isAnnual": true,
       "paymentMethod": "Tarjeta •••• 9999",
       "timestamp": "2026-09-28T19:59:21.646Z"
+    },
+    {
+      "id": "tx_7182fb01c4021aa9",
+      "receiptNumber": "REC-2026-619204",
+      "userId": "usr-sofia",
+      "email": "sofia.varela@ejemplo.com",
+      "planId": "plan-santuario",
+      "planName": "Plan Santuario",
+      "amount": 29,
+      "currency": "USD",
+      "status": "succeeded",
+      "isAnnual": false,
+      "paymentMethod": "Visa •••• 4242",
+      "timestamp": "2026-09-28T10:00:00.000Z"
+    },
+    {
+      "id": "tx_3910cd4810a9bb22",
+      "receiptNumber": "REC-2026-501832",
+      "userId": "usr-mateo",
+      "email": "mateo.benitez@ejemplo.com",
+      "planId": "plan-esencia",
+      "planName": "Plan Esencia",
+      "amount": 19,
+      "currency": "USD",
+      "status": "succeeded",
+      "isAnnual": false,
+      "paymentMethod": "Visa Débito •••• 1088",
+      "timestamp": "2026-09-15T14:20:00.000Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log_init_01",
+      "timestamp": "2026-10-01T15:30:00.000Z",
+      "action": "SYSTEM_AUDIT_SYNC",
+      "title": "Sincronización con base de datos",
+      "details": "Auditoría en tiempo real enlazada con cuentas de alumnos y estado del Shala",
+      "userEmail": "directora@namaste.com",
+      "status": "success"
+    },
+    {
+      "id": "log_init_02",
+      "timestamp": "2026-09-30T18:20:00.000Z",
+      "action": "PRACTICE_COMPLETED",
+      "title": "Práctica consciente completada",
+      "details": "Mateo Benítez completó 'Hatha Suave: Apertura de Caderas'",
+      "userEmail": "mateo.benitez@ejemplo.com",
+      "status": "info"
+    },
+    {
+      "id": "log_init_03",
+      "timestamp": "2026-09-29T10:15:00.000Z",
+      "action": "PRACTICE_COMPLETED",
+      "title": "Práctica consciente completada",
+      "details": "Elena Rostova completó 'Ashtanga Introductorio: Saludos al Sol'",
+      "userEmail": "elena@ejemplo.com",
+      "status": "info"
+    },
+    {
+      "id": "log_init_04",
+      "timestamp": "2026-09-28T19:59:21.646Z",
+      "action": "NEW_SUBSCRIPTION",
+      "title": "Nueva membresía contratada",
+      "details": "Elena Rostova adquirió Plan Sadhana Anual ($390/año)",
+      "userEmail": "elena@ejemplo.com",
+      "status": "success"
+    },
+    {
+      "id": "log_init_05",
+      "timestamp": "2026-09-28T14:30:00.000Z",
+      "action": "PRACTICE_COMPLETED",
+      "title": "Práctica consciente completada",
+      "details": "Sofía Varela completó 'Vinyasa Solar: Enraizamiento y Vitalidad'",
+      "userEmail": "sofia.varela@ejemplo.com",
+      "status": "info"
+    },
+    {
+      "id": "log_init_06",
+      "timestamp": "2026-09-15T16:00:00.000Z",
+      "action": "MEMBERSHIP_TOGGLE",
+      "title": "Membresía pausada a solicitud de alumna",
+      "details": "Lucía Morales pausó temporalmente su Plan Santuario",
+      "userEmail": "lucia.morales@ejemplo.com",
+      "status": "warning"
     }
   ]
 }

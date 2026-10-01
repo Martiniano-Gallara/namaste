@@ -138,7 +138,6 @@ const DEFAULT_DATABASE = {
   transactions: []
 };
 
-// Database helper functions with atomic save
 function loadDatabase() {
   try {
     if (!fs.existsSync(DB_FILE)) {
@@ -146,7 +145,12 @@ function loadDatabase() {
       return JSON.parse(JSON.stringify(DEFAULT_DATABASE));
     }
     const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.auditLogs)) parsed.auditLogs = [];
+    if (!parsed.users) parsed.users = {};
+    if (!parsed.progress) parsed.progress = {};
+    if (!Array.isArray(parsed.transactions)) parsed.transactions = [];
+    return parsed;
   } catch (err) {
     console.error('[DB] Error loading database, using default seed:', err);
     return JSON.parse(JSON.stringify(DEFAULT_DATABASE));
@@ -161,6 +165,26 @@ function saveDatabase(data) {
   } catch (err) {
     console.error('[DB] Error saving database:', err);
   }
+}
+
+function recordAuditLog(database, action, title, details, userEmail = '', status = 'info') {
+  if (!Array.isArray(database.auditLogs)) {
+    database.auditLogs = [];
+  }
+  const entry = {
+    id: 'log_' + crypto.randomBytes(4).toString('hex'),
+    timestamp: new Date().toISOString(),
+    action,
+    title,
+    details,
+    userEmail,
+    status
+  };
+  database.auditLogs.unshift(entry);
+  if (database.auditLogs.length > 250) {
+    database.auditLogs = database.auditLogs.slice(0, 250);
+  }
+  return entry;
 }
 
 let db = loadDatabase();
@@ -579,6 +603,7 @@ const server = http.createServer(async (req, res) => {
         }
         const user = db.users[auth.user.id];
         user.active = !user.active;
+        recordAuditLog(db, 'MEMBERSHIP_TOGGLE', user.active ? 'Membresía reactivada por alumna' : 'Membresía pausada por alumna', `${user.name} (${user.email})`, user.email, user.active ? 'success' : 'warning');
         saveDatabase(db);
         return sendJson(res, 200, {
           success: true,
@@ -602,12 +627,249 @@ const server = http.createServer(async (req, res) => {
         user.planId = newPlan.id;
         user.planName = newPlan.name;
         user.billedAmount = user.isAnnual ? newPlan.annualPrice : newPlan.monthlyPrice;
+        recordAuditLog(db, 'PLAN_CHANGED', 'Cambio de plan por alumna', `${user.name} actualizó su suscripción a ${newPlan.name}`, user.email, 'info');
         saveDatabase(db);
         return sendJson(res, 200, {
           success: true,
           user,
           message: `Plan actualizado a ${newPlan.name}.`
         });
+      }
+
+      // ======================================================================
+      // 11. ADMIN AUDIT & CLIENTS MANAGEMENT SUITE (DIRECTORA / VALERIA)
+      // ======================================================================
+
+      // 11.1 Admin Overview (KPIs, Active Subscriptions, Financials, Practice Totals)
+      if (pathname === '/api/admin/overview' && req.method === 'GET') {
+        const usersList = Object.values(db.users || {});
+        const totalUsers = usersList.length;
+        const activeUsers = usersList.filter(u => u.active).length;
+        const pausedUsers = totalUsers - activeUsers;
+
+        let mrr = 0;
+        let arr = 0;
+        const planCounts = { 'plan-esencia': 0, 'plan-santuario': 0, 'plan-sadhana': 0 };
+
+        usersList.forEach(u => {
+          if (u.active) {
+            const plan = PLANS_CATALOG[u.planId] || PLANS_CATALOG['plan-santuario'];
+            if (u.isAnnual) {
+              mrr += Math.round(plan.annualPrice / 12);
+              arr += plan.annualPrice;
+            } else {
+              mrr += plan.monthlyPrice;
+              arr += plan.monthlyPrice * 12;
+            }
+            if (planCounts[u.planId] !== undefined) {
+              planCounts[u.planId]++;
+            }
+          }
+        });
+
+        let totalPracticeMinutes = 0;
+        let totalCompletedClasses = 0;
+        Object.values(db.progress || {}).forEach(p => {
+          totalPracticeMinutes += (p.totalMinutes || 0);
+          if (Array.isArray(p.completed)) {
+            totalCompletedClasses += p.completed.length;
+          }
+        });
+
+        const totalRevenue = (db.transactions || []).reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+
+        return sendJson(res, 200, {
+          success: true,
+          stats: {
+            totalUsers,
+            activeUsers,
+            pausedUsers,
+            mrr,
+            arr,
+            totalRevenue,
+            totalPracticeMinutes,
+            totalCompletedClasses,
+            planCounts
+          },
+          recentLogs: (db.auditLogs || []).slice(0, 10),
+          recentTransactions: (db.transactions || []).slice(0, 6)
+        });
+      }
+
+      // 11.2 Admin: List All Client Accounts with Progress & Financials
+      if (pathname === '/api/admin/users' && req.method === 'GET') {
+        const usersList = Object.values(db.users || {}).map(user => {
+          const prog = db.progress[user.id] || { streakDays: 0, totalMinutes: 0, completed: [], favorites: [] };
+          return {
+            ...user,
+            streakDays: prog.streakDays || 0,
+            totalMinutes: prog.totalMinutes || 0,
+            completedCount: Array.isArray(prog.completed) ? prog.completed.length : 0,
+            favoritesCount: Array.isArray(prog.favorites) ? prog.favorites.length : 0,
+            completedClasses: prog.completed || [],
+            lastPlayed: prog.lastPlayed || null
+          };
+        });
+        return sendJson(res, 200, { success: true, users: usersList });
+      }
+
+      // 11.3 Admin: Create New Client Account manually
+      if (pathname === '/api/admin/users' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const name = (body.name || '').trim();
+        const email = (body.email || '').trim().toLowerCase();
+        const planId = body.planId || 'plan-santuario';
+        const isAnnual = Boolean(body.isAnnual);
+        const active = body.active !== undefined ? Boolean(body.active) : true;
+
+        if (!name || !email || !email.includes('@')) {
+          return sendJson(res, 400, { success: false, message: 'Nombre y correo electrónico válido son requeridos.' });
+        }
+
+        // Check if email already registered
+        const existing = Object.values(db.users).find(u => (u.email || '').toLowerCase() === email);
+        if (existing) {
+          return sendJson(res, 409, { success: false, message: 'Ya existe una cuenta registrada con este correo electrónico.' });
+        }
+
+        const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-santuario'];
+        const newId = 'usr-' + crypto.randomBytes(4).toString('hex');
+        const accessCode = `NAMASTE-${plan.tag}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+        const today = new Date();
+        const nextBilling = new Date(today);
+        if (isAnnual) nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+        else nextBilling.setMonth(nextBilling.getMonth() + 1);
+
+        const amount = isAnnual ? plan.annualPrice : plan.monthlyPrice;
+        const newUser = {
+          id: newId,
+          email,
+          name,
+          accessCode,
+          planId: plan.id,
+          planName: plan.name,
+          active,
+          isAnnual,
+          memberSince: today.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+          nextBillingDate: nextBilling.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
+          paymentMethod: 'Alta por Administración',
+          billedAmount: amount,
+          createdAt: today.toISOString()
+        };
+
+        db.users[newId] = newUser;
+        db.progress[newId] = {
+          streakDays: 1,
+          lastStreakDate: today.toISOString().split('T')[0],
+          totalMinutes: 0,
+          favorites: [],
+          completed: [],
+          lastPlayed: null
+        };
+
+        // Create transaction receipt if active
+        const txId = 'tx_' + crypto.randomBytes(8).toString('hex');
+        const receiptNumber = 'REC-2026-' + Math.floor(100000 + Math.random() * 900000);
+        db.transactions.unshift({
+          id: txId,
+          receiptNumber,
+          userId: newId,
+          email,
+          planId: plan.id,
+          planName: plan.name,
+          amount,
+          currency: 'USD',
+          status: 'succeeded',
+          isAnnual,
+          paymentMethod: 'Alta Manual Directora',
+          timestamp: today.toISOString()
+        });
+
+        recordAuditLog(db, 'USER_CREATED_BY_ADMIN', 'Alta manual de alumna', `Valeria Manassero registró a ${name} en ${plan.name} (${accessCode})`, email, 'success');
+        saveDatabase(db);
+
+        return sendJson(res, 201, { success: true, user: newUser, message: `Alumna ${name} registrada con éxito. Código: ${accessCode}` });
+      }
+
+      // 11.4 Admin: Update Client Account (Plan, Active Status, Details)
+      const adminUserMatch = pathname.match(/^\/api\/admin\/users\/([a-zA-Z0-9_-]+)$/);
+      if (adminUserMatch && req.method === 'PUT') {
+        const userId = adminUserMatch[1];
+        const user = db.users[userId];
+        if (!user) {
+          return sendJson(res, 404, { success: false, message: 'Alumna no encontrada en la base de datos.' });
+        }
+        const body = await parseJsonBody(req);
+
+        if (body.name) user.name = body.name.trim();
+        if (body.email) user.email = body.email.trim().toLowerCase();
+
+        if (body.active !== undefined) {
+          const prevStatus = user.active;
+          user.active = Boolean(body.active);
+          if (prevStatus !== user.active) {
+            recordAuditLog(
+              db, 
+              'USER_STATUS_CHANGE', 
+              user.active ? 'Membresía reactivada por Directora' : 'Membresía pausada por Directora', 
+              `Estado de ${user.name} cambiado a ${user.active ? 'Activo' : 'Pausado'}`, 
+              user.email, 
+              user.active ? 'success' : 'warning'
+            );
+          }
+        }
+
+        if (body.planId && PLANS_CATALOG[body.planId]) {
+          const newPlan = PLANS_CATALOG[body.planId];
+          const oldPlan = user.planName;
+          user.planId = newPlan.id;
+          user.planName = newPlan.name;
+          user.billedAmount = user.isAnnual ? newPlan.annualPrice : newPlan.monthlyPrice;
+          recordAuditLog(
+            db, 
+            'USER_PLAN_MODIFIED', 
+            'Plan modificado por Directora', 
+            `Plan de ${user.name} actualizado: ${oldPlan} → ${newPlan.name}`, 
+            user.email, 
+            'info'
+          );
+        }
+
+        saveDatabase(db);
+        return sendJson(res, 200, { success: true, user, message: 'Cuenta de alumna actualizada exitosamente.' });
+      }
+
+      // 11.5 Admin: Delete Client Account
+      if (adminUserMatch && req.method === 'DELETE') {
+        const userId = adminUserMatch[1];
+        const user = db.users[userId];
+        if (!user) {
+          return sendJson(res, 404, { success: false, message: 'Alumna no encontrada.' });
+        }
+        const userName = user.name;
+        const userEmail = user.email;
+
+        delete db.users[userId];
+        delete db.progress[userId];
+        Object.keys(db.sessions).forEach(token => {
+          if (db.sessions[token].userId === userId) {
+            delete db.sessions[token];
+          }
+        });
+
+        recordAuditLog(db, 'USER_DELETED', 'Baja definitiva de cuenta', `Cuenta de ${userName} (${userEmail}) eliminada del sistema`, userEmail, 'warning');
+        saveDatabase(db);
+        return sendJson(res, 200, { success: true, message: `Cuenta de ${userName} eliminada correctamente.` });
+      }
+
+      // 11.6 Admin: Live Audit Logs
+      if (pathname === '/api/admin/audit-logs' && req.method === 'GET') {
+        return sendJson(res, 200, { success: true, logs: db.auditLogs || [] });
+      }
+
+      // 11.7 Admin: Financial Transactions
+      if (pathname === '/api/admin/transactions' && req.method === 'GET') {
+        return sendJson(res, 200, { success: true, transactions: db.transactions || [] });
       }
 
       // Route not found in /api
