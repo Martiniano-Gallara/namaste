@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- Estado Global ---
   const state = {
-    currentView: 'landing', // 'landing' | 'platform'
+    currentView: 'landing', // 'landing' | 'platform' | 'admin'
     selectedPlanForCheckout: null,
     activeCategoryFilter: 'all',
     activeDurationFilter: 'all',
@@ -13,13 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
     searchQuery: '',
     onlyFavorites: false,
     onlyNew: false,
-    activePlayingClass: null
+    activePlayingClass: null,
+    adminUsersCache: [],
+    adminUserFilterStatus: 'all',
+    adminUserSearchQuery: '',
+    adminActiveTab: 'tab-users'
   };
 
   // --- Elementos del DOM ---
   const views = {
     landing: document.getElementById('view-landing'),
-    platform: document.getElementById('view-platform')
+    platform: document.getElementById('view-platform'),
+    admin: document.getElementById('view-admin')
   };
 
   const modals = {
@@ -31,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     changePlan: document.getElementById('modal-change-plan'),
     progressDetails: document.getElementById('modal-progress-details'),
     receipt: document.getElementById('modal-receipt'),
-    legal: document.getElementById('modal-legal')
+    legal: document.getElementById('modal-legal'),
+    adminCreateUser: document.getElementById('modal-admin-create-user'),
+    adminEditPlan: document.getElementById('modal-admin-edit-plan')
   };
 
   // Función para escapar HTML y prevenir vulnerabilidades de DOM XSS
@@ -120,11 +127,27 @@ document.addEventListener('DOMContentLoaded', () => {
     setupHorizontalSliders();
     setupBillingSwitcher();
     setupScrollSpy();
+    setupAdminDashboard();
+
+    // Enrutamiento directo por hash (#auditoria, #refugio, #inicio)
+    handleHashRouting();
+    window.addEventListener('hashchange', handleHashRouting);
 
     // Si ya existe sesión activa previa, podemos ofrecer ingresar directo o inicializar estado
     const currentUser = AuthService.getCurrentUser();
     if (currentUser) {
       updateNavForLoggedInUser(currentUser);
+    }
+  }
+
+  function handleHashRouting() {
+    const hash = (window.location.hash || '').toLowerCase();
+    if (hash === '#auditoria' || hash === '#admin' || hash === '#backoffice') {
+      switchView('admin');
+    } else if (hash === '#refugio' || hash === '#plataforma') {
+      switchView('platform');
+    } else if (hash === '#inicio' || hash === '#home') {
+      switchView('landing');
     }
   }
 
@@ -227,20 +250,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function switchView(viewName) {
     state.currentView = viewName;
 
-    if (viewName === 'platform') {
+    if (viewName === 'admin') {
+      if (views.landing) views.landing.style.display = 'none';
+      if (views.platform) views.platform.style.display = 'none';
+      if (views.admin) views.admin.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.location.hash !== '#auditoria' && window.location.hash !== '#admin') {
+        try { history.replaceState(null, '', '#auditoria'); } catch (e) {}
+      }
+      renderAdminDashboard();
+    } else if (viewName === 'platform') {
       const user = AuthService.getCurrentUser();
       if (!user) {
         openModal(modals.login);
         return;
       }
-      views.landing.style.display = 'none';
-      views.platform.style.display = 'block';
+      if (views.landing) views.landing.style.display = 'none';
+      if (views.admin) views.admin.style.display = 'none';
+      if (views.platform) views.platform.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.location.hash !== '#refugio') {
+        try { history.replaceState(null, '', '#refugio'); } catch (e) {}
+      }
       renderPlatformDashboard();
     } else {
-      views.platform.style.display = 'none';
-      views.landing.style.display = 'block';
+      if (views.platform) views.platform.style.display = 'none';
+      if (views.admin) views.admin.style.display = 'none';
+      if (views.landing) views.landing.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.location.hash === '#auditoria' || window.location.hash === '#admin' || window.location.hash === '#refugio') {
+        try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+      }
     }
 
     updateMobileNavState();
@@ -2214,6 +2254,627 @@ document.addEventListener('DOMContentLoaded', () => {
       btnNavClasses?.classList.add('active');
       btnNavHome?.classList.remove('active');
     }
+  }
+
+  // ========================================================================
+  // PANEL DE AUDITORÍA & CONTROL DE LA DUEÑA (VALERIA MANASSERO)
+  // ========================================================================
+  function setupAdminDashboard() {
+    // 1. Navegación en Barra Ejecutiva
+    const btnAdminToHome = document.getElementById('btn-admin-to-home');
+    if (btnAdminToHome) {
+      btnAdminToHome.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('landing');
+      });
+    }
+
+    const brandLogos = document.querySelectorAll('.btn-admin-go-home');
+    brandLogos.forEach(logo => {
+      logo.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('landing');
+      });
+    });
+
+    const btnAdminToPlatform = document.getElementById('btn-admin-to-platform');
+    if (btnAdminToPlatform) {
+      btnAdminToPlatform.addEventListener('click', (e) => {
+        e.preventDefault();
+        const user = AuthService.getCurrentUser();
+        if (user) {
+          switchView('platform');
+        } else {
+          // Si no hay sesión previa, autologuear con Sofía Varela para visualización de la plataforma
+          AuthService.loginWithEmail('sofia.varela@ejemplo.com').then(() => {
+            switchView('platform');
+          });
+        }
+      });
+    }
+
+    // 2. Enlaces directos hacia Auditoría en Header y Footer
+    document.querySelectorAll('#nav-btn-admin, #link-open-admin, .btn-access-admin').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('admin');
+      });
+    });
+
+    // 3. Pestañas de Navegación del Panel
+    const tabButtons = document.querySelectorAll('.admin-tab-btn');
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        if (!targetTab) return;
+
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.admin-tab-panel').forEach(panel => {
+          panel.style.display = 'none';
+        });
+
+        const activePanel = document.getElementById(`panel-${targetTab}`);
+        if (activePanel) {
+          activePanel.style.display = 'block';
+        }
+
+        state.adminActiveTab = targetTab;
+
+        if (targetTab === 'tab-logs') {
+          AdminService.getAuditLogs().then(res => {
+            if (res && res.success && res.logs) {
+              renderAdminAuditLogs(res.logs);
+            }
+          });
+        } else if (targetTab === 'tab-transactions') {
+          AdminService.getTransactions().then(res => {
+            if (res && res.success && res.transactions) {
+              renderAdminTransactions(res.transactions);
+            }
+          });
+        }
+      });
+    });
+
+    // 4. Búsqueda y Filtros de Alumnas
+    const userSearchInput = document.getElementById('admin-user-search-input');
+    if (userSearchInput) {
+      userSearchInput.addEventListener('input', (e) => {
+        state.adminUserSearchQuery = e.target.value.trim().toLowerCase();
+        renderAdminUsersTable();
+      });
+    }
+
+    const filterPills = document.querySelectorAll('.admin-filter-pill');
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.adminUserFilterStatus = pill.getAttribute('data-filter-status') || 'all';
+        renderAdminUsersTable();
+      });
+    });
+
+    // 5. Botón de Actualizar Logs de Auditoría
+    const btnRefreshLogs = document.getElementById('btn-refresh-audit-logs');
+    if (btnRefreshLogs) {
+      btnRefreshLogs.addEventListener('click', async () => {
+        btnRefreshLogs.style.opacity = '0.5';
+        try {
+          const res = await AdminService.getAuditLogs();
+          if (res && res.success && res.logs) {
+            renderAdminAuditLogs(res.logs);
+            showToast('Registro de auditoría actualizado', 'info');
+          }
+        } catch (e) {}
+        btnRefreshLogs.style.opacity = '1';
+      });
+    }
+
+    // 6. Modal de Alta de Alumna (Registrar Nueva Alumna)
+    const btnOpenCreateModal = document.getElementById('btn-admin-create-user-modal');
+    if (btnOpenCreateModal) {
+      btnOpenCreateModal.addEventListener('click', () => {
+        if (modals.adminCreateUser) {
+          modals.adminCreateUser.classList.add('active');
+        }
+      });
+    }
+
+    const btnCloseCreateModal = document.getElementById('btn-close-create-user-modal');
+    const btnCancelCreateModal = document.getElementById('btn-cancel-create-user');
+    [btnCloseCreateModal, btnCancelCreateModal].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (modals.adminCreateUser) {
+            modals.adminCreateUser.classList.remove('active');
+          }
+        });
+      }
+    });
+
+    if (modals.adminCreateUser) {
+      modals.adminCreateUser.addEventListener('click', (e) => {
+        if (e.target === modals.adminCreateUser) {
+          modals.adminCreateUser.classList.remove('active');
+        }
+      });
+    }
+
+    const formCreateUser = document.getElementById('admin-create-user-form');
+    if (formCreateUser) {
+      formCreateUser.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('create-user-name');
+        const emailInput = document.getElementById('create-user-email');
+        const planSelect = document.getElementById('create-user-plan');
+        const annualCheck = document.getElementById('create-user-annual');
+        const activeCheck = document.getElementById('create-user-active');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const planId = planSelect ? planSelect.value : 'plan-santuario';
+        const isAnnual = annualCheck ? annualCheck.checked : false;
+        const active = activeCheck ? activeCheck.checked : true;
+
+        if (!name || !email) {
+          showToast('Por favor completa todos los campos requeridos', 'warning');
+          return;
+        }
+
+        try {
+          const res = await AdminService.createUser({ name, email, planId, isAnnual, active });
+          if (res && res.success) {
+            showToast(`Alumna ${name} registrada exitosamente`, 'success');
+            if (modals.adminCreateUser) modals.adminCreateUser.classList.remove('active');
+            formCreateUser.reset();
+            renderAdminDashboard();
+          } else {
+            showToast(res.message || 'No se pudo registrar la alumna', 'warning');
+          }
+        } catch (err) {
+          showToast('Error de conexión al registrar', 'warning');
+        }
+      });
+    }
+
+    // 7. Modal de Cambio de Plan para Alumna
+    const btnCloseEditPlan = document.getElementById('btn-close-edit-plan-modal');
+    const btnCancelEditPlan = document.getElementById('btn-cancel-edit-plan');
+    [btnCloseEditPlan, btnCancelEditPlan].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (modals.adminEditPlan) {
+            modals.adminEditPlan.classList.remove('active');
+          }
+        });
+      }
+    });
+
+    if (modals.adminEditPlan) {
+      modals.adminEditPlan.addEventListener('click', (e) => {
+        if (e.target === modals.adminEditPlan) {
+          modals.adminEditPlan.classList.remove('active');
+        }
+      });
+    }
+
+    const formEditPlan = document.getElementById('admin-edit-plan-form');
+    if (formEditPlan) {
+      formEditPlan.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userId = document.getElementById('edit-plan-user-id')?.value;
+        const planSelect = document.getElementById('edit-plan-select');
+        const newPlanId = planSelect ? planSelect.value : 'plan-santuario';
+
+        if (!userId) return;
+
+        try {
+          const res = await AdminService.updateUser(userId, { planId: newPlanId });
+          if (res && res.success) {
+            showToast('Plan de membresía actualizado correctamente', 'success');
+            if (modals.adminEditPlan) modals.adminEditPlan.classList.remove('active');
+            renderAdminDashboard();
+          } else {
+            showToast(res.message || 'No se pudo actualizar el plan', 'warning');
+          }
+        } catch (err) {
+          showToast('Error al actualizar plan', 'warning');
+        }
+      });
+    }
+
+    // 8. Event Delegation en la Tabla de Alumnas
+    const tableBody = document.getElementById('admin-users-table-body');
+    if (tableBody) {
+      tableBody.addEventListener('click', async (e) => {
+        // A) Copiar Código de Acceso
+        const copyBtn = e.target.closest('.code-copy-btn');
+        if (copyBtn) {
+          const code = copyBtn.getAttribute('data-code');
+          if (code) {
+            try {
+              await navigator.clipboard.writeText(code);
+              showToast(`Código copiado: ${code}`, 'success');
+            } catch (err) {
+              showToast(`Código: ${code}`, 'info');
+            }
+          }
+          return;
+        }
+
+        // B) Pausar / Reactivar Membresía en 1 Clic
+        const toggleBtn = e.target.closest('.btn-pause-toggle');
+        if (toggleBtn) {
+          const userId = toggleBtn.getAttribute('data-user-id');
+          const currentActive = toggleBtn.getAttribute('data-active') === 'true';
+          const newActive = !currentActive;
+
+          try {
+            const res = await AdminService.updateUser(userId, { active: newActive });
+            if (res && res.success) {
+              showToast(newActive ? 'Membresía reactivada con éxito' : 'Membresía pausada en el Shala', 'info');
+              renderAdminDashboard();
+            }
+          } catch (err) {
+            showToast('Error al modificar estado', 'warning');
+          }
+          return;
+        }
+
+        // C) Modificar Plan
+        const editPlanBtn = e.target.closest('.btn-edit-plan');
+        if (editPlanBtn) {
+          const userId = editPlanBtn.getAttribute('data-user-id');
+          const userName = editPlanBtn.getAttribute('data-user-name');
+          const planId = editPlanBtn.getAttribute('data-plan-id');
+
+          const inputUserId = document.getElementById('edit-plan-user-id');
+          const nameSpan = document.getElementById('edit-plan-user-name');
+          const selectPlan = document.getElementById('edit-plan-select');
+
+          if (inputUserId) inputUserId.value = userId;
+          if (nameSpan) nameSpan.textContent = userName || 'Alumna';
+          if (selectPlan && planId) selectPlan.value = planId;
+
+          if (modals.adminEditPlan) {
+            modals.adminEditPlan.classList.add('active');
+          }
+          return;
+        }
+
+        // D) Probar como Alumna (Impersonación / Acceso rápido al Santuario)
+        const loginAsBtn = e.target.closest('.btn-login-as');
+        if (loginAsBtn) {
+          const userEmail = loginAsBtn.getAttribute('data-user-email');
+          const userName = loginAsBtn.getAttribute('data-user-name');
+          if (userEmail) {
+            showToast(`Ingresando al Santuario como ${userName}...`, 'info');
+            await AuthService.loginWithEmail(userEmail);
+            switchView('platform');
+          }
+          return;
+        }
+
+        // E) Eliminar Alumna
+        const deleteBtn = e.target.closest('.btn-delete-user');
+        if (deleteBtn) {
+          const userId = deleteBtn.getAttribute('data-user-id');
+          const userName = deleteBtn.getAttribute('data-user-name');
+          if (confirm(`¿Estás segura de eliminar permanentemente a "${userName}" del registro de alumnas?`)) {
+            try {
+              const res = await AdminService.deleteUser(userId);
+              if (res && res.success) {
+                showToast(`Alumna "${userName}" eliminada`, 'info');
+                renderAdminDashboard();
+              }
+            } catch (err) {
+              showToast('Error al eliminar alumna', 'warning');
+            }
+          }
+          return;
+        }
+      });
+    }
+  }
+
+  /**
+   * Carga y renderiza en vivo todas las métricas, cuentas y logs del panel
+   */
+  async function renderAdminDashboard() {
+    const syncText = document.getElementById('admin-sync-text');
+    if (syncText) syncText.textContent = 'Actualizando datos...';
+
+    try {
+      const [overviewRes, usersRes] = await Promise.all([
+        AdminService.getOverview(),
+        AdminService.getUsers()
+      ]);
+
+      if (overviewRes && overviewRes.success && overviewRes.stats) {
+        const stats = overviewRes.stats;
+
+        // KPI 1: Alumnas
+        const kpiActiveUsers = document.getElementById('kpi-active-users');
+        if (kpiActiveUsers) kpiActiveUsers.textContent = stats.activeUsers;
+
+        const kpiTotalUsersSub = document.getElementById('kpi-total-users-sub');
+        if (kpiTotalUsersSub) kpiTotalUsersSub.textContent = `de ${stats.totalUsers} registradas`;
+
+        const kpiBreakdown = document.getElementById('kpi-plans-breakdown');
+        if (kpiBreakdown && stats.planCounts) {
+          kpiBreakdown.innerHTML = `
+            <span class="kpi-mini-pill">Esencia: ${stats.planCounts['plan-esencia'] || 0}</span>
+            <span class="kpi-mini-pill">Santuario: ${stats.planCounts['plan-santuario'] || 0}</span>
+            <span class="kpi-mini-pill">Sadhana: ${stats.planCounts['plan-sadhana'] || 0}</span>
+          `;
+        }
+
+        // KPI 2: MRR & ARR
+        const kpiMrr = document.getElementById('kpi-mrr');
+        if (kpiMrr) kpiMrr.textContent = `$${stats.mrr}`;
+
+        const kpiArrSub = document.getElementById('kpi-arr-sub');
+        if (kpiArrSub) kpiArrSub.textContent = `Proyección anual: $${stats.arr} USD`;
+
+        // KPI 3: Horas y Minutos de Práctica
+        const kpiTotalHours = document.getElementById('kpi-total-hours');
+        const hrs = Math.floor(stats.totalPracticeMinutes / 60);
+        const mins = stats.totalPracticeMinutes % 60;
+        if (kpiTotalHours) kpiTotalHours.textContent = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
+        const kpiTotalMinsSub = document.getElementById('kpi-total-mins-sub');
+        if (kpiTotalMinsSub) kpiTotalMinsSub.textContent = `${stats.totalPracticeMinutes} min de yoga`;
+
+        const kpiCompletedClassesSub = document.getElementById('kpi-completed-classes-sub');
+        if (kpiCompletedClassesSub) kpiCompletedClassesSub.textContent = `${stats.totalCompletedClasses} clases finalizadas`;
+
+        // KPI 4: Facturación Histórica
+        const kpiTotalRevenue = document.getElementById('kpi-total-revenue');
+        if (kpiTotalRevenue) kpiTotalRevenue.textContent = `$${stats.totalRevenue}`;
+
+        // Contadores en pestañas
+        const tabCountUsers = document.getElementById('tab-count-users');
+        if (tabCountUsers) tabCountUsers.textContent = stats.totalUsers;
+
+        const tabCountLogs = document.getElementById('tab-count-logs');
+        if (tabCountLogs && overviewRes.recentLogs) {
+          tabCountLogs.textContent = overviewRes.recentLogs.length;
+        }
+
+        // Renderizar logs y transacciones iniciales
+        if (overviewRes.recentLogs) {
+          renderAdminAuditLogs(overviewRes.recentLogs);
+        }
+        if (overviewRes.recentTransactions) {
+          renderAdminTransactions(overviewRes.recentTransactions);
+        }
+      }
+
+      if (usersRes && usersRes.success && usersRes.users) {
+        state.adminUsersCache = usersRes.users;
+        renderAdminUsersTable();
+      }
+
+      if (syncText) syncText.textContent = 'Sincronizado con Base de Datos';
+    } catch (err) {
+      console.warn('[AdminDashboard] Error en renderizado:', err);
+      if (syncText) syncText.textContent = 'Modo Resiliente Local';
+    }
+  }
+
+  /**
+   * Renderiza las filas de la tabla de alumnas con filtros y búsqueda reactiva
+   */
+  function renderAdminUsersTable() {
+    const tableBody = document.getElementById('admin-users-table-body');
+    if (!tableBody) return;
+
+    let users = [...(state.adminUsersCache || [])];
+
+    // Filtro por Estado (Todas / Activas / Pausadas)
+    if (state.adminUserFilterStatus === 'active') {
+      users = users.filter(u => u.active);
+    } else if (state.adminUserFilterStatus === 'paused') {
+      users = users.filter(u => !u.active);
+    }
+
+    // Filtro por Búsqueda (Nombre, Email, Código)
+    if (state.adminUserSearchQuery) {
+      const q = state.adminUserSearchQuery;
+      users = users.filter(u =>
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.accessCode && u.accessCode.toLowerCase().includes(q))
+      );
+    }
+
+    if (users.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+            No se encontraron alumnas que coincidan con la búsqueda o filtro aplicado.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = users.map(user => {
+      const planClass = user.planId || 'plan-santuario';
+      const planLabel = escapeHtml(user.planName || 'Plan Santuario');
+      const billingType = user.isAnnual ? 'Anual' : 'Mensual';
+      const billingAmount = `$${user.billedAmount || 29} USD`;
+
+      return `
+        <tr>
+          <td>
+            <div class="user-identity-cell">
+              <div class="user-avatar-circle">${getUserInitials(user.name)}</div>
+              <div class="user-names-col">
+                <span class="user-full-name">${escapeHtml(user.name)}</span>
+                <span class="user-email-sub">${escapeHtml(user.email)}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <button type="button" class="code-copy-btn" data-code="${escapeHtml(user.accessCode)}" title="Click para copiar código de acceso">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>${escapeHtml(user.accessCode)}</span>
+            </button>
+          </td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+              <span class="plan-badge ${planClass}">${planLabel}</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">${billingType} • ${billingAmount}</span>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 0.8rem; line-height: 1.4;">
+              <strong style="color: var(--terracotta-dark);">${user.streakDays || 0}d racha</strong>
+              <div style="color: var(--text-muted); font-size: 0.74rem;">${user.totalMinutes || 0} min • ${user.completedCount || 0} clases</div>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 0.8rem; line-height: 1.35;">
+              <div>${escapeHtml(user.nextBillingDate || '28 Octubre 2026')}</div>
+              <span style="color: var(--text-muted); font-size: 0.73rem;">${escapeHtml(user.paymentMethod || 'Tarjeta')}</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge ${user.active ? 'active' : 'paused'}">
+              <span class="status-dot"></span>
+              ${user.active ? 'Activa' : 'Pausada'}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <div class="action-btns-cell" style="justify-content: flex-end;">
+              <button type="button" class="table-action-btn btn-pause-toggle" data-user-id="${user.id}" data-active="${user.active}" title="${user.active ? 'Pausar temporalmente el acceso' : 'Reactivar acceso al Santuario'}">
+                ${user.active ? 'Pausar' : 'Reactivar'}
+              </button>
+              <button type="button" class="table-action-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}" title="Modificar nivel de membresía">
+                Plan
+              </button>
+              <button type="button" class="table-action-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna al Santuario">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                  <polyline points="10 17 15 12 10 7"></polyline>
+                  <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+              </button>
+              <button type="button" class="table-action-btn btn-delete-user" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Renderiza el feed cronológico del registro de auditoría en vivo
+   */
+  function renderAdminAuditLogs(logs) {
+    const logsContainer = document.getElementById('admin-audit-logs-list');
+    if (!logsContainer) return;
+
+    if (!logs || logs.length === 0) {
+      logsContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay eventos registrados en la auditoría.</p>';
+      return;
+    }
+
+    logsContainer.innerHTML = logs.map(log => {
+      const statusClass = log.status || 'info';
+      let iconSvg = '';
+
+      if (statusClass === 'success') {
+        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      } else if (statusClass === 'warning') {
+        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+      } else {
+        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+      }
+
+      return `
+        <div class="audit-log-item">
+          <div class="audit-icon-box status-${statusClass}">
+            ${iconSvg}
+          </div>
+          <div class="audit-content-col">
+            <div class="audit-title-row">
+              <span class="audit-event-title">${escapeHtml(log.title || log.action)}</span>
+              <span class="audit-timestamp">${formatAuditTime(log.timestamp)}</span>
+            </div>
+            <p class="audit-details-text">${escapeHtml(log.details || '')}</p>
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-muted);">
+              <span>${escapeHtml(log.userEmail || 'Sistema')}</span>
+              <span>•</span>
+              <code style="background-color: var(--sand-50); padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid var(--border-subtle);">${escapeHtml(log.action || 'EVENT')}</code>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Renderiza el historial de transacciones y cobros procesados
+   */
+  function renderAdminTransactions(transactions) {
+    const txBody = document.getElementById('admin-transactions-table-body');
+    if (!txBody) return;
+
+    if (!transactions || transactions.length === 0) {
+      txBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            No hay cobros registrados actualmente.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    txBody.innerHTML = transactions.map(tx => {
+      const planClass = tx.planId || 'plan-santuario';
+      return `
+        <tr>
+          <td><code style="font-weight: 700; color: var(--terracotta-dark); font-size: 0.76rem;">${escapeHtml(tx.receiptNumber || tx.id)}</code></td>
+          <td><strong>${escapeHtml(tx.email || 'Alumna')}</strong></td>
+          <td><span class="plan-badge ${planClass}">${escapeHtml(tx.planName || 'Plan Santuario')}</span></td>
+          <td><strong>$${tx.amount} USD</strong> <span style="font-size: 0.72rem; color: var(--text-muted);">${tx.isAnnual ? '/año' : '/mes'}</span></td>
+          <td>${escapeHtml(tx.paymentMethod || 'Tarjeta')}</td>
+          <td style="font-size: 0.78rem; color: var(--text-muted);">${formatAuditTime(tx.timestamp)}</td>
+          <td><span class="status-badge active"><span class="status-dot"></span> Aprobado</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function formatAuditTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    const now = new Date();
+    const diffSec = Math.floor((now - date) / 1000);
+    if (diffSec < 60) return 'Hace instantes';
+    if (diffSec < 3600) return `Hace ${Math.floor(diffSec / 60)} min`;
+    if (diffSec < 86400) return `Hace ${Math.floor(diffSec / 3600)} h`;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${mins} hs`;
   }
 
   // Arrancar aplicación

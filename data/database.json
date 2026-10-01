@@ -178,6 +178,20 @@
   },
   "transactions": [
     {
+      "id": "tx_93d26bd46a40313e",
+      "receiptNumber": "REC-2026-324507",
+      "userId": "usr-29ef584e",
+      "email": "camila.torres@ejemplo.com",
+      "planId": "plan-santuario",
+      "planName": "Plan Santuario",
+      "amount": 29,
+      "currency": "USD",
+      "status": "succeeded",
+      "isAnnual": false,
+      "paymentMethod": "Alta Manual Directora",
+      "timestamp": "2026-10-01T20:55:45.085Z"
+    },
+    {
       "id": "tx_a62f8677e042baaa",
       "receiptNumber": "REC-2026-743715",
       "userId": "usr-a80a8ab2",
@@ -221,6 +235,33 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_e726a41f",
+      "timestamp": "2026-10-01T20:55:45.124Z",
+      "action": "USER_DELETED",
+      "title": "Baja definitiva de cuenta",
+      "details": "Cuenta de Camila Torres (camila.torres@ejemplo.com) eliminada del sistema",
+      "userEmail": "camila.torres@ejemplo.com",
+      "status": "warning"
+    },
+    {
+      "id": "log_5d2afdb3",
+      "timestamp": "2026-10-01T20:55:45.110Z",
+      "action": "USER_STATUS_CHANGE",
+      "title": "Membresía pausada por Directora",
+      "details": "Estado de Camila Torres cambiado a Pausado",
+      "userEmail": "camila.torres@ejemplo.com",
+      "status": "warning"
+    },
+    {
+      "id": "log_6e02a80b",
+      "timestamp": "2026-10-01T20:55:45.100Z",
+      "action": "USER_CREATED_BY_ADMIN",
+      "title": "Alta manual de alumna",
+      "details": "Valeria Manassero registró a Camila Torres en Plan Santuario (NAMASTE-SANTUARIO-1472D0)",
+      "userEmail": "camila.torres@ejemplo.com",
+      "status": "success"
+    },
     {
       "id": "log_init_01",
       "timestamp": "2026-10-01T15:30:00.000Z",
