@@ -1443,13 +1443,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Datos de la clase
-    document.getElementById('player-class-title').textContent = classObj.title;
-    document.getElementById('player-class-category').textContent = classObj.categoryLabel;
-    document.getElementById('player-class-duration').textContent = `${classObj.duration} min`;
-    document.getElementById('player-class-level').textContent = classObj.level;
-    document.getElementById('player-class-instructor').textContent = classObj.instructor;
-    document.getElementById('player-class-instructor-role').textContent = classObj.instructorRole;
-    document.getElementById('player-class-description').textContent = classObj.description;
+    const titleEl = document.getElementById('player-class-title');
+    if (titleEl) titleEl.textContent = classObj.title;
+    const catEl = document.getElementById('player-class-category');
+    if (catEl) catEl.textContent = classObj.categoryLabel;
+    const durEl = document.getElementById('player-class-duration');
+    if (durEl) durEl.textContent = `${classObj.duration} min`;
+    const lvlEl = document.getElementById('player-class-level');
+    if (lvlEl) lvlEl.textContent = classObj.level;
+    const instEl = document.getElementById('player-class-instructor');
+    if (instEl) instEl.textContent = classObj.instructor || '';
+    const instRoleEl = document.getElementById('player-class-instructor-role');
+    if (instRoleEl) instRoleEl.textContent = classObj.instructorRole || '';
+    const descEl = document.getElementById('player-class-description');
+    if (descEl) descEl.textContent = classObj.description;
 
     // Resetear botón de velocidad a 1.0x
     const speedBtn = document.getElementById('btn-player-speed');
@@ -1574,22 +1581,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const markCompleteBtn = document.getElementById('btn-mark-class-complete');
     if (!markCompleteBtn) return;
     if (isDone) {
-      markCompleteBtn.className = 'btn btn-olive btn-complete-practice';
+      markCompleteBtn.className = 'btn btn-olive btn-complete-practice is-completed';
       markCompleteBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <span>Práctica completada ✓</span>
+        <span>Completada ✓</span>
       `;
+      markCompleteBtn.title = 'Práctica completada';
     } else {
       markCompleteBtn.className = 'btn btn-primary btn-complete-practice';
       markCompleteBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 14 14"></polyline>
         </svg>
-        <span>Marcar práctica como completada</span>
+        <span>Marcar completada</span>
       `;
+      markCompleteBtn.title = 'Marcar práctica como completada';
     }
   }
 

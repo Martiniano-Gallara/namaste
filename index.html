@@ -1382,30 +1382,32 @@
       <div class="player-details-scroll">
         <div class="player-meta-header">
           <div class="player-tags" id="player-tags-container">
-            <span class="badge-tag" id="player-class-category">Vinyasa Flow</span>
-            <span class="badge-tag" id="player-class-level">Multinivel</span>
-            <span class="badge-duration" id="player-class-duration">35 min</span>
+            <span class="player-meta-pill" id="player-class-category">Vinyasa Flow</span>
+            <span class="player-meta-pill" id="player-class-level">Multinivel</span>
+            <span class="player-meta-pill player-meta-duration" id="player-class-duration">35 min</span>
           </div>
 
           <h2 id="player-class-title" class="player-class-main-title">Vinyasa Solar: Enraizamiento y Vitalidad</h2>
+        </div>
 
-          <button class="btn btn-primary btn-complete-practice" id="btn-mark-class-complete">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Barra Unificada y Comprimida de Controles y Completado -->
+        <div class="player-compact-controls-bar">
+          <div class="player-playback-group">
+            <div class="video-ctrl-btns">
+              <button type="button" class="video-ctrl-btn" id="btn-player-skip-back" title="Retroceder 10 segundos">⏪ 10s</button>
+              <button type="button" class="video-ctrl-btn" id="btn-player-speed" title="Velocidad de reproducción">1.0x</button>
+              <button type="button" class="video-ctrl-btn" id="btn-player-skip-fwd" title="Avanzar 10 segundos">10s ⏩</button>
+            </div>
+            <span class="player-time-indicator" id="player-progress-indicator">00:00 / 00:00</span>
+          </div>
+
+          <button class="btn btn-primary btn-complete-practice" id="btn-mark-class-complete" title="Marcar esta sesión como completada">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 14 14"></polyline>
             </svg>
-            <span>Marcar práctica como completada</span>
+            <span class="btn-complete-text">Marcar completada</span>
           </button>
-        </div>
-
-        <!-- Barra de Control Rápido de Reproducción -->
-        <div class="video-extra-bar">
-          <div class="video-ctrl-btns">
-            <button type="button" class="video-ctrl-btn" id="btn-player-skip-back" title="Retroceder 10 segundos">⏪ 10s</button>
-            <button type="button" class="video-ctrl-btn" id="btn-player-speed" title="Velocidad de reproducción">1.0x</button>
-            <button type="button" class="video-ctrl-btn" id="btn-player-skip-fwd" title="Avanzar 10 segundos">10s ⏩</button>
-          </div>
-          <span style="font-size: 0.76rem; color: var(--text-muted);" id="player-progress-indicator">00:00 / 00:00</span>
         </div>
 
         <p id="player-class-description" class="player-description-text">
@@ -1428,23 +1430,14 @@
           </div>
         </div>
 
-        <div class="player-instructor-row">
-          <div class="player-instructor-meta">
-            <div class="instructor-avatar-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
-            <div>
-              <div class="instructor-name" id="player-class-instructor">Valeria Manassero</div>
-              <div class="instructor-role" id="player-class-instructor-role">Fundadora de Namasté</div>
-            </div>
-          </div>
+        <div class="player-music-section">
+          <!-- Fallback invisible elements to ensure complete JS safety -->
+          <span id="player-class-instructor" style="display:none;"></span>
+          <span id="player-class-instructor-role" style="display:none;"></span>
 
           <a href="https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m" target="_blank" rel="noopener"
-            class="btn btn-secondary btn-spotify-playlist" title="Abrir lista de reproducción serena en Spotify">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            class="btn-spotify-playlist" title="Abrir música recomendada para la clase en Spotify">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18V5l12-2v13"></path>
               <circle cx="6" cy="18" r="3"></circle>
               <circle cx="18" cy="16" r="3"></circle>
@@ -1737,7 +1730,7 @@
     </div>
   </div>
 
-  <!-- Modal 8: Términos, Privacidad y Políticas de Cancelación (Diseño Editorial & Tabs) -->
+  <!-- Modal 8: Términos, Privacidad y Políticas de Cancelación (Diseño Optimizado Móvil & Editorial) -->
   <div class="modal-backdrop" id="modal-legal" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
     <div class="modal-dialog modal-dialog-legal">
       
@@ -1745,13 +1738,13 @@
       <div class="legal-modal-header">
         <div class="legal-modal-title-group">
           <div class="legal-modal-icon-badge" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
           </div>
           <div class="legal-modal-titles">
             <h3 id="legal-modal-title" class="legal-modal-title">Marco Legal & Políticas</h3>
-            <span class="legal-modal-subtitle">Namasté Escuela de Yoga • Transparencia, privacidad y confianza</span>
+            <span class="legal-modal-subtitle">Namasté • Transparencia, privacidad y confianza</span>
           </div>
         </div>
         <button class="modal-close-btn" aria-label="Cerrar ventana de términos">✕</button>
@@ -1761,28 +1754,27 @@
       <div class="legal-modal-tabs-wrap" role="tablist" aria-label="Secciones Legales de Namasté">
         <div class="legal-modal-tabs">
           <button type="button" class="legal-tab-btn active" role="tab" id="tab-btn-terms" aria-selected="true" aria-controls="tab-pane-terms" data-tab="terms">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
               <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            <span>Términos de Servicio</span>
+            <span>Términos<span class="tab-label-ext"> de Servicio</span></span>
           </button>
           <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-privacy" aria-selected="false" aria-controls="tab-pane-privacy" data-tab="privacy">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            <span>Privacidad & Datos</span>
+            <span>Privacidad<span class="tab-label-ext"> & Datos</span></span>
           </button>
           <button type="button" class="legal-tab-btn" role="tab" id="tab-btn-cancellation" aria-selected="false" aria-controls="tab-pane-cancellation" data-tab="cancellation">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
-            <span>Cancelación & Garantía</span>
+            <span>Cancelación<span class="tab-label-ext"> & Garantía</span></span>
           </button>
         </div>
       </div>
@@ -1817,24 +1809,23 @@
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">01</span>
-              <h4 class="legal-article-title">Identificación del Prestador & Filosofía</h4>
+              <h4 class="legal-article-title">El Shala & Filosofía de Práctica</h4>
             </div>
-            <p><strong>Namasté Escuela de Yoga</strong> es un espacio formativo y santuario digital dedicado a la práctica integral del Yoga, meditación y bienestar consciente, fundado y dirigido por la <strong>Prof. Valeria Manassero</strong> (+14 años de trayectoria docente y formación continua en Argentina e India, con sede central en Córdoba, Argentina).</p>
-            <p>El acceso al Shala virtual y sus servicios se rige por las presentes condiciones de uso, diseñadas para preservar un entorno de práctica seguro, sereno y armónico para toda la comunidad.</p>
+            <p><strong>Namasté Escuela de Yoga</strong> es un santuario formativo digital fundado y dirigido por la <strong>Prof. Valeria Manassero</strong> (+14 años de trayectoria docente entre Argentina e India). Acompañamos tu camino de yoga y bienestar en un entorno seguro, sereno y de cuidado mutuo.</p>
           </div>
 
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">02</span>
-              <h4 class="legal-article-title">Compromiso de Salud y Práctica Consciente</h4>
+              <h4 class="legal-article-title">Práctica Consciente y Salud</h4>
             </div>
-            <p>Las clases guiadas (Hatha Dinámico, Ashtanga, Vinyasa, Yoga Suave, Restaurativo y Meditaciones) son recursos para cultivar el autoconocimiento y la salud física. Cada practicante reconoce que la actividad física implica exigencias neuromusculares y asume la responsabilidad de respetar los límites de su propio cuerpo.</p>
+            <p>Nuestras sesiones son recursos para el autoconocimiento. Cada alumno es responsable de escuchar su propio cuerpo y avanzar a su propio ritmo.</p>
             <div class="legal-callout-box">
               <div class="legal-callout-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               </div>
               <div>
-                <strong>Principio de Ahimsa (No Violencia):</strong> Recomendamos consultar con un profesional de la salud antes de iniciar si tienes lesiones de columna, patologías articulares, afecciones cardíacas o estás transitando un embarazo. La práctica nunca debe generar dolor punzante.
+                <strong>Principio de Ahimsa (No Violencia):</strong> Si tienes lesiones previas, patologías articulares o estás embarazada, consulta a tu médico. La práctica nunca debe generar dolor punzante.
               </div>
             </div>
           </div>
@@ -1842,18 +1833,10 @@
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">03</span>
-              <h4 class="legal-article-title">Propiedad Intelectual y Licencia de Uso</h4>
+              <h4 class="legal-article-title">Licencia de Uso y Convivencia</h4>
             </div>
-            <p>La totalidad de las grabaciones audiovisuales, audios de meditación, textos, ilustraciones, secuencias didácticas y metodologías son propiedad intelectual exclusiva de Valeria Manassero y Namasté Yoga.</p>
-            <p>La suscripción a cualquier plan otorga al alumno una <strong>licencia personal, individual, no exclusiva e intransferible</strong> para practicar en sus dispositivos personales. Queda expresamente prohibida la reproducción pública, descarga, redistribución o comercialización no autorizada del material pedagógico.</p>
-          </div>
-
-          <div class="legal-article-card">
-            <div class="legal-article-header">
-              <span class="legal-article-num">04</span>
-              <h4 class="legal-article-title">Convivencia en el Shala Virtual</h4>
-            </div>
-            <p>La comunidad de Namasté es un santuario seguro. Nos reservamos el derecho de suspender la cuenta de cualquier usuario que manifieste conductas lesivas, discriminatorias o contrarias al respeto y cuidado mutuo en nuestras sesiones o canales de comunicación.</p>
+            <p>Tu suscripción concede una <strong>licencia personal e intransferible</strong> para practicar en tus dispositivos. Todo el material pedagógico es propiedad intelectual exclusiva de Namasté.</p>
+            <p>Preservamos este espacio libre de discriminación y con respeto hacia toda la comunidad del Shala.</p>
           </div>
         </div>
 
@@ -1862,46 +1845,37 @@
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">01</span>
-              <h4 class="legal-article-title">Protección de Datos Personales (Ley 25.326)</h4>
+              <h4 class="legal-article-title">Protección de Datos (Ley 25.326)</h4>
             </div>
-            <p>En estricto cumplimiento con la <strong>Ley Nacional de Protección de Datos Personales N° 25.326</strong> de la República Argentina y estándares internacionales de privacidad, Namasté garantiza la salvaguarda y reserva absoluta de la información de todos sus usuarios y alumnos.</p>
+            <p>Cumplimos estrictamente la <strong>Ley Nacional N° 25.326</strong> y estándares internacionales de privacidad, garantizando la reserva absoluta de tu información.</p>
+            <div class="legal-callout-box olive">
+              <div class="legal-callout-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <div>
+                <strong>Privacidad Sagrada:</strong> Jamás vendemos, alquilamos ni compartimos tus datos con terceros ni empresas de publicidad.
+              </div>
+            </div>
           </div>
 
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">02</span>
-              <h4 class="legal-article-title">Datos que Recabamos y su Finalidad</h4>
+              <h4 class="legal-article-title">Información que Cuidamos</h4>
             </div>
-            <p>Solo solicitamos la información estrictamente necesaria para brindarte acceso al Shala:</p>
-            <ul style="margin: 0.5rem 0 0.75rem 1.25rem; padding: 0;">
-              <li><strong>Datos de Cuenta:</strong> Nombre completo, correo electrónico y código de acceso único.</li>
-              <li><strong>Progreso de Práctica:</strong> Clases completadas, minutos acumulados, racha y clases marcadas como favoritas para enriquecer tu experiencia en el santuario.</li>
+            <ul class="legal-compact-list">
+              <li><strong>Cuenta:</strong> Nombre, email y credenciales seguras de acceso.</li>
+              <li><strong>Tu Práctica:</strong> Clases completadas, minutos acumulados y favoritas para guardar tu avance.</li>
+              <li><strong>Pagos Cifrados:</strong> Procesados con encriptación bancaria SSL de 256 bits (PCI-DSS). <em>Namasté nunca almacena los datos de tu tarjeta</em>.</li>
             </ul>
-            <div class="legal-callout-box olive">
-              <div class="legal-callout-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              </div>
-              <div>
-                <strong>Privacidad Sagrada:</strong> Jamás vendemos, alquilamos ni transferimos tus datos personales a empresas de publicidad o terceras partes. Tu privacidad se respeta al 100%.
-              </div>
-            </div>
           </div>
 
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">03</span>
-              <h4 class="legal-article-title">Seguridad Financiera & Pagos Cifrados</h4>
+              <h4 class="legal-article-title">Tus Derechos ARCO</h4>
             </div>
-            <p>Los pagos y suscripciones se procesan a través de pasarelas de pago de estándar internacional con cifrado <strong>SSL / TLS de 256 bits</strong> y certificación PCI-DSS Nivel 1.</p>
-            <p><strong>Namasté no almacena ni tiene acceso en ningún momento a los datos sensibles de tu tarjeta de crédito o débito</strong>, los cuales son gestionados directamente por la infraestructura bancaria certificada.</p>
-          </div>
-
-          <div class="legal-article-card">
-            <div class="legal-article-header">
-              <span class="legal-article-num">04</span>
-              <h4 class="legal-article-title">Tus Derechos de Acceso, Rectificación y Supresión</h4>
-            </div>
-            <p>Tienes pleno derecho a conocer qué datos tuyos conservamos, actualizarlos o solicitar su eliminación definitiva en cualquier momento mediante un correo a <a href="mailto:privacidad@namaste-yoga.com" style="color: var(--terracotta); text-decoration: underline; font-weight: 600;">privacidad@namaste-yoga.com</a>.</p>
+            <p>Puedes consultar, corregir o solicitar la eliminación total de tus datos en cualquier momento escribiendo a <a href="mailto:privacidad@namaste-yoga.com" class="legal-link">privacidad@namaste-yoga.com</a>.</p>
           </div>
         </div>
 
@@ -1910,60 +1884,47 @@
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">01</span>
-              <h4 class="legal-article-title">Sin Ataduras: Libertad 100% Autogestionada</h4>
+              <h4 class="legal-article-title">Libertad Total y Sin Permanencia</h4>
             </div>
-            <p>En Namasté creemos que el compromiso con el yoga debe nacer de la serenidad, no de obligaciones contractuales. No existen contratos mínimos, ataduras ni cláusulas de permanencia forzada. Eres el dueño absoluto de tu membresía.</p>
+            <p>El compromiso con tu práctica debe nacer de la serenidad. No existen contratos mínimos, ataduras ni cláusulas de permanencia forzada. Eres el dueño absoluto de tu suscripción.</p>
           </div>
 
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">02</span>
-              <h4 class="legal-article-title">Pausa Preventiva en 1 Clic (Sin Costo)</h4>
+              <h4 class="legal-article-title">Pausa y Cancelación en 1 Clic</h4>
             </div>
-            <p>Si tienes un viaje programado, períodos de exámenes o una lesión transitoria, puedes activar la <strong>Pausa Preventiva</strong> directamente desde tu panel de alumno en el Shala.</p>
-            <div class="legal-callout-box">
-              <div class="legal-callout-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-              </div>
-              <div>
-                Durante el período de pausa <strong>no se emitirá ningún cobro en tu tarjeta</strong> y conservaremos intactos todos tus minutos practicados, tu racha y tus clases favoritas para cuando desees reactivar tu práctica.
-              </div>
-            </div>
+            <ul class="legal-compact-list">
+              <li><strong>Pausa Preventiva (Sin Costo):</strong> Si viajas o tienes una pausa médica, pausa tu plan desde tu perfil. No se cobrará nada y tu avance quedará congelado intacto.</li>
+              <li><strong>Cancelación Instantánea:</strong> Da de baja la renovación automática en cualquier instante. Mantienes acceso hasta el último día del período que ya abonaste.</li>
+            </ul>
           </div>
 
           <div class="legal-article-card">
             <div class="legal-article-header">
               <span class="legal-article-num">03</span>
-              <h4 class="legal-article-title">Cancelación Instantánea y Clara</h4>
+              <h4 class="legal-article-title">Garantía de Satisfacción (14 Días)</h4>
             </div>
-            <p>Puedes dar de baja la renovación automática de tu suscripción en cualquier instante desde la sección <em>Perfil & Membresía</em>. No requiere trámites telefónicos ni justificaciones. Continuarás disfrutando de acceso completo hasta el último día del período que ya hayas abonado.</p>
-          </div>
-
-          <div class="legal-article-card">
-            <div class="legal-article-header">
-              <span class="legal-article-num">04</span>
-              <h4 class="legal-article-title">Garantía de Serenidad (14 Días)</h4>
-            </div>
-            <p>Queremos que sientas total tranquilidad al sumarte a nuestra escuela. Si durante los primeros <strong>14 días corridos</strong> desde tu primera suscripción sientes que el formato o las clases no se adecúan a lo que buscabas, puedes solicitar el <strong>reembolso total del 100% de tu pago</strong> escribiéndonos un correo directo.</p>
+            <p>Queremos que sientas total tranquilidad. Si durante tus primeros <strong>14 días</strong> sientes que las clases no se adaptan a lo que buscas, te reembolsamos el <strong>100% de tu dinero</strong> sin preguntas.</p>
           </div>
         </div>
 
         <!-- Banner de Contacto Directo con el Shala -->
         <div class="legal-footer-contact">
           <div class="legal-contact-info">
-            <div class="legal-modal-icon-badge" style="width:36px; height:36px; background:var(--sand-100); color:var(--text-primary);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="legal-modal-icon-badge mini">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
             </div>
             <div class="legal-contact-text">
-              <h5>¿Tienes alguna inquietud particular?</h5>
-              <p>Valeria y el equipo del Shala te acompañan de forma personalizada.</p>
+              <h5>¿Tienes alguna duda sobre tu membresía?</h5>
+              <p>Valeria y el equipo del Shala te acompañan.</p>
             </div>
           </div>
-          <a href="mailto:contacto@namaste-yoga.com?subject=Consulta%20Membres%C3%ADa%20y%20Pol%C3%ADticas%20Namast%C3%A9" class="legal-contact-btn">
-            <span>Escribir a Soporte</span>
+          <a href="mailto:contacto@namaste-yoga.com?subject=Consulta%20Membres%C3%ADa%20Namast%C3%A9" class="legal-contact-btn">
+            <span>Escribir al Shala</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </a>
         </div>
