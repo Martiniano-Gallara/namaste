@@ -2335,13 +2335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         state.adminActiveTab = targetTab;
 
-        if (targetTab === 'tab-logs') {
-          AdminService.getAuditLogs().then(res => {
-            if (res && res.success && res.logs) {
-              renderAdminAuditLogs(res.logs);
-            }
-          });
-        } else if (targetTab === 'tab-transactions') {
+        if (targetTab === 'tab-transactions') {
           AdminService.getTransactions().then(res => {
             if (res && res.success && res.transactions) {
               renderAdminTransactions(res.transactions);
@@ -2370,23 +2364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // 5. Botón de Actualizar Logs de Auditoría
-    const btnRefreshLogs = document.getElementById('btn-refresh-audit-logs');
-    if (btnRefreshLogs) {
-      btnRefreshLogs.addEventListener('click', async () => {
-        btnRefreshLogs.style.opacity = '0.5';
-        try {
-          const res = await AdminService.getAuditLogs();
-          if (res && res.success && res.logs) {
-            renderAdminAuditLogs(res.logs);
-            showToast('Registro de auditoría actualizado', 'info');
-          }
-        } catch (e) {}
-        btnRefreshLogs.style.opacity = '1';
-      });
-    }
-
-    // 6. Modal de Alta de Alumna (Registrar Nueva Alumna)
+    // 5. Modal de Alta de Alumna (Registrar Nueva Alumna)
     const btnOpenCreateModal = document.getElementById('btn-admin-create-user-modal');
     if (btnOpenCreateModal) {
       btnOpenCreateModal.addEventListener('click', () => {
@@ -2503,6 +2481,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('admin-users-table-body');
     if (tableBody) {
       tableBody.addEventListener('click', async (e) => {
+        // Toggle de fila "Más detalles"
+        const toggleDetailsBtn = e.target.closest('.btn-toggle-user-details');
+        if (toggleDetailsBtn) {
+          const userId = toggleDetailsBtn.getAttribute('data-user-id');
+          const detailsRow = document.getElementById(`details-row-${userId}`);
+          const mainRow = document.getElementById(`main-row-${userId}`);
+          if (detailsRow) {
+            const isHidden = detailsRow.style.display === 'none';
+            detailsRow.style.display = isHidden ? 'table-row' : 'none';
+            toggleDetailsBtn.classList.toggle('expanded', isHidden);
+            if (mainRow) mainRow.classList.toggle('expanded', isHidden);
+            toggleDetailsBtn.innerHTML = isHidden
+              ? `<span>Menos detalles</span> <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+              : `<span>Más detalles</span> <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+          }
+          return;
+        }
+
         // A) Copiar Código de Acceso
         const copyBtn = e.target.closest('.code-copy-btn');
         if (copyBtn) {
@@ -2642,7 +2638,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (kpiTotalMinsSub) kpiTotalMinsSub.textContent = `${stats.totalPracticeMinutes} min de yoga`;
 
         const kpiCompletedClassesSub = document.getElementById('kpi-completed-classes-sub');
-        if (kpiCompletedClassesSub) kpiCompletedClassesSub.textContent = `${stats.totalCompletedClasses} clases finalizadas`;
+        if (kpiCompletedClassesSub) kpiCompletedClassesSub.textContent = `${stats.totalCompletedClasses} clases`;
 
         // KPI 4: Facturación Histórica
         const kpiTotalRevenue = document.getElementById('kpi-total-revenue');
@@ -2652,15 +2648,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabCountUsers = document.getElementById('tab-count-users');
         if (tabCountUsers) tabCountUsers.textContent = stats.totalUsers;
 
-        const tabCountLogs = document.getElementById('tab-count-logs');
-        if (tabCountLogs && overviewRes.recentLogs) {
-          tabCountLogs.textContent = overviewRes.recentLogs.length;
-        }
-
-        // Renderizar logs y transacciones iniciales
-        if (overviewRes.recentLogs) {
-          renderAdminAuditLogs(overviewRes.recentLogs);
-        }
         if (overviewRes.recentTransactions) {
           renderAdminTransactions(overviewRes.recentTransactions);
         }
@@ -2679,7 +2666,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Renderiza las filas de la tabla de alumnas con filtros y búsqueda reactiva
+   * Renderiza las filas de la tabla de alumnas con diseño ultra-compacto.
+   * Solo muestra lo indispensable a simple vista: Nombre, Plan, Estado y botón "Más detalles".
+   * Todos los datos secundarios y botones de acción se agrupan dentro de la fila expandible.
    */
   function renderAdminUsersTable() {
     const tableBody = document.getElementById('admin-users-table-body');
@@ -2707,7 +2696,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (users.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+          <td colspan="4" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
             No se encontraron alumnas que coincidan con la búsqueda o filtro aplicado.
           </td>
         </tr>
@@ -2722,42 +2711,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const billingAmount = `$${user.billedAmount || 29} USD`;
 
       return `
-        <tr>
+        <tr id="main-row-${user.id}" class="admin-user-row">
           <td>
-            <div class="user-identity-cell">
-              <div class="user-avatar-circle">${getUserInitials(user.name)}</div>
-              <div class="user-names-col">
-                <span class="user-full-name">${escapeHtml(user.name)}</span>
-                <span class="user-email-sub">${escapeHtml(user.email)}</span>
-              </div>
-            </div>
+            <span class="user-clean-name">${escapeHtml(user.name)}</span>
           </td>
           <td>
-            <button type="button" class="code-copy-btn" data-code="${escapeHtml(user.accessCode)}" title="Click para copiar código de acceso">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              <span>${escapeHtml(user.accessCode)}</span>
-            </button>
-          </td>
-          <td>
-            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-              <span class="plan-badge ${planClass}">${planLabel}</span>
-              <span style="font-size: 0.72rem; color: var(--text-muted);">${billingType} • ${billingAmount}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 0.8rem; line-height: 1.4;">
-              <strong style="color: var(--terracotta-dark);">${user.streakDays || 0}d racha</strong>
-              <div style="color: var(--text-muted); font-size: 0.74rem;">${user.totalMinutes || 0} min • ${user.completedCount || 0} clases</div>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 0.8rem; line-height: 1.35;">
-              <div>${escapeHtml(user.nextBillingDate || '28 Octubre 2026')}</div>
-              <span style="color: var(--text-muted); font-size: 0.73rem;">${escapeHtml(user.paymentMethod || 'Tarjeta')}</span>
-            </div>
+            <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
           <td>
             <span class="status-badge ${user.active ? 'active' : 'paused'}">
@@ -2766,26 +2725,68 @@ document.addEventListener('DOMContentLoaded', () => {
             </span>
           </td>
           <td style="text-align: right;">
-            <div class="action-btns-cell" style="justify-content: flex-end;">
-              <button type="button" class="table-action-btn btn-pause-toggle" data-user-id="${user.id}" data-active="${user.active}" title="${user.active ? 'Pausar temporalmente el acceso' : 'Reactivar acceso al Santuario'}">
-                ${user.active ? 'Pausar' : 'Reactivar'}
-              </button>
-              <button type="button" class="table-action-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}" title="Modificar nivel de membresía">
-                Plan
-              </button>
-              <button type="button" class="table-action-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna al Santuario">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                  <polyline points="10 17 15 12 10 7"></polyline>
-                  <line x1="15" y1="12" x2="3" y2="12"></line>
-                </svg>
-              </button>
-              <button type="button" class="table-action-btn btn-delete-user" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
+            <button type="button" class="btn-toggle-user-details" data-user-id="${user.id}" title="Ver más detalles de ${escapeHtml(user.name)}">
+              <span>Más detalles</span>
+              <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr id="details-row-${user.id}" class="admin-user-details-row" style="display: none;">
+          <td colspan="4">
+            <div class="user-expanded-card">
+              <div class="expanded-info-grid">
+                <div class="expanded-item">
+                  <span class="expanded-item-title">Correo Electrónico</span>
+                  <span class="expanded-item-val">${escapeHtml(user.email)}</span>
+                </div>
+                <div class="expanded-item">
+                  <span class="expanded-item-title">Código de Acceso</span>
+                  <button type="button" class="code-copy-btn" data-code="${escapeHtml(user.accessCode)}" title="Click para copiar código">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>${escapeHtml(user.accessCode)}</span>
+                  </button>
+                </div>
+                <div class="expanded-item">
+                  <span class="expanded-item-title">Práctica en el Shala</span>
+                  <span class="expanded-item-val">
+                    <strong style="color: var(--terracotta-dark);">${user.streakDays || 0}d racha</strong> • ${user.totalMinutes || 0} min • ${user.completedCount || 0} clases
+                  </span>
+                </div>
+                <div class="expanded-item">
+                  <span class="expanded-item-title">Facturación & Renovación</span>
+                  <span class="expanded-item-val">
+                    ${billingType} (${billingAmount}) • Próx: ${escapeHtml(user.nextBillingDate || '28 Octubre 2026')} (${escapeHtml(user.paymentMethod || 'Tarjeta')})
+                  </span>
+                </div>
+              </div>
+              <div class="expanded-actions-toolbar">
+                <button type="button" class="table-action-btn btn-pause-toggle" data-user-id="${user.id}" data-active="${user.active}" title="${user.active ? 'Pausar temporalmente el acceso' : 'Reactivar acceso al Santuario'}">
+                  ${user.active ? 'Pausar membresía' : 'Reactivar membresía'}
+                </button>
+                <button type="button" class="table-action-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}" title="Modificar nivel de membresía">
+                  Cambiar Plan
+                </button>
+                <button type="button" class="table-action-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna al Santuario">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                  </svg>
+                  <span>Ingresar como alumna</span>
+                </button>
+                <button type="button" class="table-action-btn btn-delete-user" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Eliminar</span>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
@@ -2794,53 +2795,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Renderiza el feed cronológico del registro de auditoría en vivo
-   */
-  function renderAdminAuditLogs(logs) {
-    const logsContainer = document.getElementById('admin-audit-logs-list');
-    if (!logsContainer) return;
-
-    if (!logs || logs.length === 0) {
-      logsContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No hay eventos registrados en la auditoría.</p>';
-      return;
-    }
-
-    logsContainer.innerHTML = logs.map(log => {
-      const statusClass = log.status || 'info';
-      let iconSvg = '';
-
-      if (statusClass === 'success') {
-        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      } else if (statusClass === 'warning') {
-        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-      } else {
-        iconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
-      }
-
-      return `
-        <div class="audit-log-item">
-          <div class="audit-icon-box status-${statusClass}">
-            ${iconSvg}
-          </div>
-          <div class="audit-content-col">
-            <div class="audit-title-row">
-              <span class="audit-event-title">${escapeHtml(log.title || log.action)}</span>
-              <span class="audit-timestamp">${formatAuditTime(log.timestamp)}</span>
-            </div>
-            <p class="audit-details-text">${escapeHtml(log.details || '')}</p>
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.35rem; font-size: 0.72rem; color: var(--text-muted);">
-              <span>${escapeHtml(log.userEmail || 'Sistema')}</span>
-              <span>•</span>
-              <code style="background-color: var(--sand-50); padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid var(--border-subtle);">${escapeHtml(log.action || 'EVENT')}</code>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  /**
-   * Renderiza el historial de transacciones y cobros procesados
+   * Renderiza el historial de transacciones y cobros procesados de forma simplificada
    */
   function renderAdminTransactions(transactions) {
     const txBody = document.getElementById('admin-transactions-table-body');
@@ -2849,7 +2804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!transactions || transactions.length === 0) {
       txBody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+          <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
             No hay cobros registrados actualmente.
           </td>
         </tr>
@@ -2861,13 +2816,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const planClass = tx.planId || 'plan-santuario';
       return `
         <tr>
-          <td><code style="font-weight: 700; color: var(--terracotta-dark); font-size: 0.76rem;">${escapeHtml(tx.receiptNumber || tx.id)}</code></td>
           <td><strong>${escapeHtml(tx.email || 'Alumna')}</strong></td>
           <td><span class="plan-badge ${planClass}">${escapeHtml(tx.planName || 'Plan Santuario')}</span></td>
           <td><strong>$${tx.amount} USD</strong> <span style="font-size: 0.72rem; color: var(--text-muted);">${tx.isAnnual ? '/año' : '/mes'}</span></td>
-          <td>${escapeHtml(tx.paymentMethod || 'Tarjeta')}</td>
           <td style="font-size: 0.78rem; color: var(--text-muted);">${formatAuditTime(tx.timestamp)}</td>
-          <td><span class="status-badge active"><span class="status-dot"></span> Aprobado</span></td>
+          <td style="text-align: right;"><code class="receipt-code-pill">${escapeHtml(tx.receiptNumber || tx.id)}</code></td>
         </tr>
       `;
     }).join('');

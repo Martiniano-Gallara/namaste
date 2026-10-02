@@ -1206,34 +1206,29 @@
        ==================================================================== -->
   <div id="view-admin" class="admin-view" style="display: none;">
 
-    <!-- Barra de Navegación Ejecutiva -->
+    <!-- Barra de Navegación Compacta -->
     <header class="admin-navbar">
       <div class="container admin-navbar-inner">
         <div class="admin-brand-group">
           <a href="#" class="brand-logo btn-admin-go-home" title="Regresar al inicio de Namasté">
             <span class="brand-name">Namasté</span>
-            <span class="brand-subtitle">Control & Auditoría</span>
           </a>
-          <span class="admin-badge-role">Valeria Manassero • Dueña</span>
+          <span class="admin-live-tag">
+            <span class="pulse-dot-green"></span>
+            <span id="admin-sync-text">Sincronizado</span>
+          </span>
         </div>
 
         <div class="admin-nav-actions">
-          <button type="button" class="btn-admin-nav" id="btn-admin-to-home" title="Ir a la página principal pública">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="btn-admin-nav" id="btn-admin-to-home" title="Ir a la página principal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
             <span>Inicio</span>
           </button>
-          <button type="button" class="btn-admin-nav" id="btn-admin-to-platform" title="Ver cómo experimentan los alumnos el Santuario">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="10 8 16 12 10 16 10 8"></polygon>
-            </svg>
-            <span>Vista Alumno</span>
-          </button>
           <button type="button" class="btn-admin-nav btn-primary-action" id="btn-admin-create-user-modal">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -1243,134 +1238,73 @@
       </div>
     </header>
 
-    <!-- Header Banner con Estado de Sincronización en Vivo -->
-    <section class="admin-header-banner">
-      <div class="container admin-header-inner">
-        <div class="admin-welcome-text">
-          <h1>Panel de Auditoría & Membresías</h1>
-          <p>Supervisión en tiempo real de cuentas de alumnas, cobros mensuales y registro de prácticas en el Shala.</p>
-        </div>
-        <div class="admin-live-sync-indicator">
-          <span class="pulse-dot-green"></span>
-          <span id="admin-sync-text">Sincronizado con Base de Datos</span>
+    <!-- Resumen Compacto de Métricas -->
+    <section class="admin-kpis-compact-section">
+      <div class="container">
+        <div class="admin-kpis-compact-grid">
+          <div class="admin-mini-kpi">
+            <span class="mini-kpi-label">Alumnas Activas</span>
+            <div class="mini-kpi-val-row">
+              <span class="mini-kpi-number" id="kpi-active-users">0</span>
+              <span class="mini-kpi-sub" id="kpi-total-users-sub">/ 0 total</span>
+            </div>
+            <div class="mini-kpi-plans" id="kpi-plans-breakdown"></div>
+          </div>
+
+          <div class="admin-mini-kpi">
+            <span class="mini-kpi-label">Ingresos (MRR)</span>
+            <div class="mini-kpi-val-row">
+              <span class="mini-kpi-number" id="kpi-mrr">$0</span>
+              <span class="mini-kpi-sub">USD/mes</span>
+            </div>
+            <span class="mini-kpi-sub" id="kpi-arr-sub" style="font-size: 0.7rem; color: var(--text-muted);">Proyección anual: $0</span>
+          </div>
+
+          <div class="admin-mini-kpi">
+            <span class="mini-kpi-label">Práctica Total</span>
+            <div class="mini-kpi-val-row">
+              <span class="mini-kpi-number" id="kpi-total-hours">0h</span>
+              <span class="mini-kpi-sub" id="kpi-total-mins-sub">0 min</span>
+            </div>
+            <span class="mini-kpi-sub" id="kpi-completed-classes-sub" style="font-size: 0.7rem; color: var(--olive-dark);">0 clases</span>
+          </div>
+
+          <div class="admin-mini-kpi">
+            <span class="mini-kpi-label">Facturación</span>
+            <div class="mini-kpi-val-row">
+              <span class="mini-kpi-number" id="kpi-total-revenue">$0</span>
+              <span class="mini-kpi-sub">USD hist.</span>
+            </div>
+            <span class="mini-kpi-sub" style="font-size: 0.7rem; color: var(--text-muted);">Cobros verificados</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Sección de KPIs y Métricas Ejecutivas -->
-    <section class="admin-kpis-section">
-      <div class="container admin-kpi-grid">
-        <div class="admin-kpi-card">
-          <div class="kpi-header">
-            <span>Alumnas del Shala</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div class="kpi-value-row">
-            <span class="kpi-big-number" id="kpi-active-users">0</span>
-            <span class="kpi-subtext" id="kpi-total-users-sub">de 0 registradas</span>
-          </div>
-          <div class="kpi-mini-badges" id="kpi-plans-breakdown">
-            <!-- Badges generados dinámicamente -->
-          </div>
-        </div>
-
-        <div class="admin-kpi-card">
-          <div class="kpi-header">
-            <span>Ingresos Mensuales (MRR)</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="1" x2="12" y2="23"></line>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-            </svg>
-          </div>
-          <div class="kpi-value-row">
-            <span class="kpi-big-number" id="kpi-mrr">$0</span>
-            <span class="kpi-subtext">USD / mes</span>
-          </div>
-          <span class="kpi-subtext" id="kpi-arr-sub" style="font-size: 0.72rem; color: var(--text-muted);">Proyección anual: $0 USD</span>
-        </div>
-
-        <div class="admin-kpi-card">
-          <div class="kpi-header">
-            <span>Práctica Acumulada</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 14 14"></polyline>
-            </svg>
-          </div>
-          <div class="kpi-value-row">
-            <span class="kpi-big-number" id="kpi-total-hours">0h</span>
-            <span class="kpi-subtext" id="kpi-total-mins-sub">0 min de yoga</span>
-          </div>
-          <span class="kpi-subtext" id="kpi-completed-classes-sub" style="font-size: 0.72rem; color: var(--olive-dark);">0 clases finalizadas</span>
-        </div>
-
-        <div class="admin-kpi-card">
-          <div class="kpi-header">
-            <span>Facturación Procesada</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-              <line x1="2" y1="10" x2="22" y2="10"></line>
-            </svg>
-          </div>
-          <div class="kpi-value-row">
-            <span class="kpi-big-number" id="kpi-total-revenue">$0</span>
-            <span class="kpi-subtext">USD histórico</span>
-          </div>
-          <span class="kpi-subtext" style="font-size: 0.72rem; color: var(--text-muted);">Cobros automáticos verificados</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contenido Principal: Pestañas de Gestión & Auditoría -->
+    <!-- Contenido Principal: 2 Pestañas Simplificadas -->
     <main class="admin-tabs-section">
       <div class="container">
-        <!-- Navegación de Pestañas -->
+        <!-- Navegación de 2 Pestañas -->
         <div class="admin-tabs-nav">
           <button type="button" class="admin-tab-btn active" data-tab="tab-users" id="admin-tab-btn-users">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-            </svg>
-            <span>Cuentas de Alumnas</span>
+            <span>Alumnas</span>
             <span class="admin-tab-count-badge" id="tab-count-users">0</span>
           </button>
-
-          <button type="button" class="admin-tab-btn" data-tab="tab-logs" id="admin-tab-btn-logs">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            <span>Registro de Auditoría en Vivo</span>
-            <span class="admin-tab-count-badge" id="tab-count-logs">0</span>
-          </button>
-
           <button type="button" class="admin-tab-btn" data-tab="tab-transactions" id="admin-tab-btn-transactions">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 14 14"></polyline>
-            </svg>
             <span>Cobros & Recibos</span>
           </button>
         </div>
 
-        <!-- Pestaña 1: Cuentas de Alumnas & Control de Membresías -->
+        <!-- Pestaña 1: Cuentas de Alumnas (Solo lo indispensable a simple vista) -->
         <div class="admin-tab-panel" id="panel-tab-users">
-          <!-- Toolbar con Buscador y Filtros -->
+          <!-- Toolbar con Buscador y Filtros Compactos -->
           <div class="admin-toolbar-card">
             <div class="admin-search-wrap">
-              <svg class="admin-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <input type="text" id="admin-user-search-input" class="admin-search-input" placeholder="Buscar por nombre, correo o código de acceso..." />
+              <input type="text" id="admin-user-search-input" class="admin-search-input" placeholder="Buscar alumna..." />
             </div>
 
             <div class="admin-filter-group">
@@ -1380,18 +1314,15 @@
             </div>
           </div>
 
-          <!-- Tabla de Alumnas -->
+          <!-- Tabla de Alumnas Compacta -->
           <div class="admin-table-container">
             <table class="admin-table">
               <thead>
                 <tr>
                   <th>Alumna</th>
-                  <th>Código de Acceso</th>
                   <th>Membresía</th>
-                  <th>Práctica</th>
-                  <th>Próximo Cobro</th>
                   <th>Estado</th>
-                  <th style="text-align: right;">Acciones</th>
+                  <th style="text-align: right;">Detalles</th>
                 </tr>
               </thead>
               <tbody id="admin-users-table-body">
@@ -1401,39 +1332,17 @@
           </div>
         </div>
 
-        <!-- Pestaña 2: Registro de Auditoría (Audit Trail) -->
-        <div class="admin-tab-panel" id="panel-tab-logs" style="display: none;">
-          <div class="audit-logs-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
-              <h3 style="margin: 0; font-size: 1.05rem; font-family: var(--font-serif);">Eventos y Trazabilidad del Sistema</h3>
-              <button type="button" class="btn-admin-nav" id="btn-refresh-audit-logs">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                Actualizar
-              </button>
-            </div>
-            <div id="admin-audit-logs-list">
-              <!-- Logs inyectados dinámicamente -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Pestaña 3: Historial de Cobros & Recibos -->
+        <!-- Pestaña 2: Cobros & Recibos Simplificados -->
         <div class="admin-tab-panel" id="panel-tab-transactions" style="display: none;">
           <div class="admin-table-container">
-            <table class="admin-table">
+            <table class="admin-table admin-transactions-table">
               <thead>
                 <tr>
-                  <th>N° Recibo</th>
                   <th>Alumna</th>
-                  <th>Plan Contratado</th>
+                  <th>Plan</th>
                   <th>Monto</th>
-                  <th>Medio de Pago</th>
                   <th>Fecha</th>
-                  <th>Estado</th>
+                  <th style="text-align: right;">N° Recibo</th>
                 </tr>
               </thead>
               <tbody id="admin-transactions-table-body">
