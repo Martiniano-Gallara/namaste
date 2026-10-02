@@ -1861,35 +1861,48 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 6. Modal de Cambio de Plan en el Santuario
+    // 6. Modal de Cambio de Plan en el Santuario (Diseño Compacto & Estilizado)
     const openChangePlanModal = () => {
       const user = AuthService.getCurrentUser();
       if (!user) return;
 
       const container = document.getElementById('plan-change-options');
       if (container) {
+        // Síntesis concisa para máxima elegancia y dimensiones compactas
+        const planHighlights = {
+          'plan-esencia': 'Yoga Suave, Clásico y Meditación (+40 clases)',
+          'plan-santuario': 'Catálogo total (+140 clases) • Vinyasa, Hatha y Satsang en vivo',
+          'plan-sadhana': 'Práctica avanzada, masterclasses y mentoría personal'
+        };
+
         container.innerHTML = PLANS_DATA.map(plan => {
           const isCurrent = (user.planId === plan.id) || (user.planName && user.planName.toLowerCase().includes(plan.name.toLowerCase()));
+          const summary = planHighlights[plan.id] || plan.description;
+
           return `
             <div class="plan-change-item ${isCurrent ? 'current' : ''}">
-              <div class="plan-change-item-info">
-                <h4>
-                  ${plan.name}
-                  ${isCurrent ? '<span class="status-badge-active" style="font-size:0.7rem; padding:0.15rem 0.5rem;">Tu Plan Actual</span>' : ''}
-                </h4>
-                <p class="plan-change-item-desc">${plan.description}</p>
-                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;">
-                  ${plan.features[0]} • ${plan.features[1]}
+              <div class="plan-change-info">
+                <div class="plan-change-topline">
+                  <h4 class="plan-change-name">${escapeHtml(plan.name)}</h4>
+                  ${isCurrent
+                    ? '<span class="plan-change-badge-active">● Tu Plan Actual</span>'
+                    : (plan.recommended ? '<span class="plan-change-badge-rec">Recomendado</span>' : '')}
                 </div>
+                <p class="plan-change-summary">${escapeHtml(summary)}</p>
               </div>
-              <div style="text-align: right; flex-shrink: 0;">
-                <div class="plan-change-price">$${plan.priceMonthly}/mes</div>
+
+              <div class="plan-change-action">
+                <div class="plan-change-pricing">
+                  <span class="plan-change-amount">$${plan.priceMonthly}</span>
+                  <span class="plan-change-cadence">/mes</span>
+                </div>
                 ${isCurrent ? `
-                  <button type="button" class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; cursor: default; margin-top: 0.35rem;">
-                    Activo
+                  <button type="button" class="btn-plan-active-chip" disabled title="Membresía actual">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Activo</span>
                   </button>
                 ` : `
-                  <button type="button" class="btn btn-primary btn-sm btn-select-new-plan" data-plan-id="${plan.id}" data-plan-name="${plan.name}" style="margin-top: 0.35rem;">
+                  <button type="button" class="btn-plan-select-compact btn-select-new-plan" data-plan-id="${plan.id}" data-plan-name="${escapeHtml(plan.name)}" title="Cambiar a ${escapeHtml(plan.name)}">
                     Elegir plan
                   </button>
                 `}
