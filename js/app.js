@@ -2584,6 +2584,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
+    // 9. Event Delegation en la Tabla de Cobros & Recibos (Toggle Detalles)
+    const txTableBody = document.getElementById('admin-transactions-table-body');
+    if (txTableBody) {
+      txTableBody.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.btn-toggle-tx-details');
+        if (toggleBtn) {
+          const txId = toggleBtn.getAttribute('data-tx-id');
+          const detailsRow = document.getElementById(`tx-details-row-${txId}`);
+          const mainRow = document.getElementById(`tx-main-row-${txId}`);
+          if (detailsRow) {
+            const isHidden = detailsRow.style.display === 'none';
+            detailsRow.style.display = isHidden ? 'table-row' : 'none';
+            toggleBtn.classList.toggle('expanded', isHidden);
+            if (mainRow) mainRow.classList.toggle('expanded', isHidden);
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -2788,7 +2807,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!transactions || transactions.length === 0) {
       txBody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+          <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
             No hay cobros registrados actualmente.
           </td>
         </tr>
@@ -2800,13 +2819,51 @@ document.addEventListener('DOMContentLoaded', () => {
       const planClass = tx.planId || 'plan-santuario';
       const rawPlan = tx.planName || (tx.planId === 'plan-esencia' ? 'Esencia' : tx.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
+      const txId = tx.id || String(Math.random()).substring(2);
+
       return `
-        <tr>
-          <td><strong>${escapeHtml(tx.email || 'Alumna')}</strong></td>
-          <td><span class="plan-badge ${planClass}">${planLabel}</span></td>
-          <td><strong>$${tx.amount} USD</strong> <span style="font-size: 0.72rem; color: var(--text-muted);">${tx.isAnnual ? '/año' : '/mes'}</span></td>
-          <td style="font-size: 0.78rem; color: var(--text-muted);">${formatAuditTime(tx.timestamp)}</td>
-          <td style="text-align: right;"><code class="receipt-code-pill">${escapeHtml(tx.receiptNumber || tx.id)}</code></td>
+        <tr id="tx-main-row-${txId}" class="admin-user-row">
+          <td class="col-user-name">
+            <span class="user-clean-name" title="${escapeHtml(tx.email || 'Alumna')}">${escapeHtml(tx.email || 'Alumna')}</span>
+          </td>
+          <td class="col-user-plan">
+            <span class="plan-badge ${planClass}">${planLabel}</span>
+          </td>
+          <td class="col-user-status" style="text-align: center;">
+            <strong style="color: var(--text-primary); font-size: 0.8rem;">$${tx.amount}</strong>
+            <span style="font-size: 0.65rem; color: var(--text-muted);">${tx.isAnnual ? '/a' : '/m'}</span>
+          </td>
+          <td class="col-user-action" style="text-align: center;">
+            <button type="button" class="btn-toggle-tx-details btn-arrow-only" data-tx-id="${txId}" aria-label="Ver detalles del cobro" title="Detalles">
+              <svg class="arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr id="tx-details-row-${txId}" class="admin-user-details-row" style="display: none;">
+          <td colspan="4" style="padding: 0 0.5rem 0.5rem 0.5rem !important;">
+            <div class="user-expanded-card-simplified">
+              <div class="quick-details-grid">
+                <div class="quick-detail-item">
+                  <span class="qd-label">Recibo:</span>
+                  <code class="receipt-code-pill">${escapeHtml(tx.receiptNumber || txId)}</code>
+                </div>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Fecha:</span>
+                  <span class="qd-val">${formatAuditTime(tx.timestamp)}</span>
+                </div>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Medio:</span>
+                  <span class="qd-val">${escapeHtml(tx.paymentMethod || 'Tarjeta')}</span>
+                </div>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Estado:</span>
+                  <span class="status-badge active"><span class="status-dot"></span> Aprobado</span>
+                </div>
+              </div>
+            </div>
+          </td>
         </tr>
       `;
     }).join('');
