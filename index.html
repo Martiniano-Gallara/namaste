@@ -1938,13 +1938,11 @@
       </div>
 
       <div class="profile-drawer-body">
-        <!-- Identidad del Alumno -->
-        <div class="user-identity-card">
-          <div class="user-avatar-circle" id="drawer-user-avatar" style="width: 44px; height: 44px; font-size: 1.15rem;">SV</div>
+        <!-- Identidad del Alumno (Sin círculo de foto) -->
+        <div class="user-identity-card" style="padding: 0.85rem 1.15rem;">
           <div>
-            <h4 id="drawer-user-name" style="font-size: 1.1rem; margin-bottom: 0.15rem;">Sofía Varela</h4>
-            <div id="drawer-user-email" style="font-size: 0.84rem; color: var(--text-muted);">sofia.varela@ejemplo.com
-            </div>
+            <h4 id="drawer-user-name" style="font-size: 1.15rem; margin-bottom: 0.15rem; color: var(--text-primary); font-family: var(--font-serif, serif);">Sofía Varela</h4>
+            <div id="drawer-user-email" style="font-size: 0.84rem; color: var(--text-muted);">sofia.varela@ejemplo.com</div>
           </div>
         </div>
 
@@ -2002,6 +2000,11 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Sección de Reseña de la Alumna (Se habilita a la semana de activar la membresía) -->
+        <div class="drawer-review-card" id="drawer-review-card">
+          <!-- Renderizado dinámicamente con ReviewsService -->
         </div>
 
         <!-- Opciones de Salida -->
@@ -2464,6 +2467,7 @@
   <script src="js/services/auth.js?v=3.8"></script>
   <script src="js/services/membership.js?v=3.8"></script>
   <script src="js/services/progress.js?v=3.8"></script>
+  <script src="js/services/reviews.js?v=3.8"></script>
   <script src="js/services/admin.js?v=3.8"></script>
   <script src="js/app.js?v=3.8"></script>
 </body>

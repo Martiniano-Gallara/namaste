@@ -140,6 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBillingSwitcher();
     setupScrollSpy();
     setupAdminDashboard();
+    renderTestimonialsSlider();
+    window.addEventListener('namaste:reviews-updated', () => {
+      renderTestimonialsSlider();
+    });
 
     // Enrutamiento directo por hash (#auditoria, #refugio, #inicio)
     handleHashRouting();
@@ -2285,6 +2289,248 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
     }
+
+    // Renderizar sección de reseña corta con regla de elegibilidad (1 semana activa)
+    renderDrawerReviewSection(user);
+  }
+
+  /**
+   * Renderiza la sección de reseña dentro del Drawer "Mi Espacio & Membresía".
+   * Se desbloquea exclusivamente tras 7 días (1 semana) de activación de membresía.
+   */
+  function renderDrawerReviewSection(user) {
+    const container = document.getElementById('drawer-review-card');
+    if (!container) return;
+
+    if (!user || user.isAdmin || user.role === 'admin') {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'flex';
+
+    if (typeof ReviewsService === 'undefined') {
+      container.innerHTML = '';
+      return;
+    }
+
+    const eligibility = ReviewsService.checkEligibility(user);
+    const existingReview = ReviewsService.getUserReview(user);
+
+    // CASO 1: Bloqueado por antigüedad (< 7 días desde la activación de la membresía)
+    if (!eligibility.eligible) {
+      container.className = 'drawer-review-card locked';
+      container.innerHTML = `
+        <div class="drawer-review-header">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h4 class="drawer-review-title" style="font-size:0.95rem;">Tu Reseña de Práctica</h4>
+          </div>
+          <span class="drawer-review-badge badge-locked">En ${eligibility.daysRemaining} días</span>
+        </div>
+        <p class="drawer-review-locked-msg">
+          Tu reseña se habilitará al completar tu <strong>primera semana de membresía</strong> (${eligibility.daysRemaining} ${eligibility.daysRemaining === 1 ? 'día restante' : 'días restantes'}). ¡Disfruta de tus primeras clases en el Santuario!
+        </p>
+      `;
+      return;
+    }
+
+    // CASO 2: Ya publicó una reseña (Vista de lectura con opción a editar)
+    if (existingReview && !container.dataset.editing) {
+      container.className = 'drawer-review-card';
+      const starsHtml = '★'.repeat(existingReview.rating || 5);
+      container.innerHTML = `
+        <div class="drawer-review-header">
+          <div>
+            <h4 class="drawer-review-title">Tu Reseña en el Inicio</h4>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Publicada en orden cronológico</div>
+          </div>
+          <span class="drawer-review-badge">Publicada</span>
+        </div>
+        <div class="drawer-review-published-box">
+          <div style="color:#B65E42; font-size:0.95rem; letter-spacing:1px; line-height:1;">${starsHtml}</div>
+          <p class="drawer-review-published-quote">«${escapeHtml(existingReview.quote)}»</p>
+          <div class="drawer-review-published-meta">
+            <span>✓ Visible en testimonios de inicio</span>
+            ${existingReview.dateFormatted ? `<span>• ${escapeHtml(existingReview.dateFormatted)}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.2rem;">
+          <button type="button" class="btn btn-secondary" id="btn-view-review-landing" style="padding:0.35rem 0.65rem; font-size:0.74rem;">
+            <span>Ver en Inicio</span>
+          </button>
+          <button type="button" class="btn btn-secondary" id="btn-drawer-edit-review" style="padding:0.35rem 0.75rem; font-size:0.74rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <span>Modificar reseña</span>
+          </button>
+        </div>
+      `;
+
+      const viewLandingBtn = document.getElementById('btn-view-review-landing');
+      if (viewLandingBtn) {
+        viewLandingBtn.addEventListener('click', () => {
+          closeModal(modals.profileDrawer);
+          switchView('landing');
+          const testSec = document.getElementById('testimonios');
+          if (testSec) testSec.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+
+      const editBtn = document.getElementById('btn-drawer-edit-review');
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          container.dataset.editing = 'true';
+          renderDrawerReviewSection(user);
+        });
+      }
+      return;
+    }
+
+    // CASO 3: Habilitada para escribir / editar reseña corta
+    container.className = 'drawer-review-card';
+    let currentRating = existingReview ? (existingReview.rating || 5) : 5;
+    const initialText = existingReview ? existingReview.quote : '';
+
+    container.innerHTML = `
+      <div class="drawer-review-header">
+        <div>
+          <h4 class="drawer-review-title">${existingReview ? 'Modificar Tu Reseña' : 'Dejar una Reseña'}</h4>
+          <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.1rem;">Se publicará en testimonios del inicio</div>
+        </div>
+        <div class="drawer-review-stars-wrap" id="drawer-review-stars" title="Calificación">
+          ${[1, 2, 3, 4, 5].map(star => `
+            <button type="button" class="review-star-btn ${star <= currentRating ? 'active' : ''}" data-val="${star}" aria-label="${star} estrellas">★</button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div style="position:relative;">
+        <textarea
+          id="drawer-review-text"
+          class="drawer-review-textarea"
+          placeholder="Cuéntanos brevemente cómo te acompaña la práctica en tu día a día (máx. 250 caracteres)..."
+          maxlength="250"
+        >${escapeHtml(initialText)}</textarea>
+      </div>
+
+      <div class="drawer-review-footer">
+        <span class="drawer-review-counter" id="drawer-review-counter">${initialText.length} / 250</span>
+        <div style="display:flex; gap:0.4rem;">
+          ${existingReview ? `
+            <button type="button" class="btn btn-secondary" id="btn-cancel-edit-review" style="padding:0.45rem 0.65rem; font-size:0.78rem;">Cancelar</button>
+          ` : ''}
+          <button type="button" class="btn-drawer-review-submit" id="btn-submit-drawer-review">
+            ${existingReview ? 'Actualizar' : 'Publicar Reseña'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Interacción con Estrellas
+    const starBtns = container.querySelectorAll('.review-star-btn');
+    starBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentRating = parseInt(btn.getAttribute('data-val'), 10) || 5;
+        starBtns.forEach(b => {
+          const val = parseInt(b.getAttribute('data-val'), 10);
+          b.classList.toggle('active', val <= currentRating);
+        });
+      });
+    });
+
+    // Contador de Caracteres
+    const textarea = document.getElementById('drawer-review-text');
+    const counter = document.getElementById('drawer-review-counter');
+    if (textarea && counter) {
+      textarea.addEventListener('input', () => {
+        counter.textContent = `${textarea.value.length} / 250`;
+      });
+    }
+
+    // Cancelar edición
+    const cancelBtn = document.getElementById('btn-cancel-edit-review');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        delete container.dataset.editing;
+        renderDrawerReviewSection(user);
+      });
+    }
+
+    // Enviar / Publicar
+    const submitBtn = document.getElementById('btn-submit-drawer-review');
+    if (submitBtn && textarea) {
+      submitBtn.addEventListener('click', async () => {
+        const text = textarea.value.trim();
+        if (text.length < 10) {
+          showToast('Por favor escribe al menos 10 caracteres para tu reseña.', 'error');
+          textarea.focus();
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Publicando...';
+
+        try {
+          const res = await ReviewsService.publishReview({
+            quote: text,
+            rating: currentRating,
+            user
+          });
+
+          if (res.success) {
+            delete container.dataset.editing;
+            renderDrawerReviewSection(user);
+            renderTestimonialsSlider();
+            showToast('¡Tu reseña ha sido publicada en la sección de inicio!', 'success');
+          } else {
+            showToast(res.message || 'No se pudo publicar la reseña.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = existingReview ? 'Actualizar' : 'Publicar Reseña';
+          }
+        } catch (err) {
+          console.error('Error publicando reseña:', err);
+          showToast('Ocurrió un error al guardar la reseña.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = existingReview ? 'Actualizar' : 'Publicar Reseña';
+        }
+      });
+    }
+  }
+
+  /**
+   * Renderiza el slider de testimonios de la página de inicio en estricto orden cronológico
+   */
+  function renderTestimonialsSlider() {
+    const slider = document.getElementById('testimonials-slider');
+    if (!slider) return;
+
+    if (typeof ReviewsService === 'undefined') return;
+
+    const reviews = ReviewsService.getAllReviews();
+    if (!reviews || !reviews.length) return;
+
+    slider.innerHTML = reviews.map(r => {
+      const stars = '★'.repeat(r.rating || 5);
+      const authorName = escapeHtml(r.name || r.authorName || 'Alumna');
+      const authorMeta = escapeHtml(r.memberSince || r.meta || (r.planName ? `Alumna • ${r.planName}` : 'Alumna de Namasté'));
+      const quote = escapeHtml(r.quote);
+      const isStudent = r.isStudentReview ? ' student-verified' : '';
+
+      return `
+        <div class="testimonial-card${isStudent}">
+          <div class="testimonial-stars" aria-hidden="true">${stars}</div>
+          <p class="testimonial-quote">«${quote}»</p>
+          <div class="testimonial-author">
+            <div class="author-meta">
+              <h4>${authorName}</h4>
+              <span>${authorMeta}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // ========================================================================

@@ -263,6 +263,15 @@
   ],
   "auditLogs": [
     {
+      "id": "log_00ac4e9d",
+      "timestamp": "2026-10-02T23:02:03.124Z",
+      "action": "REVIEW_POSTED",
+      "title": "Nueva reseña publicada",
+      "details": "Sofía Varela publicó una reseña de 5 estrellas",
+      "userEmail": "sofia.varela@ejemplo.com",
+      "status": "info"
+    },
+    {
       "id": "log_e726a41f",
       "timestamp": "2026-10-01T20:55:45.124Z",
       "action": "USER_DELETED",
@@ -342,6 +351,44 @@
       "details": "Lucía Morales pausó temporalmente su Plan Santuario",
       "userEmail": "lucia.morales@ejemplo.com",
       "status": "warning"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rev_seed_01",
+      "name": "Lucía Méndez",
+      "planName": "Plan Santuario",
+      "memberSince": "Miembro hace 8 meses • Plan Santuario",
+      "quote": "Sentí de inmediato la calidez y el respeto pedagógico de las maestras. Namasté transformó mis mañanas en un momento de verdadera calma.",
+      "rating": 5,
+      "timestamp": "2026-02-15T10:00:00Z"
+    },
+    {
+      "id": "rev_seed_02",
+      "name": "Martín Rossi",
+      "planName": "Sadhana Anual",
+      "memberSince": "Miembro hace 1 año • Sadhana Anual",
+      "quote": "Las clases de Yin Yoga nocturnas son mi salvavidas tras el trabajo. La forma en que te guían para soltar tensiones es medicina pura.",
+      "rating": 5,
+      "timestamp": "2026-04-10T10:00:00Z"
+    },
+    {
+      "id": "rev_seed_03",
+      "name": "Clara Linares",
+      "planName": "Plan Santuario",
+      "memberSince": "Miembro hace 5 meses • Plan Santuario",
+      "quote": "El acceso es simple y directo. Despliego la esterilla en mi casa y realmente siento que entro a un santuario de paz y cuidado personal.",
+      "rating": 5,
+      "timestamp": "2026-06-05T10:00:00Z"
+    },
+    {
+      "id": "rev_seed_04",
+      "name": "Lucía Benítez",
+      "planName": "Plan Santuario",
+      "memberSince": "Miembro hace 6 meses • Plan Santuario",
+      "quote": "La voz y serenidad de Vale me acompañan a diario. Encontrar un espacio guiado con tanta presencia y amor no tiene precio.",
+      "rating": 5,
+      "timestamp": "2026-08-20T10:00:00Z"
     }
   ]
 }

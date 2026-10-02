@@ -1406,6 +1406,172 @@
   white-space: nowrap;
 }
 
+/* --- Tarjeta de Reseña en Mi Espacio & Membresía --- */
+.drawer-review-card {
+  background: linear-gradient(135deg, #FAF7F2, #F4EFEA);
+  border: 1px solid var(--border-medium, #D5CCC0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.05rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.drawer-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.drawer-review-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary, #2A2421);
+  margin: 0;
+}
+
+.drawer-review-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background-color: rgba(182, 94, 66, 0.12);
+  color: var(--terracotta-dark, #A04E30);
+  border: 1px solid rgba(182, 94, 66, 0.2);
+}
+
+.drawer-review-badge.badge-locked {
+  background-color: #EDE8E0;
+  color: var(--text-muted, #7A7067);
+  border-color: #D8D0C5;
+}
+
+.drawer-review-stars-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.review-star-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #D5CCC0;
+  cursor: pointer;
+  padding: 0 0.05rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+  line-height: 1;
+}
+
+.review-star-btn.active,
+.review-star-btn:hover {
+  color: #B65E42;
+  transform: scale(1.18);
+}
+
+.drawer-review-textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-medium, #D5CCC0);
+  background-color: #FFFFFF;
+  font-family: inherit;
+  font-size: 0.84rem;
+  color: var(--text-primary, #2A2421);
+  resize: vertical;
+  min-height: 68px;
+  max-height: 110px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drawer-review-textarea:focus {
+  border-color: var(--terracotta, #B65E42);
+  box-shadow: 0 0 0 2.5px rgba(182, 94, 66, 0.12);
+}
+
+.drawer-review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.drawer-review-counter {
+  font-size: 0.7rem;
+  color: var(--text-muted, #7A7067);
+}
+
+.btn-drawer-review-submit {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: var(--terracotta, #B65E42);
+  color: #FFFFFF;
+  border: 1px solid var(--terracotta, #B65E42);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-drawer-review-submit:hover:not(:disabled) {
+  background-color: var(--terracotta-dark, #A04E30);
+  transform: translateY(-1px);
+}
+
+.btn-drawer-review-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estado Bloqueado (< 7 días) */
+.drawer-review-card.locked {
+  background: #F8F5F0;
+  border-style: dashed;
+}
+
+.drawer-review-locked-msg {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #5C524C);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Estado Ya Publicado */
+.drawer-review-published-box {
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle, #E6DFD5);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drawer-review-published-quote {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-style: italic;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-primary, #2A2421);
+  margin: 0;
+}
+
+.drawer-review-published-meta {
+  font-size: 0.72rem;
+  color: var(--olive-dark, #36533F);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Visibilidad Desktop / Móvil en la plataforma */
 .hide-mobile {
   display: flex;

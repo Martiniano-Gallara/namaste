@@ -628,6 +628,47 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      // 8.5 Reviews del Shala (Públicas & Alumnas)
+      if (pathname === '/api/reviews' && req.method === 'GET') {
+        const reviews = (db.reviews || []).slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        return sendJson(res, 200, { success: true, reviews });
+      }
+
+      if (pathname === '/api/reviews' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const quote = (body.quote || '').trim();
+        const rating = Number(body.rating) || 5;
+        const name = (body.name || 'Alumna de Namasté').trim();
+        const planName = (body.planName || 'Plan Santuario').trim();
+        const userEmail = (body.userEmail || '').trim().toLowerCase();
+
+        if (!quote || quote.length < 10) {
+          return sendJson(res, 400, { success: false, message: 'La reseña debe tener al menos 10 caracteres.' });
+        }
+
+        if (!db.reviews) db.reviews = [];
+        const newReview = {
+          id: 'rev_' + crypto.randomBytes(6).toString('hex'),
+          name,
+          planName,
+          memberSince: 'Miembro verificada',
+          quote,
+          rating,
+          userEmail,
+          timestamp: new Date().toISOString()
+        };
+
+        db.reviews.push(newReview);
+        recordAuditLog(db, 'REVIEW_POSTED', 'Nueva reseña publicada', `${name} publicó una reseña de ${rating} estrellas`, userEmail, 'info');
+        saveDatabase(db);
+
+        return sendJson(res, 201, {
+          success: true,
+          review: newReview,
+          message: 'Tu reseña ha sido publicada con éxito en el inicio.'
+        });
+      }
+
       // 9. Membership Management: Toggle Status (Pause / Reactivate)
       if (pathname === '/api/membership/toggle-status' && req.method === 'POST') {
         const auth = getAuthenticatedUser(req);
