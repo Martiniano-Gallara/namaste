@@ -2481,7 +2481,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('admin-users-table-body');
     if (tableBody) {
       tableBody.addEventListener('click', async (e) => {
-        // Toggle de fila "Más detalles"
+        // Toggle de fila "Más detalles" (flechita)
         const toggleDetailsBtn = e.target.closest('.btn-toggle-user-details');
         if (toggleDetailsBtn) {
           const userId = toggleDetailsBtn.getAttribute('data-user-id');
@@ -2492,15 +2492,12 @@ document.addEventListener('DOMContentLoaded', () => {
             detailsRow.style.display = isHidden ? 'table-row' : 'none';
             toggleDetailsBtn.classList.toggle('expanded', isHidden);
             if (mainRow) mainRow.classList.toggle('expanded', isHidden);
-            toggleDetailsBtn.innerHTML = isHidden
-              ? `<span>Menos detalles</span> <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>`
-              : `<span>Más detalles</span> <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
           }
           return;
         }
 
         // A) Copiar Código de Acceso
-        const copyBtn = e.target.closest('.code-copy-btn');
+        const copyBtn = e.target.closest('.code-copy-btn, .code-copy-btn-mini');
         if (copyBtn) {
           const code = copyBtn.getAttribute('data-code');
           if (code) {
@@ -2706,85 +2703,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tableBody.innerHTML = users.map(user => {
       const planClass = user.planId || 'plan-santuario';
-      const planLabel = escapeHtml(user.planName || 'Plan Santuario');
+      const rawPlan = user.planName || (user.planId === 'plan-esencia' ? 'Esencia' : user.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
+      const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const billingType = user.isAnnual ? 'Anual' : 'Mensual';
       const billingAmount = `$${user.billedAmount || 29} USD`;
 
       return `
         <tr id="main-row-${user.id}" class="admin-user-row">
-          <td>
+          <td class="col-user-name">
             <span class="user-clean-name">${escapeHtml(user.name)}</span>
           </td>
-          <td>
+          <td class="col-user-plan">
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
-          <td>
+          <td class="col-user-status">
             <span class="status-badge ${user.active ? 'active' : 'paused'}">
               <span class="status-dot"></span>
               ${user.active ? 'Activa' : 'Pausada'}
             </span>
           </td>
-          <td style="text-align: right;">
-            <button type="button" class="btn-toggle-user-details" data-user-id="${user.id}" title="Ver más detalles de ${escapeHtml(user.name)}">
-              <span>Más detalles</span>
-              <svg class="arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <td class="col-user-action" style="text-align: center;">
+            <button type="button" class="btn-toggle-user-details btn-arrow-only" data-user-id="${user.id}" aria-label="Ver detalles" title="Detalles">
+              <svg class="arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
           </td>
         </tr>
         <tr id="details-row-${user.id}" class="admin-user-details-row" style="display: none;">
-          <td colspan="4">
-            <div class="user-expanded-card">
-              <div class="expanded-info-grid">
-                <div class="expanded-item">
-                  <span class="expanded-item-title">Correo Electrónico</span>
-                  <span class="expanded-item-val">${escapeHtml(user.email)}</span>
+          <td colspan="4" style="padding: 0 0.5rem 0.5rem 0.5rem !important;">
+            <div class="user-expanded-card-simplified">
+              <div class="quick-details-grid">
+                <div class="quick-detail-item">
+                  <span class="qd-label">Email:</span>
+                  <span class="qd-val">${escapeHtml(user.email)}</span>
                 </div>
-                <div class="expanded-item">
-                  <span class="expanded-item-title">Código de Acceso</span>
-                  <button type="button" class="code-copy-btn" data-code="${escapeHtml(user.accessCode)}" title="Click para copiar código">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <div class="quick-detail-item">
+                  <span class="qd-label">Código:</span>
+                  <button type="button" class="code-copy-btn-mini" data-code="${escapeHtml(user.accessCode)}" title="Copiar código">
+                    <span>${escapeHtml(user.accessCode)}</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
-                    <span>${escapeHtml(user.accessCode)}</span>
                   </button>
                 </div>
-                <div class="expanded-item">
-                  <span class="expanded-item-title">Práctica en el Shala</span>
-                  <span class="expanded-item-val">
-                    <strong style="color: var(--terracotta-dark);">${user.streakDays || 0}d racha</strong> • ${user.totalMinutes || 0} min • ${user.completedCount || 0} clases
-                  </span>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Práctica:</span>
+                  <span class="qd-val">${user.streakDays || 0}d racha • ${user.completedCount || 0} clases (${user.totalMinutes || 0}m)</span>
                 </div>
-                <div class="expanded-item">
-                  <span class="expanded-item-title">Facturación & Renovación</span>
-                  <span class="expanded-item-val">
-                    ${billingType} (${billingAmount}) • Próx: ${escapeHtml(user.nextBillingDate || '28 Octubre 2026')} (${escapeHtml(user.paymentMethod || 'Tarjeta')})
-                  </span>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Cobro:</span>
+                  <span class="qd-val">${billingAmount}/${user.isAnnual ? 'año' : 'mes'} • Próx: ${escapeHtml(user.nextBillingDate || '28 Oct')}</span>
                 </div>
               </div>
-              <div class="expanded-actions-toolbar">
-                <button type="button" class="table-action-btn btn-pause-toggle" data-user-id="${user.id}" data-active="${user.active}" title="${user.active ? 'Pausar temporalmente el acceso' : 'Reactivar acceso al Santuario'}">
-                  ${user.active ? 'Pausar membresía' : 'Reactivar membresía'}
+              <div class="quick-actions-row">
+                <button type="button" class="mini-btn btn-pause-toggle" data-user-id="${user.id}" data-active="${user.active}">
+                  ${user.active ? 'Pausar' : 'Activar'}
                 </button>
-                <button type="button" class="table-action-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}" title="Modificar nivel de membresía">
-                  Cambiar Plan
+                <button type="button" class="mini-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}">
+                  Plan
                 </button>
-                <button type="button" class="table-action-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna al Santuario">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                    <polyline points="10 17 15 12 10 7"></polyline>
-                    <line x1="15" y1="12" x2="3" y2="12"></line>
-                  </svg>
-                  <span>Ingresar como alumna</span>
+                <button type="button" class="mini-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna">
+                  Entrar
                 </button>
-                <button type="button" class="table-action-btn btn-delete-user" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                  <span>Eliminar</span>
+                <button type="button" class="mini-btn btn-delete-user danger" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
+                  Eliminar
                 </button>
               </div>
             </div>
@@ -2814,10 +2798,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     txBody.innerHTML = transactions.map(tx => {
       const planClass = tx.planId || 'plan-santuario';
+      const rawPlan = tx.planName || (tx.planId === 'plan-esencia' ? 'Esencia' : tx.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
+      const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       return `
         <tr>
           <td><strong>${escapeHtml(tx.email || 'Alumna')}</strong></td>
-          <td><span class="plan-badge ${planClass}">${escapeHtml(tx.planName || 'Plan Santuario')}</span></td>
+          <td><span class="plan-badge ${planClass}">${planLabel}</span></td>
           <td><strong>$${tx.amount} USD</strong> <span style="font-size: 0.72rem; color: var(--text-muted);">${tx.isAnnual ? '/año' : '/mes'}</span></td>
           <td style="font-size: 0.78rem; color: var(--text-muted);">${formatAuditTime(tx.timestamp)}</td>
           <td style="text-align: right;"><code class="receipt-code-pill">${escapeHtml(tx.receiptNumber || tx.id)}</code></td>

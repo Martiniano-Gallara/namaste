@@ -1213,26 +1213,11 @@
           <a href="#" class="brand-logo btn-admin-go-home" title="Regresar al inicio de Namasté">
             <span class="brand-name">Namasté</span>
           </a>
-          <span class="admin-live-tag">
-            <span class="pulse-dot-green"></span>
-            <span id="admin-sync-text">Sincronizado</span>
-          </span>
         </div>
 
         <div class="admin-nav-actions">
-          <button type="button" class="btn-admin-nav" id="btn-admin-to-home" title="Ir a la página principal">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            <span>Inicio</span>
-          </button>
           <button type="button" class="btn-admin-nav btn-primary-action" id="btn-admin-create-user-modal">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>+ Nueva Alumna</span>
+            <span>+ Nuevo</span>
           </button>
         </div>
       </div>
@@ -1252,7 +1237,7 @@
           </div>
 
           <div class="admin-mini-kpi">
-            <span class="mini-kpi-label">Ingresos (MRR)</span>
+            <span class="mini-kpi-label">Ingresos</span>
             <div class="mini-kpi-val-row">
               <span class="mini-kpi-number" id="kpi-mrr">$0</span>
               <span class="mini-kpi-sub">USD/mes</span>
@@ -1316,13 +1301,13 @@
 
           <!-- Tabla de Alumnas Compacta -->
           <div class="admin-table-container">
-            <table class="admin-table">
+            <table class="admin-table admin-users-table">
               <thead>
                 <tr>
-                  <th>Alumna</th>
-                  <th>Membresía</th>
-                  <th>Estado</th>
-                  <th style="text-align: right;">Detalles</th>
+                  <th style="width: 36%;">Alumna</th>
+                  <th style="width: 28%;">Plan</th>
+                  <th style="width: 24%;">Estado</th>
+                  <th style="width: 12%; text-align: center;"></th>
                 </tr>
               </thead>
               <tbody id="admin-users-table-body">
