@@ -1269,11 +1269,15 @@
     <!-- Contenido Principal: 2 Pestañas Simplificadas -->
     <main class="admin-tabs-section">
       <div class="container">
-        <!-- Navegación de 2 Pestañas -->
+        <!-- Navegación de 3 Pestañas Simplificadas -->
         <div class="admin-tabs-nav">
           <button type="button" class="admin-tab-btn active" data-tab="tab-users" id="admin-tab-btn-users">
             <span>Alumnas</span>
             <span class="admin-tab-count-badge" id="tab-count-users">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tab-classes" id="admin-tab-btn-classes">
+            <span>Clases</span>
+            <span class="admin-tab-count-badge" id="tab-count-classes">0</span>
           </button>
           <button type="button" class="admin-tab-btn" data-tab="tab-transactions" id="admin-tab-btn-transactions">
             <span>Cobros & Recibos</span>
@@ -1312,6 +1316,46 @@
               </thead>
               <tbody id="admin-users-table-body">
                 <!-- Filas renderizadas dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Gestión de Clases del Shala (Mobile First y Compacta) -->
+        <div class="admin-tab-panel" id="panel-tab-classes" style="display: none;">
+          <!-- Toolbar con Buscador, Filtros y Botón + Subir Clase -->
+          <div class="admin-toolbar-card">
+            <div class="admin-search-wrap">
+              <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="admin-class-search-input" class="admin-search-input" placeholder="Buscar práctica..." />
+            </div>
+
+            <div class="admin-filter-group">
+              <button type="button" class="admin-filter-pill active" data-filter-class="all">Todas</button>
+              <button type="button" class="admin-filter-pill" data-filter-class="video">Video</button>
+              <button type="button" class="admin-filter-pill" data-filter-class="audio">Audio</button>
+              <button type="button" class="btn-admin-nav btn-primary-action" id="btn-admin-open-create-class" style="margin-left: 0.2rem;">
+                <span>+ Subir Clase</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabla de Clases (Mobile First - Sin Scroll Horizontal) -->
+          <div class="admin-table-container">
+            <table class="admin-table admin-classes-table">
+              <thead>
+                <tr>
+                  <th style="width: 44%;">Clase</th>
+                  <th style="width: 24%; text-align: center;">Formato</th>
+                  <th style="width: 22%; text-align: center;">Plan</th>
+                  <th style="width: 10%; text-align: center;"></th>
+                </tr>
+              </thead>
+              <tbody id="admin-classes-table-body">
+                <!-- Clases inyectadas dinámicamente -->
               </tbody>
             </table>
           </div>
@@ -1415,6 +1459,87 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
           <button type="button" class="btn btn-secondary" id="btn-cancel-edit-plan">Cancelar</button>
           <button type="submit" class="btn btn-primary">Actualizar Plan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Admin 3: Subir / Editar Clase (Video o Audio con Imagen) -->
+  <div class="admin-modal-backdrop" id="modal-admin-class">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <h3 id="modal-class-heading">Subir Nueva Práctica</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-class-modal">✕</button>
+      </div>
+      <form id="admin-class-form" class="admin-modal-body">
+        <input type="hidden" id="form-class-id" value="" />
+
+        <div class="form-group">
+          <label for="form-class-title">Título de la Práctica:</label>
+          <input type="text" id="form-class-title" class="form-input" required placeholder="ej: Hatha: Apertura de Pecho & Calma" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+          <div class="form-group">
+            <label for="form-class-format">Tipo de Formato:</label>
+            <select id="form-class-format" class="form-input">
+              <option value="video" selected>🎥 Video con Imagen</option>
+              <option value="audio">🎧 Audio con Imagen</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-class-plan">Membresía:</label>
+            <select id="form-class-plan" class="form-input">
+              <option value="plan-esencia" selected>Todos (Esencia)</option>
+              <option value="plan-santuario">Santuario & Sadhana</option>
+              <option value="plan-sadhana">Solo Sadhana</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+          <div class="form-group">
+            <label for="form-class-category">Disciplina:</label>
+            <select id="form-class-category" class="form-input">
+              <option value="suave" selected>Yoga Suave</option>
+              <option value="clasico">Yoga Clásico</option>
+              <option value="terapeutico">Yoga Terapéutico</option>
+              <option value="dinamico">Yoga Dinámico</option>
+              <option value="ashtanga">Yoga Ashtanga</option>
+              <option value="relax">Yoga Relax</option>
+              <option value="meditacion">Meditación & Pranayama</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-class-duration">Duración (minutos):</label>
+            <input type="number" id="form-class-duration" class="form-input" required min="5" max="180" value="35" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-class-media-url">URL de Archivo (Video o Audio):</label>
+          <input type="url" id="form-class-media-url" class="form-input" required placeholder="https://... (mp4, webm o mp3)" value="https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm" />
+        </div>
+
+        <div class="form-group">
+          <label for="form-class-thumbnail-preset">Imagen de Portada / Carátula:</label>
+          <select id="form-class-thumbnail-preset" class="form-input" style="margin-bottom: 0.35rem;">
+            <option value="assets/images/shala.jpg" selected>Shala Clásico (shala.jpg)</option>
+            <option value="assets/images/hero.jpg">Postura Hero (hero.jpg)</option>
+            <option value="assets/images/hatha.jpg">Hatha Tradicional (hatha.jpg)</option>
+            <option value="custom">URL personalizada...</option>
+          </select>
+          <input type="url" id="form-class-thumbnail-custom" class="form-input" placeholder="https://... o ruta de imagen" style="display: none;" value="assets/images/shala.jpg" />
+        </div>
+
+        <div class="form-group">
+          <label for="form-class-desc">Descripción Breve:</label>
+          <textarea id="form-class-desc" class="form-input" rows="2" placeholder="Resumen conciso de la práctica para las alumnas..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem;">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-class-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-class">Guardar Práctica</button>
         </div>
       </form>
     </div>

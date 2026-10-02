@@ -8,6 +8,15 @@ const AdminService = (() => {
   const API_BASE = '/api/admin';
 
   async function fetchJson(endpoint, options = {}) {
+    // Si estamos en GitHub Pages o entorno estático sin backend, usar almacenamiento resiliente directo
+    const isStatic = window.location.hostname.includes('github.io') ||
+                     window.location.protocol === 'file:' ||
+                     (!['localhost', '127.0.0.1'].includes(window.location.hostname));
+
+    if (isStatic) {
+      return fallbackHandler(endpoint, options);
+    }
+
     try {
       const token = sessionStorage.getItem('namaste_session_token') || localStorage.getItem('namaste_session_token') || '';
       const headers = {
@@ -21,14 +30,27 @@ const AdminService = (() => {
         headers
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || `Error HTTP ${res.status}`);
+        return fallbackHandler(endpoint, options);
       }
-      return data;
+
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        return fallbackHandler(endpoint, options);
+      }
+
+      return await res.json();
     } catch (err) {
-      console.warn(`[AdminService] Fallback local para ${endpoint}:`, err.message);
       return fallbackHandler(endpoint, options);
+    }
+  }
+
+  function safeJsonParse(str, fallback = null) {
+    if (!str) return fallback;
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      return fallback;
     }
   }
 
@@ -37,7 +59,7 @@ const AdminService = (() => {
     const method = options.method || 'GET';
 
     // Seed local si no existe
-    let localUsers = JSON.parse(localStorage.getItem('namaste_admin_users_cache') || 'null');
+    let localUsers = safeJsonParse(localStorage.getItem('namaste_admin_users_cache'), null);
     if (!localUsers) {
       localUsers = [
         {
@@ -134,7 +156,7 @@ const AdminService = (() => {
       localStorage.setItem('namaste_admin_users_cache', JSON.stringify(localUsers));
     }
 
-    let localLogs = JSON.parse(localStorage.getItem('namaste_admin_logs_cache') || 'null');
+    let localLogs = safeJsonParse(localStorage.getItem('namaste_admin_logs_cache'), null);
     if (!localLogs) {
       localLogs = [
         {
@@ -203,7 +225,7 @@ const AdminService = (() => {
 
     if (endpoint === '/users') {
       if (method === 'POST') {
-        const body = JSON.parse(options.body || '{}');
+        const body = safeJsonParse(options.body, {});
         const planNames = { 'plan-esencia': 'Plan Esencia', 'plan-santuario': 'Plan Santuario', 'plan-sadhana': 'Plan Sadhana' };
         const newUser = {
           id: 'usr-' + Date.now().toString(36),
@@ -235,7 +257,7 @@ const AdminService = (() => {
       const idx = localUsers.findIndex(u => u.id === userId);
       if (idx !== -1) {
         if (method === 'PUT') {
-          const body = JSON.parse(options.body || '{}');
+          const body = safeJsonParse(options.body, {});
           if (body.active !== undefined) localUsers[idx].active = Boolean(body.active);
           if (body.planId) {
             localUsers[idx].planId = body.planId;
@@ -292,6 +314,58 @@ const AdminService = (() => {
     return { success: false, message: 'Endpoint fallback no implementado' };
   }
 
+  // --- Gestión Local y Sincronizada de Clases (Mobile First) ---
+  function getLocalClasses() {
+    const parsed = safeJsonParse(localStorage.getItem('namaste_custom_classes'), null);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+
+    const initial = typeof CLASSES_DATA !== 'undefined' ? [...CLASSES_DATA] : [];
+    const enriched = initial.map(c => ({
+      ...c,
+      format: c.format || (c.category === 'meditacion' || c.category === 'relax' ? 'audio' : 'video'),
+      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario'))
+    }));
+    try {
+      localStorage.setItem('namaste_custom_classes', JSON.stringify(enriched));
+    } catch (e) {}
+    return enriched;
+  }
+
+  function saveLocalClass(classData) {
+    const list = getLocalClasses();
+    if (classData.id) {
+      const idx = list.findIndex(c => c.id === classData.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...classData };
+      } else {
+        list.unshift(classData);
+      }
+    } else {
+      const newId = `cls-${Date.now().toString(36)}`;
+      const newClass = {
+        id: newId,
+        isNew: true,
+        featured: false,
+        viewsCount: 0,
+        props: classData.props || ["Esterilla"],
+        intentions: classData.intentions || ["Presencia y calma"],
+        instructor: "Vale Manassero",
+        instructorRole: "Fundadora de Namasté • +14 años de trayectoria",
+        ...classData
+      };
+      list.unshift(newClass);
+    }
+    localStorage.setItem('namaste_custom_classes', JSON.stringify(list));
+    return { success: true, classes: list };
+  }
+
+  function deleteLocalClass(classId) {
+    let list = getLocalClasses();
+    list = list.filter(c => c.id !== classId);
+    localStorage.setItem('namaste_custom_classes', JSON.stringify(list));
+    return { success: true, classes: list };
+  }
+
   return {
     getOverview: () => fetchJson('/overview'),
     getUsers: () => fetchJson('/users'),
@@ -307,7 +381,10 @@ const AdminService = (() => {
       method: 'DELETE'
     }),
     getAuditLogs: () => fetchJson('/audit-logs'),
-    getTransactions: () => fetchJson('/transactions')
+    getTransactions: () => fetchJson('/transactions'),
+    getClasses: () => Promise.resolve({ success: true, classes: getLocalClasses() }),
+    saveClass: (classData) => Promise.resolve(saveLocalClass(classData)),
+    deleteClass: (classId) => Promise.resolve(deleteLocalClass(classId))
   };
 })();
 

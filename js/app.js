@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     adminUsersCache: [],
     adminUserFilterStatus: 'all',
     adminUserSearchQuery: '',
+    adminClassesCache: [],
+    adminClassFilterFormat: 'all',
+    adminClassSearchQuery: '',
     adminActiveTab: 'tab-users'
   };
 
@@ -38,8 +41,17 @@ document.addEventListener('DOMContentLoaded', () => {
     receipt: document.getElementById('modal-receipt'),
     legal: document.getElementById('modal-legal'),
     adminCreateUser: document.getElementById('modal-admin-create-user'),
-    adminEditPlan: document.getElementById('modal-admin-edit-plan')
+    adminEditPlan: document.getElementById('modal-admin-edit-plan'),
+    adminClass: document.getElementById('modal-admin-class')
   };
+
+  // Helper para obtener todas las clases activas (sincronizadas entre Admin y Alumnas)
+  function getActiveClasses() {
+    if (typeof ClassesService !== 'undefined') {
+      return ClassesService.getAllClasses();
+    }
+    return typeof CLASSES_DATA !== 'undefined' ? CLASSES_DATA : [];
+  }
 
   // Función para escapar HTML y prevenir vulnerabilidades de DOM XSS
   function escapeHtml(str) {
@@ -911,9 +923,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('landing-classes-grid');
     if (!grid) return;
 
+    const allClasses = getActiveClasses();
     const filtered = category === 'all'
-      ? CLASSES_DATA.slice(0, 6)
-      : CLASSES_DATA.filter(c => c.category === category);
+      ? allClasses.slice(0, 6)
+      : allClasses.filter(c => c.category === category);
 
     grid.innerHTML = filtered.map(c => `
       <article class="class-card">
@@ -1172,10 +1185,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let count = 0;
+      const allClasses = getActiveClasses();
       if (cat === 'meditacion') {
-        count = CLASSES_DATA.filter(c => c.category === 'meditacion' || c.category === 'relax').length;
+        count = allClasses.filter(c => c.category === 'meditacion' || c.category === 'relax').length;
       } else {
-        count = CLASSES_DATA.filter(c => c.category === cat).length;
+        count = allClasses.filter(c => c.category === cat).length;
       }
 
       if (count === 0) {
@@ -1297,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!yogaCarousel || !medCarousel) return;
 
-    let filtered = CLASSES_DATA.filter(c => {
+    let filtered = getActiveClasses().filter(c => {
       // 1. Filtro por Chip de Categoría
       if (state.activeCategoryFilter && state.activeCategoryFilter !== 'all') {
         if (state.activeCategoryFilter === 'completed') {
@@ -1353,12 +1367,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function createCardHTML(c) {
       const isFav = ProgressService.isFavorite(c.id);
       const isDone = ProgressService.isCompleted(c.id);
+      const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
+
+      const planHierarchy = { 'plan-esencia': 1, 'plan-santuario': 2, 'plan-sadhana': 3 };
+      const user = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser() : null;
+      const userLevel = user ? (planHierarchy[user.planId] || 1) : 1;
+      const requiredPlan = c.planRequired || (
+        c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' :
+        (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario')
+      );
+      const isLocked = Boolean(user && userLevel < (planHierarchy[requiredPlan] || 1));
 
       return `
         <article class="class-card class-card-platform" data-class-id="${c.id}">
           <div class="class-card-thumbnail">
             <img src="${c.thumbnail}" alt="${c.title}" loading="lazy" />
             ${c.isNew ? '<span class="badge-tag badge-new">Nueva</span>' : ''}
+            ${isAudio ? '<span class="badge-tag" style="background: rgba(190, 24, 93, 0.9); color: #fff; left: auto; right: 0.5rem; top: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🎧 Audio</span>' : ''}
+            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🔒 ${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Santuario'}</span>` : ''}
             <span class="class-duration-badge">${c.duration} min</span>
             
             <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="${isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}" aria-label="Favorito">
@@ -1407,7 +1433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', (e) => {
           if (e.target.closest('.favorite-btn')) return;
           const classId = card.getAttribute('data-class-id');
-          const classObj = CLASSES_DATA.find(c => c.id === classId);
+          const classObj = getActiveClasses().find(c => c.id === classId);
           if (classObj) openClassPlayer(classObj);
         });
       });
@@ -1443,11 +1469,19 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. Control de acceso por plan (Plan Esencia accede a yoga suave, clásico, relax y meditación)
-    if (user && user.planId === 'plan-esencia') {
-      const allowed = ['suave', 'clasico', 'relax', 'meditacion'];
-      if (!allowed.includes(classObj.category)) {
-        showToast(`La práctica "${classObj.title}" requiere Plan Santuario o Sadhana. Puedes mejorar tu plan desde tu perfil.`, 'warning');
+    // 2. Control de acceso según membresía (Plan Esencia, Plan Santuario, Plan Sadhana)
+    if (user) {
+      const planHierarchy = { 'plan-esencia': 1, 'plan-santuario': 2, 'plan-sadhana': 3 };
+      const userLevel = planHierarchy[user.planId] || 1;
+      const requiredPlan = classObj.planRequired || (
+        classObj.category === 'dinamico' || classObj.category === 'ashtanga' ? 'plan-sadhana' :
+        (classObj.category === 'suave' ? 'plan-esencia' : 'plan-santuario')
+      );
+      const requiredLevel = planHierarchy[requiredPlan] || 1;
+
+      if (userLevel < requiredLevel) {
+        const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Santuario';
+        showToast(`La práctica "${classObj.title}" requiere ${planName}. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
         return;
       }
     }
@@ -1486,7 +1520,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = document.getElementById('player-class-title');
     if (titleEl) titleEl.textContent = classObj.title;
     const catEl = document.getElementById('player-class-category');
-    if (catEl) catEl.textContent = classObj.categoryLabel;
+    if (catEl) {
+      const isAudio = classObj.format === 'audio' || (!classObj.format && (classObj.category === 'meditacion' || classObj.category === 'relax'));
+      catEl.textContent = isAudio ? `${classObj.categoryLabel} • 🎧 Audio Práctica` : classObj.categoryLabel;
+    }
     const durEl = document.getElementById('player-class-duration');
     if (durEl) durEl.textContent = `${classObj.duration} min`;
     const lvlEl = document.getElementById('player-class-level');
@@ -1679,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!user) return;
 
       const progress = ProgressService.getProgressState();
-      const completedClasses = CLASSES_DATA.filter(c => progress.completed.includes(c.id));
+      const completedClasses = getActiveClasses().filter(c => progress.completed.includes(c.id));
 
       const streakEl = document.getElementById('modal-metric-streak');
       const minEl = document.getElementById('modal-metric-minutes');
@@ -1747,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', () => {
           listContainer.querySelectorAll('.btn-repeat-practice').forEach(btn => {
             btn.addEventListener('click', () => {
               const classId = btn.getAttribute('data-class-id');
-              const classObj = CLASSES_DATA.find(c => c.id === classId);
+              const classObj = getActiveClasses().find(c => c.id === classId);
               if (classObj) {
                 closeModal(modals.progressDetails);
                 openClassPlayer(classObj, 0);
@@ -2341,6 +2378,13 @@ document.addEventListener('DOMContentLoaded', () => {
               renderAdminTransactions(res.transactions);
             }
           });
+        } else if (targetTab === 'tab-classes') {
+          AdminService.getClasses().then(res => {
+            if (res && res.success && res.classes) {
+              state.adminClassesCache = res.classes;
+              renderAdminClassesTable();
+            }
+          });
         }
       });
     });
@@ -2603,6 +2647,237 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
+    // 10. Búsqueda y Filtros de Clases
+    const classSearchInput = document.getElementById('admin-class-search-input');
+    if (classSearchInput) {
+      classSearchInput.addEventListener('input', (e) => {
+        state.adminClassSearchQuery = e.target.value.trim().toLowerCase();
+        renderAdminClassesTable();
+      });
+    }
+
+    const classFilterPills = document.querySelectorAll('[data-filter-class]');
+    classFilterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        classFilterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.adminClassFilterFormat = pill.getAttribute('data-filter-class') || 'all';
+        renderAdminClassesTable();
+      });
+    });
+
+    // 11. Modal de Subir / Editar Clase (Video o Audio con Imagen)
+    const btnOpenCreateClassModal = document.getElementById('btn-admin-open-create-class');
+    if (btnOpenCreateClassModal) {
+      btnOpenCreateClassModal.addEventListener('click', () => {
+        const form = document.getElementById('admin-class-form');
+        if (form) form.reset();
+        const heading = document.getElementById('modal-class-heading');
+        if (heading) heading.textContent = 'Subir Nueva Práctica';
+        const idInput = document.getElementById('form-class-id');
+        if (idInput) idInput.value = '';
+        const customThumb = document.getElementById('form-class-thumbnail-custom');
+        if (customThumb) customThumb.style.display = 'none';
+        if (modals.adminClass) modals.adminClass.classList.add('active');
+      });
+    }
+
+    const btnCloseClassModal = document.getElementById('btn-close-class-modal');
+    const btnCancelClassModal = document.getElementById('btn-cancel-class-modal');
+    [btnCloseClassModal, btnCancelClassModal].forEach(btn => {
+      if (btn) {
+        btn.addEventListener('click', () => {
+          if (modals.adminClass) modals.adminClass.classList.remove('active');
+        });
+      }
+    });
+
+    if (modals.adminClass) {
+      modals.adminClass.addEventListener('click', (e) => {
+        if (e.target === modals.adminClass) {
+          modals.adminClass.classList.remove('active');
+        }
+      });
+    }
+
+    const thumbPresetSelect = document.getElementById('form-class-thumbnail-preset');
+    const thumbCustomInput = document.getElementById('form-class-thumbnail-custom');
+    if (thumbPresetSelect && thumbCustomInput) {
+      thumbPresetSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+          thumbCustomInput.style.display = 'block';
+          thumbCustomInput.focus();
+        } else {
+          thumbCustomInput.style.display = 'none';
+        }
+      });
+    }
+
+    const formClass = document.getElementById('admin-class-form');
+    if (formClass) {
+      formClass.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const classId = document.getElementById('form-class-id')?.value;
+        const title = document.getElementById('form-class-title')?.value.trim();
+        const format = document.getElementById('form-class-format')?.value || 'video';
+        const planRequired = document.getElementById('form-class-plan')?.value || 'plan-esencia';
+        const category = document.getElementById('form-class-category')?.value || 'suave';
+        const duration = parseInt(document.getElementById('form-class-duration')?.value, 10) || 35;
+        const mediaUrl = document.getElementById('form-class-media-url')?.value.trim();
+        const preset = thumbPresetSelect?.value;
+        const thumbnail = preset === 'custom' ? (thumbCustomInput?.value.trim() || 'assets/images/shala.jpg') : (preset || 'assets/images/shala.jpg');
+        const description = document.getElementById('form-class-desc')?.value.trim() || '';
+
+        if (!title || !mediaUrl) {
+          showToast('Por favor completa el título y la URL del archivo', 'warning');
+          return;
+        }
+
+        const categoryLabels = {
+          suave: 'Yoga Suave',
+          clasico: 'Yoga Clásico',
+          terapeutico: 'Yoga Terapéutico',
+          dinamico: 'Yoga Dinámico',
+          ashtanga: 'Yoga Ashtanga',
+          relax: 'Yoga Relax',
+          meditacion: 'Meditación & Pranayama'
+        };
+
+        const classData = {
+          id: classId || undefined,
+          title,
+          format,
+          planRequired,
+          category,
+          categoryLabel: categoryLabels[category] || 'Práctica Holística',
+          duration,
+          videoUrl: mediaUrl,
+          thumbnail,
+          description,
+          level: 'Todos los niveles'
+        };
+
+        try {
+          const res = await AdminService.saveClass(classData);
+          if (res && res.success) {
+            showToast(classId ? 'Práctica actualizada exitosamente' : 'Nueva práctica subida y disponible para alumnas', 'success');
+            if (modals.adminClass) modals.adminClass.classList.remove('active');
+            formClass.reset();
+            state.adminClassesCache = res.classes;
+            renderAdminClassesTable();
+            const badge = document.getElementById('tab-count-classes');
+            if (badge) badge.textContent = res.classes.length;
+            renderPlatformClasses();
+          } else {
+            showToast('No se pudo guardar la práctica', 'warning');
+          }
+        } catch (err) {
+          showToast('Error al guardar la práctica', 'warning');
+        }
+      });
+    }
+
+    // 12. Event Delegation en la Tabla de Clases (Mobile First)
+    const classTableBody = document.getElementById('admin-classes-table-body');
+    if (classTableBody) {
+      classTableBody.addEventListener('click', async (e) => {
+        // A) Toggle flecha detalles
+        const toggleBtn = e.target.closest('.btn-toggle-class-details');
+        if (toggleBtn) {
+          const classId = toggleBtn.getAttribute('data-class-id');
+          const detailsRow = document.getElementById(`class-details-row-${classId}`);
+          const mainRow = document.getElementById(`class-main-row-${classId}`);
+          if (detailsRow) {
+            const isHidden = detailsRow.style.display === 'none';
+            detailsRow.style.display = isHidden ? 'table-row' : 'none';
+            toggleBtn.classList.toggle('expanded', isHidden);
+            if (mainRow) mainRow.classList.toggle('expanded', isHidden);
+          }
+          return;
+        }
+
+        // B) Probar práctica (reproducir como alumna)
+        const previewBtn = e.target.closest('.btn-preview-class');
+        if (previewBtn) {
+          const classId = previewBtn.getAttribute('data-class-id');
+          const classObj = getActiveClasses().find(c => c.id === classId);
+          if (classObj) {
+            openClassPlayer(classObj, 0);
+          }
+          return;
+        }
+
+        // C) Editar práctica
+        const editBtn = e.target.closest('.btn-edit-class');
+        if (editBtn) {
+          const classId = editBtn.getAttribute('data-class-id');
+          const classObj = (state.adminClassesCache || []).find(c => c.id === classId) || getActiveClasses().find(c => c.id === classId);
+          if (classObj) {
+            const heading = document.getElementById('modal-class-heading');
+            if (heading) heading.textContent = 'Editar Práctica';
+            const idInput = document.getElementById('form-class-id');
+            if (idInput) idInput.value = classObj.id;
+            const titleInput = document.getElementById('form-class-title');
+            if (titleInput) titleInput.value = classObj.title || '';
+            const formatSelect = document.getElementById('form-class-format');
+            if (formatSelect) formatSelect.value = classObj.format || (classObj.category === 'meditacion' || classObj.category === 'relax' ? 'audio' : 'video');
+            const planSelect = document.getElementById('form-class-plan');
+            if (planSelect) planSelect.value = classObj.planRequired || 'plan-esencia';
+            const catSelect = document.getElementById('form-class-category');
+            if (catSelect) catSelect.value = classObj.category || 'suave';
+            const durInput = document.getElementById('form-class-duration');
+            if (durInput) durInput.value = classObj.duration || 35;
+            const mediaInput = document.getElementById('form-class-media-url');
+            if (mediaInput) mediaInput.value = classObj.videoUrl || '';
+            const descInput = document.getElementById('form-class-desc');
+            if (descInput) descInput.value = classObj.description || '';
+
+            const presetSelect = document.getElementById('form-class-thumbnail-preset');
+            const customThumb = document.getElementById('form-class-thumbnail-custom');
+            if (presetSelect) {
+              const standardPresets = ['assets/images/shala.jpg', 'assets/images/hero.jpg', 'assets/images/hatha.jpg'];
+              if (standardPresets.includes(classObj.thumbnail)) {
+                presetSelect.value = classObj.thumbnail;
+                if (customThumb) customThumb.style.display = 'none';
+              } else {
+                presetSelect.value = 'custom';
+                if (customThumb) {
+                  customThumb.value = classObj.thumbnail || '';
+                  customThumb.style.display = 'block';
+                }
+              }
+            }
+
+            if (modals.adminClass) modals.adminClass.classList.add('active');
+          }
+          return;
+        }
+
+        // D) Eliminar práctica
+        const deleteBtn = e.target.closest('.btn-delete-class');
+        if (deleteBtn) {
+          const classId = deleteBtn.getAttribute('data-class-id');
+          const classTitle = deleteBtn.getAttribute('data-class-title');
+          if (confirm(`¿Estás segura de eliminar permanentemente la clase "${classTitle}" del Shala?`)) {
+            try {
+              const res = await AdminService.deleteClass(classId);
+              if (res && res.success) {
+                showToast(`Práctica "${classTitle}" eliminada`, 'info');
+                state.adminClassesCache = res.classes;
+                renderAdminClassesTable();
+                const badge = document.getElementById('tab-count-classes');
+                if (badge) badge.textContent = res.classes.length;
+                renderPlatformClasses();
+              }
+            } catch (err) {
+              showToast('Error al eliminar práctica', 'warning');
+            }
+          }
+          return;
+        }
+      });
+    }
   }
 
   /**
@@ -2613,9 +2888,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (syncText) syncText.textContent = 'Actualizando datos...';
 
     try {
-      const [overviewRes, usersRes] = await Promise.all([
+      const [overviewRes, usersRes, classesRes] = await Promise.all([
         AdminService.getOverview(),
-        AdminService.getUsers()
+        AdminService.getUsers(),
+        AdminService.getClasses()
       ]);
 
       if (overviewRes && overviewRes.success && overviewRes.stats) {
@@ -2672,6 +2948,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (usersRes && usersRes.success && usersRes.users) {
         state.adminUsersCache = usersRes.users;
         renderAdminUsersTable();
+      }
+
+      if (classesRes && classesRes.success && classesRes.classes) {
+        state.adminClassesCache = classesRes.classes;
+        const tabCountClasses = document.getElementById('tab-count-classes');
+        if (tabCountClasses) tabCountClasses.textContent = classesRes.classes.length;
+        if (state.adminActiveTab === 'tab-classes') {
+          renderAdminClassesTable();
+        }
       }
 
       if (syncText) syncText.textContent = 'Sincronizado con Base de Datos';
@@ -2861,6 +3146,112 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="qd-label">Estado:</span>
                   <span class="status-badge active"><span class="status-dot"></span> Aprobado</span>
                 </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Renderiza la tabla de clases con diseño ultra-compacto y mobile first.
+   * 4 Columnas sin scroll horizontal: Clase (44%), Formato (24%), Plan (22%), Flecha (10%).
+   * Al pulsar la flecha se despliegan detalles, URL, duración y botones Probar / Editar / Eliminar.
+   */
+  function renderAdminClassesTable() {
+    const tableBody = document.getElementById('admin-classes-table-body');
+    if (!tableBody) return;
+
+    let classes = [...(state.adminClassesCache && state.adminClassesCache.length > 0 ? state.adminClassesCache : getActiveClasses())];
+
+    // Filtro por Formato (Todas / Video / Audio)
+    if (state.adminClassFilterFormat === 'video') {
+      classes = classes.filter(c => c.format === 'video' || (!c.format && c.category !== 'meditacion' && c.category !== 'relax'));
+    } else if (state.adminClassFilterFormat === 'audio') {
+      classes = classes.filter(c => c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax')));
+    }
+
+    // Filtro por Búsqueda (Título, Categoría)
+    if (state.adminClassSearchQuery) {
+      const q = state.adminClassSearchQuery;
+      classes = classes.filter(c =>
+        (c.title && c.title.toLowerCase().includes(q)) ||
+        (c.category && c.category.toLowerCase().includes(q)) ||
+        (c.categoryLabel && c.categoryLabel.toLowerCase().includes(q))
+      );
+    }
+
+    if (classes.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+            No se encontraron clases con el filtro o búsqueda actual.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = classes.map(c => {
+      const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
+      const planReq = c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario'));
+      const planLabel = planReq === 'plan-sadhana' ? 'SADHANA' : (planReq === 'plan-esencia' ? 'ESENCIA' : 'SANTUARIO');
+      const planClass = planReq;
+
+      return `
+        <tr id="class-main-row-${c.id}" class="admin-user-row">
+          <td class="col-user-name" style="width: 44%;">
+            <span class="user-clean-name" title="${escapeHtml(c.title)}">${escapeHtml(c.title)}</span>
+          </td>
+          <td style="width: 24%; text-align: center;">
+            <span class="format-badge ${isAudio ? 'audio' : 'video'}">
+              ${isAudio ? '🎧 Audio' : '🎥 Video'}
+            </span>
+          </td>
+          <td style="width: 22%; text-align: center;">
+            <span class="plan-badge ${planClass}">${planLabel}</span>
+          </td>
+          <td style="width: 10%; text-align: center;">
+            <button type="button" class="btn-toggle-class-details btn-arrow-only" data-class-id="${c.id}" aria-label="Ver detalles" title="Detalles">
+              <svg class="arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr id="class-details-row-${c.id}" class="admin-user-details-row" style="display: none;">
+          <td colspan="4" style="padding: 0 0.5rem 0.5rem 0.5rem !important;">
+            <div class="user-expanded-card-simplified">
+              <div class="quick-details-grid">
+                <div class="quick-detail-item">
+                  <span class="qd-label">Duración:</span>
+                  <span class="qd-val">${c.duration} min • ${escapeHtml(c.categoryLabel || c.category)}</span>
+                </div>
+                <div class="quick-detail-item">
+                  <span class="qd-label">Portada:</span>
+                  <span class="qd-val" title="${escapeHtml(c.thumbnail || '')}">${escapeHtml((c.thumbnail || '').split('/').pop())}</span>
+                </div>
+                <div class="quick-detail-item" style="grid-column: 1 / -1;">
+                  <span class="qd-label">Archivo:</span>
+                  <span class="qd-val" style="font-family: monospace; font-size: 0.68rem;" title="${escapeHtml(c.videoUrl || '')}">${escapeHtml(c.videoUrl || '')}</span>
+                </div>
+                ${c.description ? `
+                <div class="quick-detail-item" style="grid-column: 1 / -1;">
+                  <span class="qd-label">Detalle:</span>
+                  <span class="qd-val" style="white-space: normal;">${escapeHtml(c.description)}</span>
+                </div>` : ''}
+              </div>
+              <div class="quick-actions-row">
+                <button type="button" class="mini-btn btn-preview-class" data-class-id="${c.id}" title="Reproducir como alumna">
+                  ▶ Probar
+                </button>
+                <button type="button" class="mini-btn btn-edit-class" data-class-id="${c.id}" title="Editar práctica">
+                  Editar
+                </button>
+                <button type="button" class="mini-btn btn-delete-class danger" data-class-id="${c.id}" data-class-title="${escapeHtml(c.title)}" title="Eliminar práctica">
+                  Eliminar
+                </button>
               </div>
             </div>
           </td>

@@ -335,13 +335,30 @@ const CLASSES_DATA = [
 
 // Classes Service with protected streaming & API integration
 const ClassesService = (() => {
-  const getAllClasses = () => CLASSES_DATA;
+  const getAllClasses = () => {
+    try {
+      const stored = localStorage.getItem('namaste_custom_classes');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return CLASSES_DATA;
+  };
 
-  const getClassById = (id) => CLASSES_DATA.find(c => c.id === id) || null;
+  const getClassById = (id) => getAllClasses().find(c => c.id === id) || null;
 
   const getClassStreamUrl = async (classId) => {
     const classObj = getClassById(classId);
     if (!classObj) return null;
+
+    const isStatic = window.location.hostname.includes('github.io') ||
+                     window.location.protocol === 'file:' ||
+                     (!['localhost', '127.0.0.1'].includes(window.location.hostname));
+
+    if (isStatic) {
+      return classObj.videoUrl;
+    }
 
     // Try server protected streaming endpoint if available
     try {

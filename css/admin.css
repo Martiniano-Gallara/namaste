@@ -413,6 +413,30 @@
   flex-shrink: 0;
 }
 
+/* Badges de Formato (Video / Audio) */
+.format-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.12rem 0.38rem;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.format-badge.video {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.format-badge.audio {
+  background-color: #FDF2F8;
+  color: #9D174D;
+}
+
 /* Botón Flechita para Detalles */
 .btn-arrow-only {
   width: 26px;
@@ -655,3 +679,41 @@
     margin-left: 0;
   }
 }
+
+/* --- Formato de Clases (Video / Audio) --- */
+.format-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.format-badge.video {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.format-badge.audio {
+  background-color: #FDF2F8;
+  color: #BE185D;
+  border: 1px solid #FBCFE8;
+}
+
+.admin-classes-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.admin-classes-table th,
+.admin-classes-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
