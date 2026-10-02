@@ -824,6 +824,43 @@
   transform: scale(1);
 }
 
+.card-top-right-group {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  z-index: 2;
+}
+
+.card-top-right-group .favorite-btn {
+  position: static;
+  top: auto;
+  right: auto;
+  flex-shrink: 0;
+}
+
+.card-top-right-group .badge-audio,
+.badge-audio {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  background: rgba(190, 24, 93, 0.92) !important;
+  color: #fff !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  padding: 0.22rem 0.62rem !important;
+  border-radius: var(--radius-pill) !important;
+  letter-spacing: 0.04em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1.2 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(4px);
+}
+
 .favorite-btn {
   position: absolute;
   top: 0.75rem;

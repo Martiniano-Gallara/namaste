@@ -1383,15 +1383,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="class-card-thumbnail">
             <img src="${c.thumbnail}" alt="${c.title}" loading="lazy" />
             ${c.isNew ? '<span class="badge-tag badge-new">Nueva</span>' : ''}
-            ${isAudio ? '<span class="badge-tag" style="background: rgba(190, 24, 93, 0.9); color: #fff; left: auto; right: 0.5rem; top: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🎧 Audio</span>' : ''}
+            <div class="card-top-right-group">
+              ${isAudio ? '<span class="badge-tag badge-audio">🎧 Audio</span>' : ''}
+              <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="${isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}" aria-label="Favorito">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+            </div>
             ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🔒 ${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Santuario'}</span>` : ''}
             <span class="class-duration-badge">${c.duration} min</span>
-            
-            <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="${isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}" aria-label="Favorito">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-            </button>
 
             <div class="play-overlay-btn">
               <div class="play-circle-icon">
@@ -2353,6 +2354,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Pestañas de Navegación del Panel
     const tabButtons = document.querySelectorAll('.admin-tab-btn');
+
+    // 3.1 Menú Lateral / Admin Drawer
+    const adminDrawerToggleBtn = document.getElementById('btn-admin-drawer-toggle');
+    const adminDrawerBackdrop = document.getElementById('admin-drawer-backdrop');
+    const adminDrawerCloseBtn = document.getElementById('btn-admin-drawer-close');
+
+    function openAdminDrawer() {
+      if (adminDrawerBackdrop) {
+        adminDrawerBackdrop.classList.add('active');
+        if (adminDrawerToggleBtn) adminDrawerToggleBtn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function closeAdminDrawer() {
+      if (adminDrawerBackdrop) {
+        adminDrawerBackdrop.classList.remove('active');
+        if (adminDrawerToggleBtn) adminDrawerToggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    if (adminDrawerToggleBtn) {
+      adminDrawerToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (adminDrawerBackdrop && adminDrawerBackdrop.classList.contains('active')) {
+          closeAdminDrawer();
+        } else {
+          openAdminDrawer();
+        }
+      });
+    }
+
+    if (adminDrawerCloseBtn) {
+      adminDrawerCloseBtn.addEventListener('click', closeAdminDrawer);
+    }
+
+    if (adminDrawerBackdrop) {
+      adminDrawerBackdrop.addEventListener('click', (e) => {
+        if (e.target === adminDrawerBackdrop) {
+          closeAdminDrawer();
+        }
+      });
+    }
+
+    document.querySelectorAll('[data-admin-goto-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-admin-goto-tab');
+        closeAdminDrawer();
+        const tabBtn = document.querySelector(`.admin-tab-btn[data-tab="${tab}"]`);
+        if (tabBtn) tabBtn.click();
+      });
+    });
+
+    const adminDrawerNewUser = document.getElementById('admin-drawer-action-new-user');
+    if (adminDrawerNewUser) {
+      adminDrawerNewUser.addEventListener('click', () => {
+        closeAdminDrawer();
+        if (modals.adminCreateUser) modals.adminCreateUser.classList.add('active');
+      });
+    }
+
+    const adminDrawerNewClass = document.getElementById('admin-drawer-action-new-class');
+    if (adminDrawerNewClass) {
+      adminDrawerNewClass.addEventListener('click', () => {
+        closeAdminDrawer();
+        const createClassBtn = document.getElementById('btn-admin-open-create-class');
+        if (createClassBtn) createClassBtn.click();
+      });
+    }
+
+    const adminDrawerGotoPlatform = document.getElementById('admin-drawer-goto-platform');
+    if (adminDrawerGotoPlatform) {
+      adminDrawerGotoPlatform.addEventListener('click', () => {
+        closeAdminDrawer();
+        switchView('platform');
+      });
+    }
+
+    const adminDrawerGotoLanding = document.getElementById('admin-drawer-goto-landing');
+    if (adminDrawerGotoLanding) {
+      adminDrawerGotoLanding.addEventListener('click', () => {
+        closeAdminDrawer();
+        switchView('landing');
+      });
+    }
+
+    const adminDrawerLogout = document.getElementById('admin-drawer-logout');
+    if (adminDrawerLogout) {
+      adminDrawerLogout.addEventListener('click', () => {
+        closeAdminDrawer();
+        AuthService.logout();
+        switchView('landing');
+        showToast('Sesión cerrada', 'info');
+      });
+    }
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const targetTab = btn.getAttribute('data-tab');
@@ -2904,15 +2999,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const kpiTotalUsersSub = document.getElementById('kpi-total-users-sub');
         if (kpiTotalUsersSub) kpiTotalUsersSub.textContent = `de ${stats.totalUsers} registradas`;
 
-        const kpiBreakdown = document.getElementById('kpi-plans-breakdown');
-        if (kpiBreakdown && stats.planCounts) {
-          kpiBreakdown.innerHTML = `
-            <span class="kpi-mini-pill">Esencia: ${stats.planCounts['plan-esencia'] || 0}</span>
-            <span class="kpi-mini-pill">Santuario: ${stats.planCounts['plan-santuario'] || 0}</span>
-            <span class="kpi-mini-pill">Sadhana: ${stats.planCounts['plan-sadhana'] || 0}</span>
-          `;
-        }
-
         // KPI 2: MRR & ARR
         const kpiMrr = document.getElementById('kpi-mrr');
         if (kpiMrr) kpiMrr.textContent = `$${stats.mrr}`;
@@ -3114,9 +3200,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="col-user-plan">
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
-          <td class="col-user-status" style="text-align: center;">
-            <strong style="color: var(--text-primary); font-size: 0.8rem;">$${tx.amount}</strong>
-            <span style="font-size: 0.65rem; color: var(--text-muted);">${tx.isAnnual ? '/a' : '/m'}</span>
+          <td class="col-user-status col-tx-amount" style="text-align: center; white-space: nowrap;">
+            <strong style="color: var(--text-primary); font-size: 0.82rem; white-space: nowrap;">$${tx.amount}</strong><span style="font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; margin-left: 2px;">${tx.isAnnual ? '/a' : '/m'}</span>
           </td>
           <td class="col-user-action" style="text-align: center;">
             <button type="button" class="btn-toggle-tx-details btn-arrow-only" data-tx-id="${txId}" aria-label="Ver detalles del cobro" title="Detalles">
