@@ -4,6 +4,13 @@
  */
 
 const ProgressService = (() => {
+  const isStatic = () => {
+    if (typeof window === 'undefined') return true;
+    return window.location.hostname.includes('github.io') ||
+           window.location.protocol === 'file:' ||
+           (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port);
+  };
+
   const getUserKey = () => {
     try {
       const user = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser() : null;
@@ -51,8 +58,8 @@ const ProgressService = (() => {
       localStorage.setItem(key, JSON.stringify(state));
       window.dispatchEvent(new CustomEvent('namaste:progress-changed', { detail: state }));
 
-      // Sincronizar con el servidor en segundo plano
-      if (syncServer && typeof AuthService !== 'undefined') {
+      // Sincronizar con el servidor en segundo plano (solo si no es estático)
+      if (!isStatic() && syncServer && typeof AuthService !== 'undefined') {
         const token = AuthService.getToken();
         if (token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
           fetch('/api/progress', {
@@ -152,7 +159,7 @@ const ProgressService = (() => {
 
   // Carga inicial desde servidor al autenticarse
   const fetchProgressFromServer = async () => {
-    if (typeof AuthService === 'undefined') return;
+    if (isStatic() || typeof AuthService === 'undefined') return;
     const token = AuthService.getToken();
     if (!token || typeof window === 'undefined' || !window.location.protocol.startsWith('http')) return;
     try {

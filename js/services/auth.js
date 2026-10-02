@@ -114,6 +114,13 @@ const AuthService = (() => {
     return !!getCurrentUser();
   };
 
+  const isStatic = () => {
+    if (typeof window === 'undefined') return true;
+    return window.location.hostname.includes('github.io') ||
+           window.location.protocol === 'file:' ||
+           (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port);
+  };
+
   // Login transparente que intenta el backend REST y sincroniza
   const login = async (identifier) => {
     if (!identifier || typeof identifier !== 'string') {
@@ -122,8 +129,8 @@ const AuthService = (() => {
 
     const clean = identifier.trim().toLowerCase();
 
-    // 1. Intentar autenticación contra API REST si está en servidor HTTP
-    if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+    // 1. Intentar autenticación contra API REST si NO es entorno estático (como GitHub Pages)
+    if (!isStatic() && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -146,7 +153,7 @@ const AuthService = (() => {
       }
     }
 
-    // 2. Fallback de demostración / offline
+    // 2. Fallback de demostración / offline / GitHub Pages (sin peticiones de red bloqueadas)
     const adminAliases = [
       'valeria', 'vale', 'admin', 'valeria manassero',
       'valeria.manassero@namaste.com', 'valeria@namaste.com',
@@ -166,11 +173,12 @@ const AuthService = (() => {
       }
     }
 
+    // Si aún no existe, crear la cuenta de alumna automáticamente al vuelo para no trabar el acceso
     if (!user) {
-      return {
-        success: false,
-        message: 'No encontramos una cuenta con ese correo. Puedes probar con la cuenta demo de Sofía o elegir un plan.'
-      };
+      const isEmail = clean.includes('@');
+      const userName = clean.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Practicante';
+      const userEmail = isEmail ? clean : `${clean}@namaste.com`;
+      user = registerNewMember(userName, userEmail, 'plan-santuario', 'Plan Santuario');
     }
 
     if (!user.active) {
@@ -181,8 +189,9 @@ const AuthService = (() => {
     }
 
     try {
-      setToken('mock-token-' + Date.now());
+      setToken('local-token-' + Date.now());
       localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      saveUserRecord(user);
       window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: user }));
       return { success: true, user };
     } catch (e) {
@@ -205,7 +214,7 @@ const AuthService = (() => {
 
   const logout = async () => {
     const token = getToken();
-    if (token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+    if (!isStatic() && token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
         await fetch('/api/auth/logout', {
           method: 'POST',
@@ -289,9 +298,9 @@ const AuthService = (() => {
     localStorage.setItem(SESSION_KEY, JSON.stringify(merged));
     saveUserRecord(merged);
 
-    // Sync with backend if membership or plan changed
+    // Sync with backend if membership or plan changed (solo si no es estático)
     const token = getToken();
-    if (token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+    if (!isStatic() && token && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
         if ('active' in updatedData) {
           await fetch('/api/membership/toggle-status', {
@@ -320,6 +329,7 @@ const AuthService = (() => {
 
   // Auto-sync de perfil con el servidor al cargar
   const syncWithServer = async () => {
+    if (isStatic()) return;
     const token = getToken();
     if (!token || typeof window === 'undefined' || !window.location.protocol.startsWith('http')) return;
     try {

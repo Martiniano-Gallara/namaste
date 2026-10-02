@@ -4,6 +4,13 @@
  */
 
 const MembershipService = (() => {
+  const isStatic = () => {
+    if (typeof window === 'undefined') return true;
+    return window.location.hostname.includes('github.io') ||
+           window.location.protocol === 'file:' ||
+           (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port);
+  };
+
   /**
    * Procesa el alta de membresía comunicándose con el backend
    */
@@ -14,8 +21,8 @@ const MembershipService = (() => {
     const planDisplayName = `${selectedPlan.name} (${isAnnual ? 'Anual • 2 meses gratis' : 'Mensual'})`;
     const finalAmount = amount || (isAnnual ? (selectedPlan.priceAnnualTotal || selectedPlan.priceMonthly * 10) : selectedPlan.priceMonthly);
 
-    // 1. Intentar registrar en API REST del servidor
-    if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+    // 1. Intentar registrar en API REST del servidor (solo si no es estático)
+    if (!isStatic() && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
         const response = await fetch('/api/checkout', {
           method: 'POST',
