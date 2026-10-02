@@ -158,6 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
       switchView('admin');
     } else if (hash === '#refugio' || hash === '#plataforma') {
       switchView('platform');
+    } else if (hash === '#login' || hash === '#ingreso' || hash === '#acceso') {
+      switchView('landing');
+      if (modals && modals.login) openModal(modals.login);
     } else if (hash === '#inicio' || hash === '#home') {
       switchView('landing');
     }
@@ -303,12 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.btn-access-login').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const user = AuthService.getCurrentUser();
-        if (user) {
-          switchView('platform');
-        } else {
-          openModal(modals.login);
-        }
+        openModal(modals.login);
       });
     });
 
@@ -441,12 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           closeDrawer();
           setTimeout(() => {
-            const user = AuthService.getCurrentUser();
-            if (user) {
-              switchView('platform');
-            } else {
-              openModal(modals.login);
-            }
+            openModal(modals.login);
           }, 120);
           return;
         }
@@ -624,6 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('access-code-input');
     const feedback = document.getElementById('login-feedback');
     const demoBtn = document.getElementById('btn-use-demo-code');
+    const adminBtn = document.getElementById('btn-use-admin-code');
 
     if (input) {
       input.addEventListener('input', () => {
@@ -635,30 +629,69 @@ document.addEventListener('DOMContentLoaded', () => {
       demoBtn.addEventListener('click', () => {
         input.value = 'sofia.varela@ejemplo.com';
         feedback.style.display = 'none';
+        if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
+      });
+    }
+
+    if (adminBtn && input) {
+      adminBtn.addEventListener('click', () => {
+        input.value = 'valeria.manassero@namaste.com';
+        feedback.style.display = 'none';
+        if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
       });
     }
 
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const identifier = input.value;
-        const result = AuthService.login(identifier);
+        const identifier = (input.value || '').trim();
+        if (!identifier) return;
 
-        if (result.success) {
-          feedback.className = 'modal-feedback success';
-          feedback.textContent = `¡Bienvenido/a de regreso, ${result.user.name}! Abriendo tu Santuario...`;
-          feedback.style.display = 'block';
+        const submitBtn = document.getElementById('btn-submit-code-login');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Verificando...';
+        }
 
-          setTimeout(() => {
-            closeModal(modals.login);
-            input.value = '';
-            feedback.style.display = 'none';
-            switchView('platform');
-          }, 600);
-        } else {
+        try {
+          const result = await AuthService.login(identifier);
+
+          if (result.success) {
+            const user = result.user;
+            const isAdmin = user.role === 'admin' || user.isAdmin;
+
+            feedback.className = 'modal-feedback success';
+            if (isAdmin) {
+              feedback.textContent = `¡Bienvenida, Valeria! Abriendo el Panel de Administración...`;
+            } else {
+              feedback.textContent = `¡Bienvenida de regreso, ${user.name}! Abriendo tu Santuario...`;
+            }
+            feedback.style.display = 'block';
+
+            setTimeout(() => {
+              closeModal(modals.login);
+              input.value = '';
+              feedback.style.display = 'none';
+              if (isAdmin) {
+                switchView('admin');
+              } else {
+                switchView('platform');
+              }
+            }, 600);
+          } else {
+            feedback.className = 'modal-feedback error';
+            feedback.textContent = result.message;
+            feedback.style.display = 'block';
+          }
+        } catch (err) {
           feedback.className = 'modal-feedback error';
-          feedback.textContent = result.message;
+          feedback.textContent = 'Error al verificar credenciales. Intenta nuevamente.';
           feedback.style.display = 'block';
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Iniciar Sesión';
+          }
         }
       });
     }
@@ -675,18 +708,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateNavForLoggedInUser(user) {
-    const loginNavBtn = document.querySelector('.btn-access-login');
+    const loginNavBtn = document.querySelector('#nav-btn-login');
     if (loginNavBtn) {
       if (user) {
-        const firstName = escapeHtml((user.name || '').split(' ')[0] || 'Alumno');
-        loginNavBtn.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          Mi Santuario (${firstName})
-        `;
-        loginNavBtn.classList.add('btn-olive');
+        const isAdmin = user.role === 'admin' || user.isAdmin;
+        const firstName = escapeHtml((user.name || '').split(' ')[0] || (isAdmin ? 'Valeria' : 'Alumno'));
+        if (isAdmin) {
+          loginNavBtn.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            Panel Admin (${firstName})
+          `;
+          loginNavBtn.classList.add('btn-olive');
+        } else {
+          loginNavBtn.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Mi Santuario (${firstName})
+          `;
+          loginNavBtn.classList.add('btn-olive');
+        }
       } else {
         loginNavBtn.innerHTML = `
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -300,11 +300,44 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, { success: false, message: 'Por favor, ingresa tu correo electrónico o código de acceso.' });
         }
 
-        // Find user by email or accessCode
-        let user = Object.values(db.users).find(u => 
-          (u.email || '').toLowerCase() === identifier || 
-          (u.accessCode || '').toUpperCase() === identifier.toUpperCase()
-        );
+        // Reconocimiento de la cuenta única de Valeria Manassero (Directora & Administradora)
+        const adminAliases = [
+          'valeria', 'vale', 'admin', 'valeria manassero',
+          'valeria.manassero@namaste.com', 'valeria@namaste.com',
+          'vale.manassero@namaste.com', 'vale@namaste.com',
+          'admin@namaste.com', 'namaste-directora', 'namaste-admin'
+        ];
+
+        let user = null;
+        if (adminAliases.includes(identifier)) {
+          user = db.users['usr-valeria'] || Object.values(db.users).find(u => u.role === 'admin' || u.isAdmin);
+          if (!user) {
+            user = {
+              id: 'usr-valeria',
+              email: 'valeria.manassero@namaste.com',
+              name: 'Valeria Manassero',
+              role: 'admin',
+              isAdmin: true,
+              accessCode: 'NAMASTE-DIRECTORA',
+              planId: 'plan-admin',
+              planName: 'Directora & Fundadora',
+              active: true,
+              isAnnual: true,
+              memberSince: 'Enero 2012',
+              nextBillingDate: 'Cuenta Maestra (Vitalicia)',
+              paymentMethod: 'Administradora General',
+              billedAmount: 0,
+              createdAt: '2012-01-01T00:00:00Z'
+            };
+            db.users['usr-valeria'] = user;
+          }
+        } else {
+          // Find user by email or accessCode
+          user = Object.values(db.users).find(u => 
+            (u.email || '').toLowerCase() === identifier || 
+            (u.accessCode || '').toUpperCase() === identifier.toUpperCase()
+          );
+        }
 
         // If not found, create new student account on the fly for effortless testing
         if (!user) {
@@ -642,7 +675,7 @@ const server = http.createServer(async (req, res) => {
 
       // 11.1 Admin Overview (KPIs, Active Subscriptions, Financials, Practice Totals)
       if (pathname === '/api/admin/overview' && req.method === 'GET') {
-        const usersList = Object.values(db.users || {});
+        const usersList = Object.values(db.users || {}).filter(u => u.role !== 'admin' && !u.isAdmin);
         const totalUsers = usersList.length;
         const activeUsers = usersList.filter(u => u.active).length;
         const pausedUsers = totalUsers - activeUsers;
@@ -698,7 +731,7 @@ const server = http.createServer(async (req, res) => {
 
       // 11.2 Admin: List All Client Accounts with Progress & Financials
       if (pathname === '/api/admin/users' && req.method === 'GET') {
-        const usersList = Object.values(db.users || {}).map(user => {
+        const usersList = Object.values(db.users || {}).filter(u => u.role !== 'admin' && !u.isAdmin).map(user => {
           const prog = db.progress[user.id] || { streakDays: 0, totalMinutes: 0, completed: [], favorites: [] };
           return {
             ...user,

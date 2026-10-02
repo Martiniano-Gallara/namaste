@@ -1,5 +1,22 @@
 {
   "users": {
+    "usr-valeria": {
+      "id": "usr-valeria",
+      "email": "valeria.manassero@namaste.com",
+      "name": "Valeria Manassero",
+      "role": "admin",
+      "isAdmin": true,
+      "accessCode": "NAMASTE-DIRECTORA",
+      "planId": "plan-admin",
+      "planName": "Directora & Fundadora",
+      "active": true,
+      "isAnnual": true,
+      "memberSince": "Enero 2012",
+      "nextBillingDate": "Cuenta Maestra (Vitalicia)",
+      "paymentMethod": "Administradora General",
+      "billedAmount": 0,
+      "createdAt": "2012-01-01T00:00:00Z"
+    },
     "usr-sofia": {
       "id": "usr-sofia",
       "email": "sofia.varela@ejemplo.com",
@@ -91,6 +108,16 @@
       "userId": "usr-sofia",
       "createdAt": 1790625578459,
       "expiresAt": 1793217578459
+    },
+    "649dd946-439a-41f5-b382-ec2b66624240": {
+      "userId": "usr-valeria",
+      "createdAt": 1790981043468,
+      "expiresAt": 1793573043468
+    },
+    "7c505d80-d34d-4cc5-b5f4-4e0070a1318c": {
+      "userId": "usr-sofia",
+      "createdAt": 1790981053711,
+      "expiresAt": 1793573053711
     }
   },
   "progress": {

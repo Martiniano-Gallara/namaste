@@ -9,8 +9,24 @@ const AuthService = (() => {
   const TOKEN_KEY = 'namaste_session_token';
   const CODES_STORAGE_KEY = 'namaste_registered_codes';
 
-  // Alumnos semilla pre-configurados para demostración inmediata
+  // Usuarios semilla pre-configurados para demostración inmediata
   const DEFAULT_USERS = {
+    'NAMASTE-DIRECTORA': {
+      id: 'usr-valeria',
+      name: 'Valeria Manassero',
+      email: 'valeria.manassero@namaste.com',
+      role: 'admin',
+      isAdmin: true,
+      accessCode: 'NAMASTE-DIRECTORA',
+      planId: 'plan-admin',
+      planName: 'Directora & Fundadora',
+      memberSince: 'Enero 2012',
+      nextBillingDate: 'Cuenta Maestra (Vitalicia)',
+      active: true,
+      streakDays: 365,
+      totalMinutesPracticed: 9999,
+      completedClassesCount: 150
+    },
     'NAMASTE-ALUMNO': {
       id: 'usr-sofia',
       name: 'Sofía Varela',
@@ -131,11 +147,23 @@ const AuthService = (() => {
     }
 
     // 2. Fallback de demostración / offline
-    const allUsers = getStoredUsers();
-    let user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
+    const adminAliases = [
+      'valeria', 'vale', 'admin', 'valeria manassero',
+      'valeria.manassero@namaste.com', 'valeria@namaste.com',
+      'vale.manassero@namaste.com', 'vale@namaste.com',
+      'admin@namaste.com', 'namaste-directora', 'namaste-admin'
+    ];
 
-    if (!user) {
-      user = allUsers[clean.toUpperCase()];
+    const allUsers = getStoredUsers();
+    let user = null;
+
+    if (adminAliases.includes(clean)) {
+      user = DEFAULT_USERS['NAMASTE-DIRECTORA'];
+    } else {
+      user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
+      if (!user) {
+        user = allUsers[clean.toUpperCase()];
+      }
     }
 
     if (!user) {
