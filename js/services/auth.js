@@ -38,8 +38,8 @@ const AuthService = (() => {
       nextBillingDate: '28 Octubre 2026',
       active: true,
       streakDays: 8,
-      totalMinutesPracticed: 245,
-      completedClassesCount: 7
+      totalMinutesPracticed: 275,
+      completedClassesCount: 8
     },
     'NAMASTE-DEMO': {
       id: 'usr-invitado',
@@ -51,9 +51,9 @@ const AuthService = (() => {
       memberSince: 'Septiembre 2026',
       nextBillingDate: '28 Octubre 2026',
       active: true,
-      streakDays: 3,
-      totalMinutesPracticed: 80,
-      completedClassesCount: 3
+      streakDays: 1,
+      totalMinutesPracticed: 35,
+      completedClassesCount: 1
     }
   };
 
@@ -144,6 +144,9 @@ const AuthService = (() => {
             setToken(data.token);
             localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
             saveUserRecord(data.user);
+            if (data.progress && typeof ProgressService !== 'undefined') {
+              ProgressService.setInitialProgress(data.user.id, data.progress);
+            }
             window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: data.user }));
             return { success: true, user: data.user };
           }
@@ -226,6 +229,9 @@ const AuthService = (() => {
     }
     setToken(null);
     localStorage.removeItem(SESSION_KEY);
+    if (typeof ProgressService !== 'undefined') {
+      ProgressService.clearActiveUser();
+    }
     window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: null }));
   };
 
@@ -340,6 +346,9 @@ const AuthService = (() => {
         const data = await response.json();
         if (data.user) {
           localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
+          if (data.progress && typeof ProgressService !== 'undefined') {
+            ProgressService.setInitialProgress(data.user.id, data.progress);
+          }
           window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: data.user }));
         }
       }

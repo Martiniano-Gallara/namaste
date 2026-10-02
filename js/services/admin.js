@@ -76,8 +76,8 @@ const AdminService = (() => {
           paymentMethod: 'Visa •••• 4242',
           billedAmount: 29,
           streakDays: 8,
-          totalMinutes: 245,
-          completedCount: 2,
+          totalMinutes: 275,
+          completedCount: 8,
           favoritesCount: 2
         },
         {

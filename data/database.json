@@ -118,25 +118,51 @@
       "userId": "usr-sofia",
       "createdAt": 1790981053711,
       "expiresAt": 1793573053711
+    },
+    "b7b5dcee-8e69-4a5e-8255-8acfe4cbd08d": {
+      "userId": "usr-sofia",
+      "createdAt": 1790982865078,
+      "expiresAt": 1793574865078
+    },
+    "c33cbf7e-64c1-4d26-a93f-3a074c026b27": {
+      "userId": "usr-invitado",
+      "createdAt": 1790982865087,
+      "expiresAt": 1793574865087
+    },
+    "1ddedcca-a228-45db-8449-e39686caa91d": {
+      "userId": "usr-sofia",
+      "createdAt": 1790982884311,
+      "expiresAt": 1793574884311
+    },
+    "381200b5-57b6-42b6-826b-5d18bf994514": {
+      "userId": "usr-invitado",
+      "createdAt": 1790982884317,
+      "expiresAt": 1793574884317
     }
   },
   "progress": {
     "usr-sofia": {
       "streakDays": 8,
-      "lastStreakDate": "2026-09-28",
-      "totalMinutes": 245,
+      "lastStreakDate": "2026-10-02",
+      "totalMinutes": 275,
       "favorites": [
         "cls-dinamico-01",
         "cls-terapeutico-01"
       ],
       "completed": [
         "cls-suave-01",
-        "cls-clasico-01"
+        "cls-relax-02",
+        "cls-suave-02",
+        "cls-dinamico-01",
+        "cls-terapeutico-01",
+        "cls-relax-01",
+        "cls-med-02",
+        "cls-terapeutico-02"
       ],
       "lastPlayed": {
         "classId": "cls-dinamico-01",
         "progressSeconds": 480,
-        "timestamp": "2026-09-28T14:30:00Z"
+        "timestamp": "2026-10-02T14:30:00Z"
       }
     },
     "usr-invitado": {

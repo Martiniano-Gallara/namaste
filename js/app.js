@@ -1068,18 +1068,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Métricas Reales del Alumno
+    // Métricas Reales del Alumno sincronizadas con la Base de Datos
+    const progress = (typeof ProgressService !== 'undefined') ? ProgressService.getProgressState() : { streakDays: 1, totalMinutes: 0, completed: [] };
     const streakEl = document.getElementById('stat-streak-days');
-    if (streakEl) streakEl.textContent = user.streakDays || 1;
+    if (streakEl) streakEl.textContent = progress.streakDays || 1;
 
     const minutesEl = document.getElementById('stat-minutes-practiced');
-    if (minutesEl) minutesEl.textContent = user.totalMinutesPracticed || 0;
+    if (minutesEl) minutesEl.textContent = progress.totalMinutes || 0;
 
     const completedEl = document.getElementById('stat-classes-completed');
-    if (completedEl) completedEl.textContent = user.completedClassesCount || 0;
+    if (completedEl) completedEl.textContent = progress.completed ? progress.completed.length : 0;
 
     const streakBadgeEl = document.getElementById('header-streak-count');
-    if (streakBadgeEl) streakBadgeEl.textContent = `${user.streakDays || 1} días`;
+    if (streakBadgeEl) streakBadgeEl.textContent = `${progress.streakDays || 1} días`;
 
     // Banner de Membresía Pausada
     const pausedBanner = document.getElementById('platform-paused-banner');
@@ -1773,10 +1774,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const badgeCountEl = document.getElementById('modal-completed-count-badge');
       const listContainer = document.getElementById('modal-completed-classes-list');
 
-      const streak = user.streakDays || 1;
+      const streak = progress.streakDays || 1;
       if (streakEl) streakEl.textContent = streak;
-      if (minEl) minEl.textContent = user.totalMinutesPracticed || 0;
-      if (countEl) countEl.textContent = user.completedClassesCount || 0;
+      if (minEl) minEl.textContent = progress.totalMinutes || 0;
+      if (countEl) countEl.textContent = progress.completed ? progress.completed.length : 0;
       if (badgeCountEl) badgeCountEl.textContent = `${completedClasses.length} ${completedClasses.length === 1 ? 'clase' : 'clases'}`;
 
       // Mensaje consciente de racha

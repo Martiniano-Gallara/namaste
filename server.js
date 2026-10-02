@@ -112,14 +112,23 @@ const DEFAULT_DATABASE = {
   progress: {
     'usr-sofia': {
       streakDays: 8,
-      lastStreakDate: '2026-09-28',
-      totalMinutes: 245,
+      lastStreakDate: '2026-10-02',
+      totalMinutes: 275,
       favorites: ['cls-dinamico-01', 'cls-terapeutico-01'],
-      completed: ['cls-suave-01', 'cls-clasico-01'],
+      completed: [
+        'cls-suave-01',
+        'cls-relax-02',
+        'cls-suave-02',
+        'cls-dinamico-01',
+        'cls-terapeutico-01',
+        'cls-relax-01',
+        'cls-med-02',
+        'cls-terapeutico-02'
+      ],
       lastPlayed: {
         classId: 'cls-dinamico-01',
         progressSeconds: 480,
-        timestamp: '2026-09-28T14:30:00Z'
+        timestamp: '2026-10-02T14:30:00Z'
       }
     },
     'usr-invitado': {
@@ -294,7 +303,7 @@ const server = http.createServer(async (req, res) => {
       // 2. Auth: Login
       if (pathname === '/api/auth/login' && req.method === 'POST') {
         const body = await parseJsonBody(req);
-        const identifier = (body.identifier || body.email || '').trim().toLowerCase();
+        const identifier = (body.identifier || body.email || body.accessCode || '').trim().toLowerCase();
 
         if (!identifier) {
           return sendJson(res, 400, { success: false, message: 'Por favor, ingresa tu correo electrónico o código de acceso.' });
@@ -574,6 +583,17 @@ const server = http.createServer(async (req, res) => {
         if (Array.isArray(body.completed)) current.completed = body.completed;
         if (body.lastPlayed) current.lastPlayed = body.lastPlayed;
         if (typeof body.totalMinutes === 'number') current.totalMinutes = body.totalMinutes;
+        if (typeof body.streakDays === 'number') current.streakDays = body.streakDays;
+        if (body.lastStreakDate) current.lastStreakDate = body.lastStreakDate;
+
+        if (body.completedClassId) {
+          if (!current.completed.includes(body.completedClassId)) {
+            current.completed.push(body.completedClassId);
+          }
+          if (typeof body.durationMinutes === 'number') {
+            current.totalMinutes = (current.totalMinutes || 0) + body.durationMinutes;
+          }
+        }
 
         // Calendar-based streak calculation
         if (body.recordPractice) {
@@ -584,7 +604,7 @@ const server = http.createServer(async (req, res) => {
             yesterday.setDate(yesterday.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
             if (lastDate === yesterdayStr) {
-              current.streakDays = Math.min(30, (current.streakDays || 0) + 1);
+              current.streakDays = (current.streakDays || 0) + 1;
             } else {
               current.streakDays = 1;
             }
