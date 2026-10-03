@@ -1,6 +1,6 @@
 /**
  * NAMASTÉ - Definición de Membresías y Planes
- * 3 Niveles Conscientes: Inicial (Esencia), Intermedio (Santuario) y Premium (Sadhana)
+ * 3 Niveles Conscientes: Inicial (Esencia), Intermedio (Refugio) y Premium (Sadhana)
  * Versión Anual con 2 Meses de Regalo (se facturan 10 meses por 12 meses de acceso)
  */
 
@@ -30,10 +30,10 @@ const PLANS_DATA = [
     codePrefix: "ESENCIA"
   },
   {
-    id: "plan-santuario",
+    id: "plan-refugio",
     tier: "intermedio",
     levelName: "Intermedio",
-    name: "Plan Santuario",
+    name: "Plan Refugio",
     badge: "Más Elegido",
     priceMonthly: 29,
     priceAnnualTotal: 290,
@@ -50,8 +50,8 @@ const PLANS_DATA = [
       "Encuentros mensuales en vivo por Zoom (Satsang)"
     ],
     recommended: true,
-    ctaText: "Unirme al Santuario",
-    codePrefix: "SANTUARIO"
+    ctaText: "Unirme al Refugio",
+    codePrefix: "REFUGIO"
   },
   {
     id: "plan-sadhana",
@@ -68,7 +68,7 @@ const PLANS_DATA = [
     description: "Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.",
     allowedCategories: ["*"],
     features: [
-      "Todo lo de Plan Santuario sin restricciones",
+      "Todo lo de Plan Refugio sin restricciones",
       "Sesión individual de bienvenida de 30 min por Zoom",
       "Masterclasses y series de meditación avanzada",
       "Cuaderno digital de Sadhana y soporte directo"
