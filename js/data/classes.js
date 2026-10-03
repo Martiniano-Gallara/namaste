@@ -352,23 +352,18 @@ const ClassesService = (() => {
     const classObj = getClassById(classId);
     if (!classObj) return null;
 
-    const isStatic = window.location.hostname.includes('github.io') ||
-                     window.location.protocol === 'file:' ||
-                     (!['localhost', '127.0.0.1'].includes(window.location.hostname));
-
-    if (isStatic) {
-      return classObj.videoUrl;
-    }
-
-    // Try server protected streaming endpoint if available (solo si no es estático)
     const isStatic = typeof window !== 'undefined' && (
       window.location.hostname.includes('github.io') ||
       window.location.protocol === 'file:' ||
       (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port)
     );
 
-    if (!isStatic) {
-      try {
+    if (isStatic) {
+      return classObj.videoUrl;
+    }
+
+    // Try server protected streaming endpoint if available (solo si no es estático)
+    try {
         const token = typeof AuthService !== 'undefined' ? AuthService.getToken() : null;
         if (token && window.location.protocol.startsWith('http')) {
           const response = await fetch(`/api/classes/${encodeURIComponent(classId)}/stream`, {
