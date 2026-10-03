@@ -1,5 +1,5 @@
 /**
- * NAMASTÉ - Controlador Principal de la Aplicación & Santuario Virtual
+ * NAMASTÉ - Controlador Principal de la Aplicación & Refugio Virtual
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isAdmin) {
               feedback.textContent = `¡Bienvenida, Valeria! Abriendo el Panel de Administración...`;
             } else {
-              feedback.textContent = `¡Bienvenida de regreso, ${user.name}! Abriendo tu Santuario...`;
+              feedback.textContent = `¡Bienvenida de regreso, ${user.name}! Abriendo tu Refugio...`;
             }
             feedback.style.display = 'block';
 
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            Mi Santuario (${firstName})
+            Mi Refugio (${firstName})
           `;
           loginNavBtn.classList.add('btn-olive');
         }
@@ -846,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const name = document.getElementById('checkout-name').value;
         const email = document.getElementById('checkout-email').value;
-        const planId = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.id : 'plan-santuario';
+        const planId = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.id : 'plan-refugio';
         const isAnnual = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
         const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29;
         const paymentRadio = checkoutForm.querySelector('input[name="payment-method"]:checked');
@@ -880,7 +880,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnEnterPlatformDirect.addEventListener('click', () => {
         closeModal(modals.checkout);
         switchView('platform');
-        showToast('¡Bienvenido/a a tu Santuario!', 'success');
+        showToast('¡Bienvenido/a a tu Refugio!', 'success');
       });
     }
   }
@@ -1068,7 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================================
   // PLATAFORMA PRIVADA (DASHBOARD & VIDEOTECA)
   // ========================================================================
-  // PLATAFORMA PRIVADA (DASHBOARD & SANTUARIO DE PRÁCTICA)
+  // PLATAFORMA PRIVADA (DASHBOARD & REFUGIO DE PRÁCTICA)
   // ========================================================================
   function renderPlatformDashboard() {
     const user = AuthService.getCurrentUser();
@@ -1451,12 +1451,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const isDone = ProgressService.isCompleted(c.id);
       const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
 
-      const planHierarchy = { 'plan-esencia': 1, 'plan-santuario': 2, 'plan-sadhana': 3 };
+      const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
       const user = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser() : null;
       const userLevel = user ? (planHierarchy[user.planId] || 1) : 1;
       const requiredPlan = c.planRequired || (
         c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' :
-        (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario')
+        (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio')
       );
       const isLocked = Boolean(user && userLevel < (planHierarchy[requiredPlan] || 1));
 
@@ -1473,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </svg>
               </button>
             </div>
-            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🔒 ${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Santuario'}</span>` : ''}
+            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🔒 ${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Refugio'}</span>` : ''}
             <span class="class-duration-badge">${c.duration} min</span>
 
             <div class="play-overlay-btn">
@@ -1552,18 +1552,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 2. Control de acceso según membresía (Plan Esencia, Plan Santuario, Plan Sadhana)
+    // 2. Control de acceso según membresía (Plan Esencia, Plan Refugio, Plan Sadhana)
     if (user) {
-      const planHierarchy = { 'plan-esencia': 1, 'plan-santuario': 2, 'plan-sadhana': 3 };
+      const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
       const userLevel = planHierarchy[user.planId] || 1;
       const requiredPlan = classObj.planRequired || (
         classObj.category === 'dinamico' || classObj.category === 'ashtanga' ? 'plan-sadhana' :
-        (classObj.category === 'suave' ? 'plan-esencia' : 'plan-santuario')
+        (classObj.category === 'suave' ? 'plan-esencia' : 'plan-refugio')
       );
       const requiredLevel = planHierarchy[requiredPlan] || 1;
 
       if (userLevel < requiredLevel) {
-        const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Santuario';
+        const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio';
         showToast(`La práctica "${classObj.title}" requiere ${planName}. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
         return;
       }
@@ -1777,7 +1777,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Enlaces del Header de la plataforma
-    const navSanctuary = document.getElementById('platform-nav-sanctuary');
+    const navSanctuary = document.getElementById('platform-nav-refugio') || document.getElementById('platform-nav-sanctuary');
     if (navSanctuary) {
       navSanctuary.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1900,7 +1900,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const gCalBtn = document.getElementById('btn-add-google-calendar');
       if (gCalBtn) {
-        gCalBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Satsang+%26+Meditaci%C3%B3n+-+Namast%C3%A9&dates=${satsang.gCalDates}&details=Encuentro+mensual+exclusivo+para+alumnos+de+Namast%C3%A9+por+Zoom.+Acceso+directo+desde+el+Santuario.&location=Zoom+Online`;
+        gCalBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Satsang+%26+Meditaci%C3%B3n+-+Namast%C3%A9&dates=${satsang.gCalDates}&details=Encuentro+mensual+exclusivo+para+alumnos+de+Namast%C3%A9+por+Zoom.+Acceso+directo+desde+el+Refugio.&location=Zoom+Online`;
       }
 
       if (attendText) {
@@ -1981,7 +1981,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 6. Modal de Cambio de Plan en el Santuario (Diseño Compacto & Estilizado)
+    // 6. Modal de Cambio de Plan en el Refugio (Diseño Compacto & Estilizado)
     const openChangePlanModal = () => {
       const user = AuthService.getCurrentUser();
       if (!user) return;
@@ -1991,6 +1991,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Síntesis concisa para máxima elegancia y dimensiones compactas
         const planHighlights = {
           'plan-esencia': 'Yoga Suave, Clásico y Meditación (+40 clases)',
+          'plan-refugio': 'Catálogo total (+140 clases) • Vinyasa, Hatha y Satsang en vivo',
           'plan-santuario': 'Catálogo total (+140 clases) • Vinyasa, Hatha y Satsang en vivo',
           'plan-sadhana': 'Práctica avanzada, masterclasses y mentoría personal'
         };
@@ -2106,14 +2107,14 @@ document.addEventListener('DOMContentLoaded', () => {
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
                 <div>
                   <strong style="font-family:var(--font-serif); font-size:1.15rem; color:var(--text-primary);">Namasté Escuela de Yoga</strong>
-                  <div style="font-size:0.78rem; color:var(--text-muted);">Santuario Consciente Online</div>
+                  <div style="font-size:0.78rem; color:var(--text-muted);">Refugio Consciente Online</div>
                 </div>
                 <span class="status-badge-active">● Pagado</span>
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:1rem;">
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Alumno:</span><br><strong>${escapeHtml(user.name)}</strong></div>
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Código:</span><br><code>${escapeHtml(user.accessCode)}</code></div>
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${escapeHtml(user.planName || 'Plan Santuario')}</strong></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${escapeHtml(user.planName || 'Plan Refugio')}</strong></div>
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Renovación:</span><br><strong>${escapeHtml(user.nextBillingDate || 'Próximo mes')}</strong></div>
               </div>
               <div style="border-top:1px dashed var(--border-medium); padding-top:0.75rem; display:flex; justify-content:space-between; align-items:center;">
@@ -2300,7 +2301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (codeEl) codeEl.textContent = user.accessCode || user.email;
 
     const planNameEl = document.getElementById('drawer-plan-name');
-    if (planNameEl) planNameEl.textContent = user.planName || 'Plan Santuario';
+    if (planNameEl) planNameEl.textContent = user.planName || 'Plan Refugio';
 
     const nextBillingEl = document.getElementById('drawer-next-billing');
     if (nextBillingEl) nextBillingEl.textContent = user.nextBillingDate || '22 Octubre 2026';
@@ -2392,7 +2393,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="drawer-review-badge badge-locked">En ${eligibility.daysRemaining} días</span>
         </div>
         <p class="drawer-review-locked-msg">
-          Tu reseña se habilitará al completar tu <strong>primera semana de membresía</strong> (${eligibility.daysRemaining} ${eligibility.daysRemaining === 1 ? 'día restante' : 'días restantes'}). ¡Disfruta de tus primeras clases en el Santuario!
+          Tu reseña se habilitará al completar tu <strong>primera semana de membresía</strong> (${eligibility.daysRemaining} ${eligibility.daysRemaining === 1 ? 'día restante' : 'días restantes'}). ¡Disfruta de tus primeras clases en el Refugio!
         </p>
       `;
       return;
@@ -2906,7 +2907,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const name = nameInput ? nameInput.value.trim() : '';
         const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
-        const planId = planSelect ? planSelect.value : 'plan-santuario';
+        const planId = planSelect ? planSelect.value : 'plan-refugio';
         const isAnnual = annualCheck ? annualCheck.checked : false;
         const active = activeCheck ? activeCheck.checked : true;
 
@@ -2958,7 +2959,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const userId = document.getElementById('edit-plan-user-id')?.value;
         const planSelect = document.getElementById('edit-plan-select');
-        const newPlanId = planSelect ? planSelect.value : 'plan-santuario';
+        const newPlanId = planSelect ? planSelect.value : 'plan-refugio';
 
         if (!userId) return;
 
@@ -3051,13 +3052,13 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // D) Probar como Alumna (Impersonación / Acceso rápido al Santuario)
+        // D) Probar como Alumna (Impersonación / Acceso rápido al Refugio)
         const loginAsBtn = e.target.closest('.btn-login-as');
         if (loginAsBtn) {
           const userEmail = loginAsBtn.getAttribute('data-user-email');
           const userName = loginAsBtn.getAttribute('data-user-name');
           if (userEmail) {
-            showToast(`Ingresando al Santuario como ${userName}...`, 'info');
+            showToast(`Ingresando al Refugio como ${userName}...`, 'info');
             await AuthService.loginWithEmail(userEmail);
             switchView('platform');
           }
@@ -3539,8 +3540,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     tableBody.innerHTML = users.map(user => {
-      const planClass = user.planId || 'plan-santuario';
-      const rawPlan = user.planName || (user.planId === 'plan-esencia' ? 'Esencia' : user.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
+      const planClass = (user.planId === 'plan-santuario') ? 'plan-refugio' : (user.planId || 'plan-refugio');
+      const rawPlan = user.planName || (user.planId === 'plan-esencia' ? 'Esencia' : user.planId === 'plan-sadhana' ? 'Sadhana' : 'Refugio');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const billingType = user.isAnnual ? 'Anual' : 'Mensual';
       const billingAmount = `$${user.billedAmount || 29}`;
@@ -3651,8 +3652,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     txBody.innerHTML = filtered.map(tx => {
-      const planClass = tx.planId || 'plan-santuario';
-      const rawPlan = tx.planName || (tx.planId === 'plan-esencia' ? 'Esencia' : tx.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
+      const planClass = (tx.planId === 'plan-santuario') ? 'plan-refugio' : (tx.planId || 'plan-refugio');
+      const rawPlan = tx.planName || (tx.planId === 'plan-esencia' ? 'Esencia' : tx.planId === 'plan-sadhana' ? 'Sadhana' : 'Refugio');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const txId = tx.id || String(Math.random()).substring(2);
 
@@ -3750,7 +3751,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /** Abre una ventana de impresión con el recibo de un cobro específico */
   function printTxReceipt(tx) {
     if (!tx) return;
-    const planLabel = (tx.planName || (tx.planId === 'plan-esencia' ? 'Plan Esencia' : tx.planId === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Santuario'));
+    const planLabel = (tx.planName || (tx.planId === 'plan-esencia' ? 'Plan Esencia' : tx.planId === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio'));
     const amount = `$${Number(tx.amount || 0).toFixed(2)}`;
     const period = tx.isAnnual ? 'Anual' : 'Mensual';
     const method = tx.paymentMethod === 'mercadopago' ? 'MercadoPago' : 'Tarjeta Débito/Crédito';
@@ -3776,7 +3777,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
     </head><body>
       <h1>🪷 Namasté Escuela de Yoga</h1>
-      <div class="sub">Santuario Consciente Online — Recibo de Pago</div>
+      <div class="sub">Refugio Consciente Online — Recibo de Pago</div>
       <table>
         <tr><td>N° Recibo</td><td><code>${escapeHtml(receiptNum)}</code></td></tr>
         <tr><td>Fecha</td><td>${escapeHtml(dateStr)}</td></tr>
@@ -3836,8 +3837,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tableBody.innerHTML = classes.map(c => {
       const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
-      const planReq = c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario'));
-      const planLabel = planReq === 'plan-sadhana' ? 'SADHANA' : (planReq === 'plan-esencia' ? 'ESENCIA' : 'SANTUARIO');
+      const planReq = c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio'));
+      const planLabel = planReq === 'plan-sadhana' ? 'SADHANA' : (planReq === 'plan-esencia' ? 'ESENCIA' : 'REFUGIO');
       const planClass = planReq;
 
       return `

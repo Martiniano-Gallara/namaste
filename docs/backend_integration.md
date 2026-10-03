@@ -62,7 +62,7 @@ CREATE INDEX idx_user_sessions_token ON user_sessions(token_hash);
 CREATE TABLE access_codes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    code VARCHAR(64) UNIQUE NOT NULL, -- Ej: NAMASTE-SANTUARIO-9A3F1B
+    code VARCHAR(64) UNIQUE NOT NULL, -- Ej: NAMASTE-REFUGIO-9A3F1B
     status VARCHAR(20) DEFAULT 'active', -- 'active', 'paused', 'revoked'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE
@@ -74,7 +74,7 @@ CREATE INDEX idx_access_codes_code ON access_codes(code);
 CREATE TABLE memberships (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    plan_tier VARCHAR(50) NOT NULL, -- 'plan-esencia', 'plan-santuario', 'plan-sadhana'
+    plan_tier VARCHAR(50) NOT NULL, -- 'plan-esencia', 'plan-refugio', 'plan-sadhana'
     provider VARCHAR(30) NOT NULL, -- 'stripe', 'mercadopago'
     external_subscription_id VARCHAR(255) UNIQUE,
     status VARCHAR(30) DEFAULT 'active', -- 'active', 'past_due', 'canceled', 'paused'
@@ -155,11 +155,11 @@ export async function handleStripeWebhook(req, res) {
 
         const email = session.customer_details.email.toLowerCase();
         const name = session.customer_details.name || 'Practicante de Namasté';
-        const planId = session.metadata.planId || 'plan-santuario';
-        const planName = session.metadata.planName || 'Plan Santuario';
+        const planId = session.metadata.planId || 'plan-refugio';
+        const planName = session.metadata.planName || 'Plan Refugio';
 
         // Generar código criptográfico de alta entropía (128 bits)
-        const planTag = planId.includes('sadhana') ? 'SADHANA' : (planId.includes('esencia') ? 'ESENCIA' : 'SANTUARIO');
+        const planTag = planId.includes('sadhana') ? 'SADHANA' : (planId.includes('esencia') ? 'ESENCIA' : 'REFUGIO');
         const cryptoSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
         const accessCode = `NAMASTE-${planTag}-${cryptoSuffix}`;
 

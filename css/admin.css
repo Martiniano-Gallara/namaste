@@ -494,6 +494,7 @@
   border: 1px solid rgba(34, 110, 64, 0.12);
 }
 
+.plan-badge.plan-refugio,
 .plan-badge.plan-santuario {
   background-color: #FDF1EA;
   color: #A04A26;

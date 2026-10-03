@@ -18,8 +18,8 @@ const ReviewsService = (() => {
     {
       id: 'rev_seed_01',
       name: 'Lucía Méndez',
-      planName: 'Plan Santuario',
-      memberSince: 'Miembro hace 8 meses • Plan Santuario',
+      planName: 'Plan Refugio',
+      memberSince: 'Miembro hace 8 meses • Plan Refugio',
       quote: 'Sentí de inmediato la calidez y el respeto pedagógico de las maestras. Namasté transformó mis mañanas en un momento de verdadera calma.',
       rating: 5,
       timestamp: new Date('2026-02-15T10:00:00Z').getTime()
@@ -36,17 +36,17 @@ const ReviewsService = (() => {
     {
       id: 'rev_seed_03',
       name: 'Clara Linares',
-      planName: 'Plan Santuario',
-      memberSince: 'Miembro hace 5 meses • Plan Santuario',
-      quote: 'El acceso es simple y directo. Despliego la esterilla en mi casa y realmente siento que entro a un santuario de paz y cuidado personal.',
+      planName: 'Plan Refugio',
+      memberSince: 'Miembro hace 5 meses • Plan Refugio',
+      quote: 'El acceso es simple y directo. Despliego la esterilla en mi casa y realmente siento que entro a un refugio de paz y cuidado personal.',
       rating: 5,
       timestamp: new Date('2026-06-05T10:00:00Z').getTime()
     },
     {
       id: 'rev_seed_04',
       name: 'Lucía Benítez',
-      planName: 'Plan Santuario',
-      memberSince: 'Miembro hace 6 meses • Plan Santuario',
+      planName: 'Plan Refugio',
+      memberSince: 'Miembro hace 6 meses • Plan Refugio',
       quote: 'La voz y serenidad de Vale me acompañan a diario. Encontrar un espacio guiado con tanta presencia y amor no tiene precio.',
       rating: 5,
       timestamp: new Date('2026-08-20T10:00:00Z').getTime()
@@ -187,8 +187,8 @@ const ReviewsService = (() => {
       userId: user.id,
       userEmail: (user.email || '').toLowerCase(),
       name: user.name || 'Alumna de Namasté',
-      planName: user.planName || 'Plan Santuario',
-      memberSince: `Alumna • ${user.planName || 'Plan Santuario'}`,
+      planName: user.planName || 'Plan Refugio',
+      memberSince: `Alumna • ${user.planName || 'Plan Refugio'}`,
       quote: cleanQuote,
       rating: Math.max(1, Math.min(5, Number(rating) || 5)),
       timestamp: existing ? existing.timestamp : now.getTime(),

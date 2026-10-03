@@ -32,8 +32,8 @@ const AuthService = (() => {
       name: 'Sofía Varela',
       email: 'sofia.varela@ejemplo.com',
       accessCode: 'NAMASTE-ALUMNO',
-      planId: 'plan-santuario',
-      planName: 'Plan Santuario',
+      planId: 'plan-refugio',
+      planName: 'Plan Refugio',
       memberSince: 'Marzo 2026',
       nextBillingDate: '28 Octubre 2026',
       active: true,
@@ -181,7 +181,7 @@ const AuthService = (() => {
       const isEmail = clean.includes('@');
       const userName = clean.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Practicante';
       const userEmail = isEmail ? clean : `${clean}@namaste.com`;
-      user = registerNewMember(userName, userEmail, 'plan-santuario', 'Plan Santuario');
+      user = registerNewMember(userName, userEmail, 'plan-refugio', 'Plan Refugio');
     }
 
     if (!user.active) {
@@ -271,7 +271,7 @@ const AuthService = (() => {
     }
 
     const randomDigits = Math.floor(100000 + Math.random() * 900000);
-    const planTag = planId.includes('santuario') ? 'SANTUARIO' : (planId.includes('sadhana') ? 'SADHANA' : 'ESENCIA');
+    const planTag = (planId.includes('refugio') || planId.includes('santuario')) ? 'REFUGIO' : (planId.includes('sadhana') ? 'SADHANA' : 'ESENCIA');
     const newCode = `NAMASTE-${planTag}-${randomDigits}`;
 
     const newUser = {

@@ -23,7 +23,7 @@ Puedes acceder a la versión interactiva y boceto/mockup en:
 - **Paso a Paso Transparente**: 4 pasos simples desde la inscripción hasta la esterilla.
 - **Selector de Membresías Dinámico**: Conmutador fluido entre facturación *Mensual* y *Anual* (con 2 meses bonificados).
   - *Plan Esencia* (Inicial)
-  - *Plan Santuario* (Intermedio - Más elegido)
+  - *Plan Refugio* (Intermedio - Más elegido)
   - *Plan Sadhana* (Avanzado)
 - **Voces del Shala (Reseñas Reales)**: Testimonios de practicantes con navegación en carrusel horizontal interactivo.
 - **Preguntas Frecuentes**: Acordeón interactivo con respuestas inmediatas.

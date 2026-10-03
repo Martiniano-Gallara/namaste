@@ -67,8 +67,8 @@ const AdminService = (() => {
           name: 'Sofía Varela',
           email: 'sofia.varela@ejemplo.com',
           accessCode: 'NAMASTE-ALUMNO',
-          planId: 'plan-santuario',
-          planName: 'Plan Santuario',
+          planId: 'plan-refugio',
+          planName: 'Plan Refugio',
           active: true,
           isAnnual: false,
           memberSince: 'Marzo 2026',
@@ -138,9 +138,9 @@ const AdminService = (() => {
           id: 'usr-lucia',
           name: 'Lucía Morales',
           email: 'lucia.morales@ejemplo.com',
-          accessCode: 'NAMASTE-SANTUARIO-552C',
-          planId: 'plan-santuario',
-          planName: 'Plan Santuario',
+          accessCode: 'NAMASTE-REFUGIO-552C',
+          planId: 'plan-refugio',
+          planName: 'Plan Refugio',
           active: false,
           isAnnual: false,
           memberSince: 'Junio 2026',
@@ -187,7 +187,7 @@ const AdminService = (() => {
       const pausedUsers = totalUsers - activeUsers;
       let mrr = 0;
       let arr = 0;
-      const planCounts = { 'plan-esencia': 0, 'plan-santuario': 0, 'plan-sadhana': 0 };
+      const planCounts = { 'plan-esencia': 0, 'plan-refugio': 0, 'plan-sadhana': 0 };
 
       localUsers.forEach(u => {
         if (u.active) {
@@ -198,7 +198,8 @@ const AdminService = (() => {
             mrr += u.billedAmount;
             arr += u.billedAmount * 12;
           }
-          if (planCounts[u.planId] !== undefined) planCounts[u.planId]++;
+          const pId = u.planId === 'plan-santuario' ? 'plan-refugio' : u.planId;
+          if (planCounts[pId] !== undefined) planCounts[pId]++;
         }
       });
 
@@ -226,14 +227,14 @@ const AdminService = (() => {
     if (endpoint === '/users') {
       if (method === 'POST') {
         const body = safeJsonParse(options.body, {});
-        const planNames = { 'plan-esencia': 'Plan Esencia', 'plan-santuario': 'Plan Santuario', 'plan-sadhana': 'Plan Sadhana' };
+        const planNames = { 'plan-esencia': 'Plan Esencia', 'plan-refugio': 'Plan Refugio', 'plan-sadhana': 'Plan Sadhana' };
         const newUser = {
           id: 'usr-' + Date.now().toString(36),
           name: body.name || 'Alumna Namasté',
           email: body.email,
-          accessCode: 'NAMASTE-' + (body.planId ? body.planId.replace('plan-', '').toUpperCase() : 'SANTUARIO') + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-          planId: body.planId || 'plan-santuario',
-          planName: planNames[body.planId] || 'Plan Santuario',
+          accessCode: 'NAMASTE-' + (body.planId ? body.planId.replace('plan-', '').toUpperCase() : 'REFUGIO') + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+          planId: body.planId || 'plan-refugio',
+          planName: planNames[body.planId] || 'Plan Refugio',
           active: body.active !== undefined ? body.active : true,
           isAnnual: Boolean(body.isAnnual),
           memberSince: 'Octubre 2026',
@@ -261,7 +262,7 @@ const AdminService = (() => {
           if (body.active !== undefined) localUsers[idx].active = Boolean(body.active);
           if (body.planId) {
             localUsers[idx].planId = body.planId;
-            const planNames = { 'plan-esencia': 'Plan Esencia', 'plan-santuario': 'Plan Santuario', 'plan-sadhana': 'Plan Sadhana' };
+            const planNames = { 'plan-esencia': 'Plan Esencia', 'plan-refugio': 'Plan Refugio', 'plan-sadhana': 'Plan Sadhana' };
             localUsers[idx].planName = planNames[body.planId] || localUsers[idx].planName;
           }
           if (body.name) localUsers[idx].name = body.name;
@@ -303,8 +304,8 @@ const AdminService = (() => {
             receiptNumber: 'REC-2026-619204',
             name: 'Sofía Varela',
             email: 'sofia.varela@ejemplo.com',
-            planName: 'Plan Santuario',
-            planId: 'plan-santuario',
+            planName: 'Plan Refugio',
+            planId: 'plan-refugio',
             amount: 29,
             currency: 'USD',
             status: 'succeeded',
@@ -327,7 +328,7 @@ const AdminService = (() => {
     const enriched = initial.map(c => ({
       ...c,
       format: c.format || (c.category === 'meditacion' || c.category === 'relax' ? 'audio' : 'video'),
-      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-santuario'))
+      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio'))
     }));
     try {
       localStorage.setItem('namaste_custom_classes', JSON.stringify(enriched));

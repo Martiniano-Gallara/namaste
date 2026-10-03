@@ -40,10 +40,18 @@ const PLANS_CATALOG = {
     annualPrice: 190,
     allowedCategories: ['suave', 'clasico']
   },
+  'plan-refugio': {
+    id: 'plan-refugio',
+    name: 'Plan Refugio',
+    tag: 'REFUGIO',
+    monthlyPrice: 29,
+    annualPrice: 290,
+    allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'relax']
+  },
   'plan-santuario': {
-    id: 'plan-santuario',
-    name: 'Plan Santuario',
-    tag: 'SANTUARIO',
+    id: 'plan-refugio',
+    name: 'Plan Refugio',
+    tag: 'REFUGIO',
     monthlyPrice: 29,
     annualPrice: 290,
     allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'relax']
@@ -82,8 +90,8 @@ const DEFAULT_DATABASE = {
       email: 'sofia.varela@ejemplo.com',
       name: 'Sofía Varela',
       accessCode: 'NAMASTE-ALUMNO',
-      planId: 'plan-santuario',
-      planName: 'Plan Santuario',
+      planId: 'plan-refugio',
+      planName: 'Plan Refugio',
       active: true,
       isAnnual: false,
       memberSince: 'Marzo 2026',
@@ -351,7 +359,7 @@ const server = http.createServer(async (req, res) => {
         // If not found, create new student account on the fly for effortless testing
         if (!user) {
           const newId = 'usr-' + crypto.randomBytes(4).toString('hex');
-          const planTag = 'SANTUARIO';
+          const planTag = 'REFUGIO';
           const randomCode = 'NAMASTE-' + planTag + '-' + crypto.randomBytes(3).toString('hex').toUpperCase();
           const today = new Date();
           const nextMonth = new Date(today);
@@ -362,8 +370,8 @@ const server = http.createServer(async (req, res) => {
             email: identifier.includes('@') ? identifier : `${identifier}@namaste.com`,
             name: identifier.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             accessCode: randomCode,
-            planId: 'plan-santuario',
-            planName: 'Plan Santuario',
+            planId: 'plan-refugio',
+            planName: 'Plan Refugio',
             active: true,
             isAnnual: false,
             memberSince: today.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
@@ -407,7 +415,7 @@ const server = http.createServer(async (req, res) => {
           token,
           user,
           progress: userProgress,
-          message: `Bienvenido/a a tu santuario, ${user.name}`
+          message: `Bienvenido/a a tu refugio, ${user.name}`
         });
       }
 
@@ -448,7 +456,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseJsonBody(req);
         const email = (body.email || '').trim().toLowerCase();
         const name = (body.name || 'Practicante').trim();
-        const planId = body.planId || 'plan-santuario';
+        const planId = body.planId || 'plan-refugio';
         const isAnnual = Boolean(body.isAnnual);
         const paymentMethod = body.paymentMethod || 'Tarjeta Cifrada •••• 4242';
 
@@ -456,7 +464,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, { success: false, message: 'Por favor, proporciona un correo electrónico válido.' });
         }
 
-        const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-santuario'];
+        const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-refugio'];
         const amount = isAnnual ? plan.annualPrice : plan.monthlyPrice;
 
         const today = new Date();
@@ -659,7 +667,7 @@ const server = http.createServer(async (req, res) => {
         const quote = (body.quote || '').trim();
         const rating = Number(body.rating) || 5;
         const name = (body.name || 'Alumna de Namasté').trim();
-        const planName = (body.planName || 'Plan Santuario').trim();
+        const planName = (body.planName || 'Plan Refugio').trim();
         const userEmail = (body.userEmail || '').trim().toLowerCase();
 
         if (!quote || quote.length < 10) {
@@ -743,11 +751,11 @@ const server = http.createServer(async (req, res) => {
 
         let mrr = 0;
         let arr = 0;
-        const planCounts = { 'plan-esencia': 0, 'plan-santuario': 0, 'plan-sadhana': 0 };
+        const planCounts = { 'plan-esencia': 0, 'plan-refugio': 0, 'plan-sadhana': 0 };
 
         usersList.forEach(u => {
           if (u.active) {
-            const plan = PLANS_CATALOG[u.planId] || PLANS_CATALOG['plan-santuario'];
+            const plan = PLANS_CATALOG[u.planId] || PLANS_CATALOG['plan-refugio'];
             if (u.isAnnual) {
               mrr += Math.round(plan.annualPrice / 12);
               arr += plan.annualPrice;
@@ -755,8 +763,9 @@ const server = http.createServer(async (req, res) => {
               mrr += plan.monthlyPrice;
               arr += plan.monthlyPrice * 12;
             }
-            if (planCounts[u.planId] !== undefined) {
-              planCounts[u.planId]++;
+            const normalizedPlanId = (u.planId === 'plan-santuario') ? 'plan-refugio' : u.planId;
+            if (planCounts[normalizedPlanId] !== undefined) {
+              planCounts[normalizedPlanId]++;
             }
           }
         });
@@ -818,7 +827,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseJsonBody(req);
         const name = (body.name || '').trim();
         const email = (body.email || '').trim().toLowerCase();
-        const planId = body.planId || 'plan-santuario';
+        const planId = body.planId || 'plan-refugio';
         const isAnnual = Boolean(body.isAnnual);
         const active = body.active !== undefined ? Boolean(body.active) : true;
 
@@ -832,7 +841,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 409, { success: false, message: 'Ya existe una cuenta registrada con este correo electrónico.' });
         }
 
-        const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-santuario'];
+        const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-refugio'];
         const newId = 'usr-' + crypto.randomBytes(4).toString('hex');
         const accessCode = `NAMASTE-${plan.tag}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
         const today = new Date();
