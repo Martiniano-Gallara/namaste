@@ -2705,6 +2705,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Pestañas de Navegación del Panel
     const tabButtons = document.querySelectorAll('.admin-tab-btn');
+    const txTabBtn = document.getElementById('admin-tab-btn-transactions');
+    if (txTabBtn) {
+      const span = txTabBtn.querySelector('span');
+      if (span) span.textContent = 'Cobros';
+    }
+    const drawerTxBtn = document.querySelector('[data-admin-goto-tab="tab-transactions"]');
+    if (drawerTxBtn) {
+      const span = drawerTxBtn.querySelector('span');
+      if (span) span.textContent = 'Cobros';
+    }
 
     // 3.1 Menú Lateral / Admin Drawer
     const adminDrawerToggleBtn = document.getElementById('btn-admin-drawer-toggle');

@@ -1011,7 +1011,10 @@ const server = http.createServer(async (req, res) => {
         } else {
           res.writeHead(200, {
             'Content-Type': 'text/html; charset=utf-8',
-            'X-Content-Type-Options': 'nosniff'
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           });
           res.end(content);
         }
@@ -1041,13 +1044,21 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // Cache header: never cache HTML; revalidate CSS/JS immediately
+    const cacheHeader = (ext === '.html')
+      ? 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+      : (ext === '.css' || ext === '.js')
+        ? 'no-cache, must-revalidate, max-age=0'
+        : 'public, max-age=86400';
+
     // Standard static file delivery
     res.writeHead(200, {
       'Content-Type': contentType,
       'Content-Length': stats.size,
       'Accept-Ranges': 'bytes',
       'X-Content-Type-Options': 'nosniff',
-      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600'
+      'Cache-Control': cacheHeader,
+      'Pragma': ext === '.html' ? 'no-cache' : undefined
     });
 
     if (req.method === 'HEAD') {
