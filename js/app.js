@@ -2152,6 +2152,23 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Toggle para comprimir / expandir los detalles de la membresía
+    const membershipToggle = document.getElementById('drawer-membership-toggle');
+    const membershipCard = document.getElementById('drawer-membership-card');
+    if (membershipToggle && membershipCard) {
+      const handleToggle = () => {
+        const isExpanded = membershipCard.classList.toggle('expanded');
+        membershipToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      };
+      membershipToggle.addEventListener('click', handleToggle);
+      membershipToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleToggle();
+        }
+      });
+    }
+
     // Copiar código de acceso del alumno
     const btnCopyDrawerCode = document.getElementById('btn-copy-drawer-code');
     if (btnCopyDrawerCode) {
@@ -2289,6 +2306,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <span>Reactivar Plan</span>
         `;
       }
+    }
+
+    // Iniciar con membresía comprimida por defecto
+    const membershipCard = document.getElementById('drawer-membership-card');
+    const membershipToggle = document.getElementById('drawer-membership-toggle');
+    if (membershipCard) {
+      membershipCard.classList.remove('expanded');
+    }
+    if (membershipToggle) {
+      membershipToggle.setAttribute('aria-expanded', 'false');
     }
 
     // Renderizar sección de reseña corta con regla de elegibilidad (1 semana activa)

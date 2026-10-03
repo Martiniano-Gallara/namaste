@@ -1946,58 +1946,66 @@
           </div>
         </div>
 
-        <!-- Tarjeta de Gestión de Membresía (Diseño Compacto y Optimizado) -->
-        <div class="membership-status-card">
-          <div class="drawer-membership-header">
-            <div>
+        <!-- Tarjeta de Gestión de Membresía (Comprimida / Expandible) -->
+        <div class="membership-status-card" id="drawer-membership-card">
+          <div class="drawer-membership-header" id="drawer-membership-toggle" role="button" tabindex="0" aria-expanded="false" title="Toca para ver u ocultar detalles de tu membresía">
+            <div class="drawer-membership-header-left">
               <span class="drawer-membership-tag">Tu Membresía</span>
               <div id="drawer-plan-name" class="drawer-plan-title">Plan Santuario</div>
             </div>
-            <span class="status-badge-active" id="drawer-membership-status">● Activa</span>
-          </div>
-
-          <div class="drawer-membership-details">
-            <div class="drawer-detail-item">
-              <span class="drawer-detail-label">Próxima renovación</span>
-              <span class="drawer-detail-value"><strong id="drawer-next-billing">22 Octubre 2026</strong> <span class="drawer-meta-dim">($29/mes)</span></span>
-            </div>
-            <div class="drawer-detail-item">
-              <span class="drawer-detail-label">Método de pago</span>
-              <span class="drawer-detail-value">•••• 4242 (Visa)</span>
-            </div>
-            <div class="drawer-detail-item">
-              <span class="drawer-detail-label">Cuenta vinculada</span>
-              <span class="drawer-detail-value drawer-access-code-text" id="drawer-access-code">sofia.varela@ejemplo.com</span>
+            <div class="drawer-membership-header-right">
+              <span class="status-badge-active" id="drawer-membership-status">● Activa</span>
+              <div class="drawer-membership-chevron" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
             </div>
           </div>
 
-          <!-- Botones de Gestión de Suscripción -->
-          <div class="drawer-membership-actions">
-            <button type="button" class="btn btn-primary btn-drawer-main" id="btn-drawer-change-plan">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon
-                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                </polygon>
-              </svg>
-              <span>Gestionar Plan / Mejorar Membresía</span>
-            </button>
-            <div class="drawer-action-row">
-              <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-toggle-pause-membership">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="6" y="4" width="4" height="16"></rect>
-                  <rect x="14" y="4" width="4" height="16"></rect>
+          <!-- Contenido Interior Expandible (Detalles y Acciones) -->
+          <div class="drawer-membership-collapse" id="drawer-membership-collapse">
+            <div class="drawer-membership-details">
+              <div class="drawer-detail-item">
+                <span class="drawer-detail-label">Próxima renovación</span>
+                <span class="drawer-detail-value"><strong id="drawer-next-billing">22 Octubre 2026</strong> <span class="drawer-meta-dim">($29/mes)</span></span>
+              </div>
+              <div class="drawer-detail-item">
+                <span class="drawer-detail-label">Método de pago</span>
+                <span class="drawer-detail-value">•••• 4242 (Visa)</span>
+              </div>
+              <div class="drawer-detail-item">
+                <span class="drawer-detail-label">Cuenta vinculada</span>
+                <span class="drawer-detail-value drawer-access-code-text" id="drawer-access-code">sofia.varela@ejemplo.com</span>
+              </div>
+            </div>
+
+            <!-- Botones de Gestión de Suscripción -->
+            <div class="drawer-membership-actions">
+              <button type="button" class="btn btn-primary btn-drawer-main" id="btn-drawer-change-plan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                <span>Pausar Membresía</span>
+                <span>Gestionar Plan / Mejorar Membresía</span>
               </button>
-              <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-drawer-download-receipt">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-                <span>Comprobante</span>
-              </button>
+              <div class="drawer-action-row">
+                <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-toggle-pause-membership">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                  <span>Pausar Membresía</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-drawer-sub" id="btn-drawer-download-receipt">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                  <span>Comprobante</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

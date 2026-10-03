@@ -1283,26 +1283,62 @@
   background: linear-gradient(135deg, var(--sand-100), var(--bg-canvas));
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  padding: 1.1rem 1.15rem;
+  padding: 0.85rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  transition: all 0.25s ease;
 }
 
 .drawer-membership-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-md);
+  padding: 0.15rem 0.15rem;
+  transition: opacity 0.2s ease;
+}
+
+.drawer-membership-header:hover {
+  opacity: 0.9;
+}
+
+.drawer-membership-header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-membership-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.drawer-membership-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s ease, background-color 0.2s ease;
+}
+
+.drawer-membership-header:hover .drawer-membership-chevron {
+  background-color: rgba(0, 0, 0, 0.08);
 }
 
 .drawer-membership-tag {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   color: var(--text-muted);
   letter-spacing: 0.08em;
   font-weight: 600;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.1rem;
 }
 
 .drawer-plan-title {
@@ -1323,6 +1359,41 @@
   font-weight: 700;
   padding: 0.2rem 0.65rem;
   border-radius: var(--radius-pill);
+}
+
+/* Colapsado por defecto: solo se ve nombre y estado */
+.drawer-membership-collapse {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* Estado expandido */
+.membership-status-card.expanded {
+  padding-bottom: 1.1rem;
+}
+
+.membership-status-card.expanded .drawer-membership-collapse {
+  display: flex;
+  animation: drawerAccordionDown 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.membership-status-card.expanded .drawer-membership-chevron {
+  transform: rotate(180deg);
+}
+
+@keyframes drawerAccordionDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .drawer-membership-details {
