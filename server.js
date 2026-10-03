@@ -786,7 +786,13 @@ const server = http.createServer(async (req, res) => {
             planCounts
           },
           recentLogs: (db.auditLogs || []).slice(0, 10),
-          recentTransactions: (db.transactions || []).slice(0, 6)
+          recentTransactions: (db.transactions || []).map(tx => {
+            const user = (tx.userId && db.users[tx.userId]) || Object.values(db.users || {}).find(u => (u.email || '').toLowerCase() === (tx.email || '').toLowerCase());
+            return {
+              ...tx,
+              name: tx.name || (user ? user.name : null) || (tx.email ? tx.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Alumna')
+            };
+          })
         });
       }
 
@@ -868,6 +874,7 @@ const server = http.createServer(async (req, res) => {
           id: txId,
           receiptNumber,
           userId: newId,
+          name,
           email,
           planId: plan.id,
           planName: plan.name,

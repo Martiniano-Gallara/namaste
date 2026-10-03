@@ -73,9 +73,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Sistema de Notificaciones Toast serenas
+  // Toast rate-limiting: max 3 simultaneous, deduplication por 2s
+  const _toastState = { queue: [], active: 0, MAX: 3, recentMsgs: new Map() };
+
   function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     if (!container) return;
+
+    // Deduplicar: ignorar si el mismo mensaje ya se mostró en los últimos 2s
+    const now = Date.now();
+    const lastShown = _toastState.recentMsgs.get(message);
+    if (lastShown && now - lastShown < 2000) return;
+    _toastState.recentMsgs.set(message, now);
+    // Limpiar mensajes viejos del mapa de deduplicación
+    for (const [k, t] of _toastState.recentMsgs) {
+      if (now - t > 4000) _toastState.recentMsgs.delete(k);
+    }
+
+    // Si ya hay 3 activos, encolar
+    if (_toastState.active >= _toastState.MAX) {
+      _toastState.queue.push({ message, type });
+      return;
+    }
+
+    _showToastNow(container, message, type);
+  }
+
+  function _showToastNow(container, message, type) {
+    _toastState.active++;
     const toast = document.createElement('div');
     toast.className = `namaste-toast namaste-toast-${type}`;
     toast.innerHTML = `
@@ -91,7 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {
       toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
+      setTimeout(() => {
+        toast.remove();
+        _toastState.active--;
+        // Despachar siguiente de la cola si hay
+        if (_toastState.queue.length > 0) {
+          const next = _toastState.queue.shift();
+          _showToastNow(container, next.message, next.type);
+        }
+      }, 300);
     }, 3200);
   }
 
@@ -3042,22 +3075,52 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 9. Event Delegation en la Tabla de Cobros & Recibos (Toggle Detalles)
+    // 9. Event Delegation en la Tabla de Cobros & Recibos (Toggle Detalles + Imprimir Recibo)
     const txTableBody = document.getElementById('admin-transactions-table-body');
     if (txTableBody) {
       txTableBody.addEventListener('click', (e) => {
-        const toggleBtn = e.target.closest('.btn-toggle-tx-details');
-        if (toggleBtn) {
-          const txId = toggleBtn.getAttribute('data-tx-id');
+        // Imprimir recibo (si hace clic en el botón de recibo o comprobante)
+        const printBtn = e.target.closest('.btn-print-tx-receipt');
+        if (printBtn) {
+          e.stopPropagation();
+          const txId = printBtn.getAttribute('data-tx-id');
+          const tx = (state.adminTxCache || []).find(t => (t.id || '') === txId);
+          if (tx) printTxReceipt(tx);
+          else showToast('No se pudo obtener los datos del cobro', 'warning');
+          return;
+        }
+
+        // Toggle detalles al hacer clic en la fila
+        const row = e.target.closest('.admin-user-row');
+        if (row) {
+          const txId = row.getAttribute('data-tx-id');
           const detailsRow = document.getElementById(`tx-details-row-${txId}`);
-          const mainRow = document.getElementById(`tx-main-row-${txId}`);
           if (detailsRow) {
             const isHidden = detailsRow.style.display === 'none';
             detailsRow.style.display = isHidden ? 'table-row' : 'none';
-            toggleBtn.classList.toggle('expanded', isHidden);
-            if (mainRow) mainRow.classList.toggle('expanded', isHidden);
+            row.classList.toggle('expanded', isHidden);
           }
         }
+      });
+    }
+
+    // 9b. Buscador y Filtros de Cobros & Recibos
+    const txSearchInput = document.getElementById('admin-tx-search-input');
+    if (txSearchInput) {
+      txSearchInput.addEventListener('input', (e) => {
+        state.adminTxSearchQuery = e.target.value.trim().toLowerCase();
+        renderAdminTransactions();
+      });
+    }
+    const txPanel = document.getElementById('panel-tab-transactions');
+    if (txPanel) {
+      txPanel.addEventListener('click', (e) => {
+        const pill = e.target.closest('[data-filter-tx]');
+        if (!pill) return;
+        txPanel.querySelectorAll('[data-filter-tx]').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        state.adminTxPlanFilter = pill.getAttribute('data-filter-tx');
+        renderAdminTransactions();
       });
     }
 
@@ -3080,18 +3143,48 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // 11. Modal de Subir / Editar Clase (Video o Audio con Imagen)
+    // 11. Modal de Subir / Editar Clase
+    // State para archivos seleccionados
+    let _classMediaBlob = null;
+    let _classThumbBlob = null;
+    let _classMediaFormat = 'video'; // auto-detectado
+
+    function _resetClassModal() {
+      const form = document.getElementById('admin-class-form');
+      if (form) form.reset();
+      _classMediaBlob = null;
+      _classThumbBlob = null;
+      _classMediaFormat = 'video';
+      // Reset media preview
+      const mediaWrap = document.getElementById('media-preview-wrap');
+      const mediaVid = document.getElementById('media-preview-video');
+      const mediaAud = document.getElementById('media-preview-audio');
+      const mediaLbl = document.getElementById('media-file-label');
+      const mediaZone = document.getElementById('media-file-zone');
+      if (mediaWrap) mediaWrap.style.display = 'none';
+      if (mediaVid) { mediaVid.src = ''; mediaVid.style.display = 'none'; }
+      if (mediaAud) { mediaAud.src = ''; mediaAud.style.display = 'none'; }
+      if (mediaLbl) mediaLbl.textContent = 'Seleccionar video o audio del dispositivo';
+      if (mediaZone) mediaZone.classList.remove('has-file');
+      // Reset thumbnail preview
+      const thumbWrap = document.getElementById('thumb-preview-wrap');
+      const thumbImg = document.getElementById('thumb-preview-img');
+      const thumbLbl = document.getElementById('thumb-file-label');
+      const thumbZone = document.getElementById('thumb-file-zone');
+      if (thumbWrap) thumbWrap.style.display = 'none';
+      if (thumbImg) thumbImg.src = '';
+      if (thumbLbl) thumbLbl.textContent = 'Seleccionar imagen del dispositivo';
+      if (thumbZone) thumbZone.classList.remove('has-file');
+    }
+
     const btnOpenCreateClassModal = document.getElementById('btn-admin-open-create-class');
     if (btnOpenCreateClassModal) {
       btnOpenCreateClassModal.addEventListener('click', () => {
-        const form = document.getElementById('admin-class-form');
-        if (form) form.reset();
+        _resetClassModal();
         const heading = document.getElementById('modal-class-heading');
         if (heading) heading.textContent = 'Subir Nueva Práctica';
         const idInput = document.getElementById('form-class-id');
         if (idInput) idInput.value = '';
-        const customThumb = document.getElementById('form-class-thumbnail-custom');
-        if (customThumb) customThumb.style.display = 'none';
         if (modals.adminClass) modals.adminClass.classList.add('active');
       });
     }
@@ -3099,31 +3192,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseClassModal = document.getElementById('btn-close-class-modal');
     const btnCancelClassModal = document.getElementById('btn-cancel-class-modal');
     [btnCloseClassModal, btnCancelClassModal].forEach(btn => {
-      if (btn) {
-        btn.addEventListener('click', () => {
-          if (modals.adminClass) modals.adminClass.classList.remove('active');
-        });
-      }
+      if (btn) btn.addEventListener('click', () => {
+        if (modals.adminClass) modals.adminClass.classList.remove('active');
+      });
     });
 
     if (modals.adminClass) {
       modals.adminClass.addEventListener('click', (e) => {
-        if (e.target === modals.adminClass) {
-          modals.adminClass.classList.remove('active');
+        if (e.target === modals.adminClass) modals.adminClass.classList.remove('active');
+      });
+    }
+
+    // File picker: Video / Audio
+    const mediaFileInput = document.getElementById('form-class-media-file');
+    if (mediaFileInput) {
+      mediaFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        _classMediaBlob = URL.createObjectURL(file);
+        _classMediaFormat = file.type.startsWith('audio') ? 'audio' : 'video';
+        const label = document.getElementById('media-file-label');
+        const zone = document.getElementById('media-file-zone');
+        const wrap = document.getElementById('media-preview-wrap');
+        const vid = document.getElementById('media-preview-video');
+        const aud = document.getElementById('media-preview-audio');
+        if (label) label.textContent = file.name;
+        if (zone) zone.classList.add('has-file');
+        if (wrap) wrap.style.display = 'block';
+        // Limpiar URL externa
+        const urlInput = document.getElementById('form-class-media-url');
+        if (urlInput) urlInput.value = '';
+        if (_classMediaFormat === 'audio') {
+          if (vid) vid.style.display = 'none';
+          if (aud) { aud.src = _classMediaBlob; aud.style.display = 'block'; }
+        } else {
+          if (aud) aud.style.display = 'none';
+          if (vid) { vid.src = _classMediaBlob; vid.style.display = 'block'; }
         }
       });
     }
 
-    const thumbPresetSelect = document.getElementById('form-class-thumbnail-preset');
-    const thumbCustomInput = document.getElementById('form-class-thumbnail-custom');
-    if (thumbPresetSelect && thumbCustomInput) {
-      thumbPresetSelect.addEventListener('change', (e) => {
-        if (e.target.value === 'custom') {
-          thumbCustomInput.style.display = 'block';
-          thumbCustomInput.focus();
-        } else {
-          thumbCustomInput.style.display = 'none';
-        }
+    // File picker: Imagen de portada
+    const thumbFileInput = document.getElementById('form-class-thumbnail-file');
+    if (thumbFileInput) {
+      thumbFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        _classThumbBlob = URL.createObjectURL(file);
+        const label = document.getElementById('thumb-file-label');
+        const zone = document.getElementById('thumb-file-zone');
+        const wrap = document.getElementById('thumb-preview-wrap');
+        const img = document.getElementById('thumb-preview-img');
+        if (label) label.textContent = file.name;
+        if (zone) zone.classList.add('has-file');
+        if (wrap) wrap.style.display = 'block';
+        if (img) img.src = _classThumbBlob;
       });
     }
 
@@ -3133,27 +3256,25 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const classId = document.getElementById('form-class-id')?.value;
         const title = document.getElementById('form-class-title')?.value.trim();
-        const format = document.getElementById('form-class-format')?.value || 'video';
         const planRequired = document.getElementById('form-class-plan')?.value || 'plan-esencia';
         const category = document.getElementById('form-class-category')?.value || 'suave';
-        const duration = parseInt(document.getElementById('form-class-duration')?.value, 10) || 35;
-        const mediaUrl = document.getElementById('form-class-media-url')?.value.trim();
-        const preset = thumbPresetSelect?.value;
-        const thumbnail = preset === 'custom' ? (thumbCustomInput?.value.trim() || 'assets/images/shala.jpg') : (preset || 'assets/images/shala.jpg');
         const description = document.getElementById('form-class-desc')?.value.trim() || '';
 
+        // Media: blob de archivo local tiene prioridad, luego URL externa
+        const mediaUrl = _classMediaBlob || document.getElementById('form-class-media-url')?.value.trim() || '';
+        const format = _classMediaFormat || 'video';
+
+        // Thumbnail: blob local tiene prioridad, luego imagen por defecto
+        const thumbnail = _classThumbBlob || 'assets/images/shala.jpg';
+
         if (!title || !mediaUrl) {
-          showToast('Por favor completa el título y la URL del archivo', 'warning');
+          showToast('Por favor completa el título y el archivo o URL del video/audio', 'warning');
           return;
         }
 
         const categoryLabels = {
-          suave: 'Yoga Suave',
-          clasico: 'Yoga Clásico',
-          terapeutico: 'Yoga Terapéutico',
-          dinamico: 'Yoga Dinámico',
-          ashtanga: 'Yoga Ashtanga',
-          relax: 'Yoga Relax',
+          suave: 'Yoga Suave', clasico: 'Yoga Clásico', terapeutico: 'Yoga Terapéutico',
+          dinamico: 'Yoga Dinámico', ashtanga: 'Yoga Ashtanga', relax: 'Yoga Relax',
           meditacion: 'Meditación & Pranayama'
         };
 
@@ -3164,7 +3285,7 @@ document.addEventListener('DOMContentLoaded', () => {
           planRequired,
           category,
           categoryLabel: categoryLabels[category] || 'Práctica Holística',
-          duration,
+          duration: 35,
           videoUrl: mediaUrl,
           thumbnail,
           description,
@@ -3176,7 +3297,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (res && res.success) {
             showToast(classId ? 'Práctica actualizada exitosamente' : 'Nueva práctica subida y disponible para alumnas', 'success');
             if (modals.adminClass) modals.adminClass.classList.remove('active');
-            formClass.reset();
+            _resetClassModal();
             state.adminClassesCache = res.classes;
             renderAdminClassesTable();
             const badge = document.getElementById('tab-count-classes');
@@ -3190,6 +3311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
 
     // 12. Event Delegation en la Tabla de Clases (Mobile First)
     const classTableBody = document.getElementById('admin-classes-table-body');
@@ -3227,45 +3349,42 @@ document.addEventListener('DOMContentLoaded', () => {
           const classId = editBtn.getAttribute('data-class-id');
           const classObj = (state.adminClassesCache || []).find(c => c.id === classId) || getActiveClasses().find(c => c.id === classId);
           if (classObj) {
+            _resetClassModal();
             const heading = document.getElementById('modal-class-heading');
             if (heading) heading.textContent = 'Editar Práctica';
             const idInput = document.getElementById('form-class-id');
             if (idInput) idInput.value = classObj.id;
             const titleInput = document.getElementById('form-class-title');
             if (titleInput) titleInput.value = classObj.title || '';
-            const formatSelect = document.getElementById('form-class-format');
-            if (formatSelect) formatSelect.value = classObj.format || (classObj.category === 'meditacion' || classObj.category === 'relax' ? 'audio' : 'video');
             const planSelect = document.getElementById('form-class-plan');
             if (planSelect) planSelect.value = classObj.planRequired || 'plan-esencia';
             const catSelect = document.getElementById('form-class-category');
             if (catSelect) catSelect.value = classObj.category || 'suave';
-            const durInput = document.getElementById('form-class-duration');
-            if (durInput) durInput.value = classObj.duration || 35;
             const mediaInput = document.getElementById('form-class-media-url');
             if (mediaInput) mediaInput.value = classObj.videoUrl || '';
             const descInput = document.getElementById('form-class-desc');
             if (descInput) descInput.value = classObj.description || '';
+            // Pre-cargar formato detectado
+            _classMediaFormat = classObj.format || 'video';
 
-            const presetSelect = document.getElementById('form-class-thumbnail-preset');
-            const customThumb = document.getElementById('form-class-thumbnail-custom');
-            if (presetSelect) {
-              const standardPresets = ['assets/images/shala.jpg', 'assets/images/hero.jpg', 'assets/images/hatha.jpg'];
-              if (standardPresets.includes(classObj.thumbnail)) {
-                presetSelect.value = classObj.thumbnail;
-                if (customThumb) customThumb.style.display = 'none';
-              } else {
-                presetSelect.value = 'custom';
-                if (customThumb) {
-                  customThumb.value = classObj.thumbnail || '';
-                  customThumb.style.display = 'block';
-                }
-              }
+            // Mostrar thumbnail existente como preview
+            if (classObj.thumbnail) {
+              _classThumbBlob = classObj.thumbnail;
+              const thumbWrap = document.getElementById('thumb-preview-wrap');
+              const thumbImg = document.getElementById('thumb-preview-img');
+              const thumbLbl = document.getElementById('thumb-file-label');
+              const thumbZone = document.getElementById('thumb-file-zone');
+              if (thumbWrap) thumbWrap.style.display = 'block';
+              if (thumbImg) thumbImg.src = classObj.thumbnail;
+              if (thumbLbl) thumbLbl.textContent = 'Portada actual (seleccionar para cambiar)';
+              if (thumbZone) thumbZone.classList.add('has-file');
             }
 
             if (modals.adminClass) modals.adminClass.classList.add('active');
           }
           return;
         }
+
 
         // D) Eliminar práctica
         const deleteBtn = e.target.closest('.btn-delete-class');
@@ -3322,7 +3441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (kpiMrr) kpiMrr.textContent = `$${stats.mrr}`;
 
         const kpiArrSub = document.getElementById('kpi-arr-sub');
-        if (kpiArrSub) kpiArrSub.textContent = `Proyección anual: $${stats.arr} USD`;
+        if (kpiArrSub) kpiArrSub.textContent = `Proyección anual: $${stats.arr}`;
 
         // KPI 3: Horas y Minutos de Práctica
         const kpiTotalHours = document.getElementById('kpi-total-hours');
@@ -3414,7 +3533,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rawPlan = user.planName || (user.planId === 'plan-esencia' ? 'Esencia' : user.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const billingType = user.isAnnual ? 'Anual' : 'Mensual';
-      const billingAmount = `$${user.billedAmount || 29} USD`;
+      const billingAmount = `$${user.billedAmount || 29}`;
 
       return `
         <tr id="main-row-${user.id}" class="admin-user-row">
@@ -3487,45 +3606,76 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Renderiza el historial de transacciones y cobros procesados de forma simplificada
+   * Renderiza el historial de transacciones y cobros con KPIs, búsqueda y recibos imprimibles
    */
-  function renderAdminTransactions(transactions) {
+  function renderAdminTransactions(transactions, searchQuery, planFilter) {
     const txBody = document.getElementById('admin-transactions-table-body');
     if (!txBody) return;
 
-    if (!transactions || transactions.length === 0) {
+    // Guardar cache para filtros reactivos
+    if (transactions) state.adminTxCache = transactions;
+    const allTx = state.adminTxCache || [];
+
+    // Actualizar KPIs con el total (sin filtrar)
+    _updateTxKpis(allTx);
+
+    // Aplicar filtros
+    const q = (searchQuery || state.adminTxSearchQuery || '').toLowerCase();
+    const plan = planFilter || state.adminTxPlanFilter || 'all';
+
+    let filtered = allTx.filter(tx => {
+      const nameMatch = !q || (tx.name || tx.email || '').toLowerCase().includes(q) || (tx.email || '').toLowerCase().includes(q);
+      const planMatch = plan === 'all' || tx.planId === plan;
+      return nameMatch && planMatch;
+    });
+
+    if (filtered.length === 0) {
       txBody.innerHTML = `
         <tr>
           <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-            No hay cobros registrados actualmente.
+            No hay cobros que coincidan con la búsqueda.
           </td>
         </tr>
       `;
       return;
     }
 
-    txBody.innerHTML = transactions.map(tx => {
+    txBody.innerHTML = filtered.map(tx => {
       const planClass = tx.planId || 'plan-santuario';
       const rawPlan = tx.planName || (tx.planId === 'plan-esencia' ? 'Esencia' : tx.planId === 'plan-sadhana' ? 'Sadhana' : 'Santuario');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const txId = tx.id || String(Math.random()).substring(2);
 
+      // Obtener nombre real de la alumna (de tx.name o de adminUsersCache o formateado de email)
+      let studentName = tx.name;
+      if (!studentName && tx.email) {
+        const found = (state.adminUsersCache || []).find(u => (u.email || '').toLowerCase() === tx.email.toLowerCase());
+        if (found && found.name) {
+          studentName = found.name;
+        } else {
+          const prefix = tx.email.split('@')[0];
+          studentName = prefix.split(/[._-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+      }
+      const displayName = escapeHtml(studentName || 'Alumna');
+      const displayEmail = escapeHtml(tx.email || '');
+
       return `
-        <tr id="tx-main-row-${txId}" class="admin-user-row">
-          <td class="col-user-name">
-            <span class="user-clean-name" title="${escapeHtml(tx.email || 'Alumna')}">${escapeHtml(tx.email || 'Alumna')}</span>
+        <tr id="tx-main-row-${txId}" class="admin-user-row" data-tx-id="${txId}">
+          <td class="col-user-name" style="width: 36%;">
+            <span class="user-clean-name" title="${displayName} (${displayEmail})">${displayName}</span>
           </td>
-          <td class="col-user-plan">
+          <td class="col-user-plan" style="width: 22%; text-align: center;">
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
-          <td class="col-user-status col-tx-amount" style="text-align: center; white-space: nowrap;">
-            <strong style="color: var(--text-primary); font-size: 0.82rem; white-space: nowrap;">$${tx.amount}</strong><span style="font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; margin-left: 2px;">${tx.isAnnual ? '/a' : '/m'}</span>
+          <td class="col-tx-amount" style="width: 18%; text-align: center; white-space: nowrap;">
+            <strong class="tx-amount-number">$${tx.amount}</strong>
+            <span class="tx-amount-freq">${tx.isAnnual ? '/año' : '/mes'}</span>
           </td>
-          <td class="col-user-action" style="text-align: center;">
-            <button type="button" class="btn-toggle-tx-details btn-arrow-only" data-tx-id="${txId}" aria-label="Ver detalles del cobro" title="Detalles">
-              <svg class="arrow-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+          <td class="col-user-action" style="width: 24%; text-align: center;">
+            <button type="button" class="btn-print-tx-receipt" data-tx-id="${txId}" title="Imprimir comprobante">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              <span>Recibo</span>
             </button>
           </td>
         </tr>
@@ -3534,7 +3684,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="user-expanded-card-simplified">
               <div class="quick-details-grid">
                 <div class="quick-detail-item">
-                  <span class="qd-label">Recibo:</span>
+                  <span class="qd-label">Recibo N°:</span>
                   <code class="receipt-code-pill">${escapeHtml(tx.receiptNumber || txId)}</code>
                 </div>
                 <div class="quick-detail-item">
@@ -3542,19 +3692,97 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="qd-val">${formatAuditTime(tx.timestamp)}</span>
                 </div>
                 <div class="quick-detail-item">
+                  <span class="qd-label">Email:</span>
+                  <span class="qd-val" style="word-break: break-all;">${displayEmail}</span>
+                </div>
+                <div class="quick-detail-item">
                   <span class="qd-label">Medio:</span>
                   <span class="qd-val">${escapeHtml(tx.paymentMethod || 'Tarjeta')}</span>
                 </div>
-                <div class="quick-detail-item">
-                  <span class="qd-label">Estado:</span>
-                  <span class="status-badge active"><span class="status-dot"></span> Aprobado</span>
-                </div>
+              </div>
+              <div class="quick-actions-row">
+                <button type="button" class="mini-btn btn-print-tx-receipt" data-tx-id="${txId}" style="display:inline-flex; align-items:center; gap:0.4rem;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                  Imprimir Comprobante Oficial
+                </button>
               </div>
             </div>
           </td>
         </tr>
       `;
     }).join('');
+  }
+
+  /** Actualiza los 3 KPI cards de Cobros */
+  function _updateTxKpis(transactions) {
+    const kpiTotal = document.getElementById('tx-kpi-total-amount');
+    const kpiCount = document.getElementById('tx-kpi-count');
+    const kpiMonthly = document.getElementById('tx-kpi-monthly');
+    if (!kpiTotal || !kpiCount || !kpiMonthly) return;
+
+    const total = transactions.reduce((s, tx) => s + Number(tx.amount || 0), 0);
+    const count = transactions.length;
+
+    const now = new Date();
+    const thisMonth = transactions
+      .filter(tx => {
+        if (!tx.timestamp) return false;
+        const d = new Date(tx.timestamp);
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      })
+      .reduce((s, tx) => s + Number(tx.amount || 0), 0);
+
+    kpiTotal.textContent = `$${total.toFixed(0)}`;
+    kpiCount.textContent = count;
+    kpiMonthly.textContent = `$${thisMonth.toFixed(0)}`;
+  }
+
+  /** Abre una ventana de impresión con el recibo de un cobro específico */
+  function printTxReceipt(tx) {
+    if (!tx) return;
+    const planLabel = (tx.planName || (tx.planId === 'plan-esencia' ? 'Plan Esencia' : tx.planId === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Santuario'));
+    const amount = `$${Number(tx.amount || 0).toFixed(2)}`;
+    const period = tx.isAnnual ? 'Anual' : 'Mensual';
+    const method = tx.paymentMethod === 'mercadopago' ? 'MercadoPago' : 'Tarjeta Débito/Crédito';
+    const dateStr = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/D';
+    const receiptNum = tx.receiptNumber || tx.id || 'N/D';
+    const alumna = tx.name || tx.email || 'Alumna';
+    const email = tx.email || '';
+
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+      <title>Recibo Namasté — ${escapeHtml(alumna)}</title>
+      <style>
+        body { font-family: Georgia, serif; color: #2d2522; max-width: 520px; margin: 2rem auto; padding: 2rem; }
+        h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+        .sub { font-size: 0.85rem; color: #7a6a61; margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+        td { padding: 0.45rem 0; border-bottom: 1px solid #e8e0d8; font-size: 0.92rem; }
+        td:first-child { color: #7a6a61; width: 40%; }
+        td:last-child { font-weight: 600; }
+        .total-row td { font-size: 1.2rem; color: #c0714a; border-bottom: none; padding-top: 1rem; }
+        .badge { display: inline-block; background: #fdf0e8; color: #c0714a; border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; font-weight: 700; }
+        .footer { font-size: 0.78rem; color: #a89585; margin-top: 2rem; border-top: 1px dashed #e0d6cc; padding-top: 1rem; text-align: center; }
+        @media print { body { margin: 0; padding: 1rem; } }
+      </style>
+    </head><body>
+      <h1>🪷 Namasté Escuela de Yoga</h1>
+      <div class="sub">Santuario Consciente Online — Recibo de Pago</div>
+      <table>
+        <tr><td>N° Recibo</td><td><code>${escapeHtml(receiptNum)}</code></td></tr>
+        <tr><td>Fecha</td><td>${escapeHtml(dateStr)}</td></tr>
+        <tr><td>Alumna</td><td>${escapeHtml(alumna)}</td></tr>
+        ${email ? `<tr><td>Email</td><td>${escapeHtml(email)}</td></tr>` : ''}
+        <tr><td>Plan</td><td><span class="badge">${escapeHtml(planLabel)}</span></td></tr>
+        <tr><td>Período</td><td>${escapeHtml(period)}</td></tr>
+        <tr><td>Método de pago</td><td>${escapeHtml(method)}</td></tr>
+        <tr class="total-row"><td>Total cobrado</td><td>${escapeHtml(amount)}</td></tr>
+      </table>
+      <div class="footer">Namasté — ${new Date().getFullYear()} · Este recibo es válido como comprobante de pago.</div>
+      <script>window.onload = () => { window.print(); }<\/script>
+    </body></html>`;
+
+    const w = window.open('', '_blank', 'width=600,height=750');
+    if (w) { w.document.write(html); w.document.close(); }
   }
 
   /**

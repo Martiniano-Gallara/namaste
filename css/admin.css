@@ -999,5 +999,24 @@
     width: 11px;
     height: 11px;
   }
+  .admin-transactions-table th,
+  .admin-transactions-table td {
+    padding: 0.5rem 0.22rem;
+  }
+  .btn-print-tx-receipt {
+    padding: 0.22rem 0.42rem;
+    font-size: 0.68rem;
+    gap: 0.22rem;
+  }
+  .btn-print-tx-receipt svg {
+    width: 10px;
+    height: 10px;
+  }
+  .tx-amount-number {
+    font-size: 0.78rem;
+  }
+  .tx-amount-freq {
+    font-size: 0.6rem;
+  }
 }
 

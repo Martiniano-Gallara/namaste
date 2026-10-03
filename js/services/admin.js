@@ -288,8 +288,10 @@ const AdminService = (() => {
           {
             id: 'tx_local_01',
             receiptNumber: 'REC-2026-743715',
+            name: 'Elena Rostova',
             email: 'elena@ejemplo.com',
             planName: 'Plan Sadhana',
+            planId: 'plan-sadhana',
             amount: 390,
             currency: 'USD',
             status: 'succeeded',
@@ -299,8 +301,10 @@ const AdminService = (() => {
           {
             id: 'tx_local_02',
             receiptNumber: 'REC-2026-619204',
+            name: 'Sofía Varela',
             email: 'sofia.varela@ejemplo.com',
             planName: 'Plan Santuario',
+            planId: 'plan-santuario',
             amount: 29,
             currency: 'USD',
             status: 'succeeded',

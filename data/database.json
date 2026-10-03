@@ -138,6 +138,11 @@
       "userId": "usr-invitado",
       "createdAt": 1790982884317,
       "expiresAt": 1793574884317
+    },
+    "d9a67daa-6fe9-4fb9-86c3-8c062d62e7d0": {
+      "userId": "usr-valeria",
+      "createdAt": 1790993631584,
+      "expiresAt": 1793585631584
     }
   },
   "progress": {
@@ -234,6 +239,7 @@
       "id": "tx_93d26bd46a40313e",
       "receiptNumber": "REC-2026-324507",
       "userId": "usr-29ef584e",
+      "name": "Camila Torres",
       "email": "camila.torres@ejemplo.com",
       "planId": "plan-santuario",
       "planName": "Plan Santuario",
@@ -248,6 +254,7 @@
       "id": "tx_a62f8677e042baaa",
       "receiptNumber": "REC-2026-743715",
       "userId": "usr-a80a8ab2",
+      "name": "Elena Rostova",
       "email": "elena@ejemplo.com",
       "planId": "plan-sadhana",
       "planName": "Plan Sadhana",
@@ -262,6 +269,7 @@
       "id": "tx_7182fb01c4021aa9",
       "receiptNumber": "REC-2026-619204",
       "userId": "usr-sofia",
+      "name": "Sofía Varela",
       "email": "sofia.varela@ejemplo.com",
       "planId": "plan-santuario",
       "planName": "Plan Santuario",
@@ -276,6 +284,7 @@
       "id": "tx_3910cd4810a9bb22",
       "receiptNumber": "REC-2026-501832",
       "userId": "usr-mateo",
+      "name": "Mateo Benítez",
       "email": "mateo.benitez@ejemplo.com",
       "planId": "plan-esencia",
       "planName": "Plan Esencia",
