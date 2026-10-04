@@ -1075,7 +1075,7 @@
                     <button type="button" class="filter-chip" data-category="terapeutico">Terapéutico</button>
                     <button type="button" class="filter-chip" data-category="ashtanga">Ashtanga</button>
                     <button type="button" class="filter-chip" data-category="meditacion">Meditación & Calma</button>
-                    <button type="button" class="filter-chip" data-category="completed" id="filter-chip-completed">✓ Completadas</button>
+                    <button type="button" class="filter-chip" data-category="completed" id="filter-chip-completed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Completadas</button>
                   </div>
                 </div>
 
@@ -1257,60 +1257,21 @@
       <div class="container">
         <!-- Navegación de 3 Pestañas Simplificadas -->
         <div class="admin-tabs-nav">
-          <button type="button" class="admin-tab-btn active" data-tab="tab-users" id="admin-tab-btn-users">
-            <span>Alumnas</span>
-            <span class="admin-tab-count-badge" id="tab-count-users">0</span>
-          </button>
-          <button type="button" class="admin-tab-btn" data-tab="tab-classes" id="admin-tab-btn-classes">
+          <button type="button" class="admin-tab-btn active" data-tab="tab-classes" id="admin-tab-btn-classes">
             <span>Clases</span>
             <span class="admin-tab-count-badge" id="tab-count-classes">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tab-users" id="admin-tab-btn-users">
+            <span>Alumnas</span>
+            <span class="admin-tab-count-badge" id="tab-count-users">0</span>
           </button>
           <button type="button" class="admin-tab-btn" data-tab="tab-transactions" id="admin-tab-btn-transactions">
             <span style="white-space: nowrap;">Cobros</span>
           </button>
         </div>
 
-        <!-- Pestaña 1: Cuentas de Alumnas (Solo lo indispensable a simple vista) -->
-        <div class="admin-tab-panel" id="panel-tab-users">
-          <div class="admin-table-card">
-            <!-- Toolbar con Buscador y Filtros Compactos -->
-            <div class="admin-toolbar-card">
-              <div class="admin-search-wrap">
-                <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="admin-user-search-input" class="admin-search-input" placeholder="Buscar alumna..." />
-              </div>
-
-              <div class="admin-filter-group">
-                <button type="button" class="admin-filter-pill active" data-filter-status="all">Todos</button>
-                <button type="button" class="admin-filter-pill" data-filter-status="active">Activas</button>
-                <button type="button" class="admin-filter-pill" data-filter-status="paused">Pausadas</button>
-              </div>
-            </div>
-
-            <!-- Tabla de Alumnas Compacta -->
-            <div class="admin-table-container">
-              <table class="admin-table admin-users-table">
-                <thead>
-                  <tr>
-                    <th style="width: 38%;">Alumna</th>
-                    <th style="width: 26%;">Plan</th>
-                    <th style="width: 24%;">Estado</th>
-                    <th style="width: 12%; text-align: center;"></th>
-                  </tr>
-                </thead>
-                <tbody id="admin-users-table-body">
-                  <!-- Filas renderizadas dinámicamente -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pestaña 2: Gestión de Clases del Shala (Mobile First y Compacta) -->
-        <div class="admin-tab-panel" id="panel-tab-classes" style="display: none;">
+        <!-- Pestaña 1: Gestión de Clases del Shala (Mobile First y Compacta) -->
+        <div class="admin-tab-panel" id="panel-tab-classes">
           <div class="admin-table-card">
             <!-- Toolbar con Buscador, Filtros y Botón + Subir Clase -->
             <div class="admin-toolbar-card">
@@ -1345,6 +1306,45 @@
                 </thead>
                 <tbody id="admin-classes-table-body">
                   <!-- Clases inyectadas dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Cuentas de Alumnas (Solo lo indispensable a simple vista) -->
+        <div class="admin-tab-panel" id="panel-tab-users" style="display: none;">
+          <div class="admin-table-card">
+            <!-- Toolbar con Buscador y Filtros Compactos -->
+            <div class="admin-toolbar-card">
+              <div class="admin-search-wrap">
+                <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="admin-user-search-input" class="admin-search-input" placeholder="Buscar alumna..." />
+              </div>
+
+              <div class="admin-filter-group">
+                <button type="button" class="admin-filter-pill active" data-filter-status="all">Todos</button>
+                <button type="button" class="admin-filter-pill" data-filter-status="active">Activas</button>
+                <button type="button" class="admin-filter-pill" data-filter-status="paused">Pausadas</button>
+              </div>
+            </div>
+
+            <!-- Tabla de Alumnas Compacta -->
+            <div class="admin-table-container">
+              <table class="admin-table admin-users-table">
+                <thead>
+                  <tr>
+                    <th style="width: 38%;">Alumna</th>
+                    <th style="width: 26%;">Plan</th>
+                    <th style="width: 24%;">Estado</th>
+                    <th style="width: 12%; text-align: center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-table-body">
+                  <!-- Filas renderizadas dinámicamente -->
                 </tbody>
               </table>
             </div>
@@ -1434,7 +1434,15 @@
             <span class="admin-drawer-section-title">Vistas de Gestión</span>
             <ul class="admin-drawer-nav-list">
               <li>
-                <button type="button" class="admin-drawer-nav-btn active" data-admin-goto-tab="tab-users">
+                <button type="button" class="admin-drawer-nav-btn active" data-admin-goto-tab="tab-classes">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>Catálogo de Clases & Audios</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="admin-drawer-nav-btn" data-admin-goto-tab="tab-users">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
@@ -1442,14 +1450,6 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
                   <span>Alumnas & Cuentas</span>
-                </button>
-              </li>
-              <li>
-                <button type="button" class="admin-drawer-nav-btn" data-admin-goto-tab="tab-classes">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                  <span>Catálogo de Clases & Audios</span>
                 </button>
               </li>
               <li>
@@ -1486,7 +1486,9 @@
     <div class="admin-modal-dialog">
       <div class="admin-modal-header">
         <h3>Registrar Nueva Alumna</h3>
-        <button type="button" class="modal-close-btn" id="btn-close-create-user-modal">✕</button>
+        <button type="button" class="modal-close-btn" id="btn-close-create-user-modal" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <form id="admin-create-user-form" class="admin-modal-body">
         <div class="form-group">
@@ -1535,7 +1537,9 @@
     <div class="admin-modal-dialog">
       <div class="admin-modal-header">
         <h3>Modificar Plan de Membresía</h3>
-        <button type="button" class="modal-close-btn" id="btn-close-edit-plan-modal">✕</button>
+        <button type="button" class="modal-close-btn" id="btn-close-edit-plan-modal" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <form id="admin-edit-plan-form" class="admin-modal-body">
         <input type="hidden" id="edit-plan-user-id" />
@@ -1565,7 +1569,9 @@
     <div class="admin-modal-dialog" style="max-width: 420px;">
       <div class="admin-modal-header">
         <h3 id="modal-class-heading">Subir Nueva Práctica</h3>
-        <button type="button" class="modal-close-btn" id="btn-close-class-modal">✕</button>
+        <button type="button" class="modal-close-btn" id="btn-close-class-modal" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <form id="admin-class-form" class="admin-modal-body" style="gap: 0.7rem;">
         <input type="hidden" id="form-class-id" value="" />
@@ -1603,30 +1609,196 @@
         <!-- Archivo de Video / Audio -->
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-size:0.78rem;">Video o Audio</label>
+          <!-- Selector inicial (cuando no hay archivo cargado) -->
           <label class="file-drop-zone" id="media-file-zone" for="form-class-media-file">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span id="media-file-label">Seleccionar video o audio del dispositivo</span>
             <input type="file" id="form-class-media-file" accept="video/*,audio/*" style="display:none;" />
           </label>
-          <!-- Preview de video/audio -->
-          <div id="media-preview-wrap" style="display:none; margin-top:0.5rem; border-radius:8px; overflow:hidden;">
-            <video id="media-preview-video" controls style="width:100%; max-height:160px; display:none; border-radius:8px; background:#111;"></video>
-            <audio id="media-preview-audio" controls style="width:100%; display:none; margin-top:0.25rem;"></audio>
+
+          <!-- Editor Integrado Mobile-First (se muestra al cargar o editar) -->
+          <div id="media-editor-container" class="media-editor-container" style="display:none;">
+            <!-- Cabecera de archivo -->
+            <div class="editor-header-bar">
+              <div class="editor-file-info">
+                <span id="editor-format-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </span>
+                <span class="editor-file-title" id="editor-file-name">archivo.mp4</span>
+                <span class="badge-tag" id="editor-format-badge">Video</span>
+              </div>
+              <button type="button" class="editor-btn-change" id="btn-change-media-file">Cambiar</button>
+            </div>
+
+            <!-- Panel Editor de Video -->
+            <div id="video-editor-panel" style="display:none; flex-direction:column; gap:0.6rem;">
+              <video id="editor-video-preview" playsinline controls style="width:100%; max-height:160px; border-radius:8px; background:#111; object-fit:contain;"></video>
+              
+              <!-- Recorte de Video -->
+              <div class="editor-section-card">
+                <div class="editor-section-head">
+                  <span class="editor-section-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+                    Recorte de Video
+                  </span>
+                  <span class="editor-badge-info" id="video-trim-info">00:00 - 00:00</span>
+                </div>
+                <div class="editor-slider-item">
+                  <div class="editor-slider-label-row">
+                    <span>Inicio</span>
+                    <span class="editor-slider-val" id="trim-start-val">00:00</span>
+                  </div>
+                  <input type="range" id="video-trim-start" min="0" max="100" value="0" step="1" class="editor-range-slider" />
+                </div>
+                <div class="editor-slider-item">
+                  <div class="editor-slider-label-row">
+                    <span>Fin</span>
+                    <span class="editor-slider-val" id="trim-end-val">00:00</span>
+                  </div>
+                  <input type="range" id="video-trim-end" min="0" max="100" value="100" step="1" class="editor-range-slider" />
+                </div>
+              </div>
+
+              <!-- Ajustes de Video -->
+              <div class="editor-section-card">
+                <div class="editor-section-head">
+                  <span class="editor-section-title">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                    Ajustes de Imagen
+                  </span>
+                  <div class="editor-pills-row">
+                    <button type="button" class="editor-pill-btn active" data-vpreset="normal">Original</button>
+                    <button type="button" class="editor-pill-btn" data-vpreset="calido">Cálido Shala</button>
+                    <button type="button" class="editor-pill-btn" data-vpreset="suave">Zen Suave</button>
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.45rem;">
+                  <div class="editor-slider-item">
+                    <div class="editor-slider-label-row">
+                      <span>Brillo</span>
+                      <span class="editor-slider-val" id="val-video-brightness">100%</span>
+                    </div>
+                    <input type="range" id="video-param-brightness" min="70" max="130" value="100" class="editor-range-slider" />
+                  </div>
+                  <div class="editor-slider-item">
+                    <div class="editor-slider-label-row">
+                      <span>Contraste</span>
+                      <span class="editor-slider-val" id="val-video-contrast">100%</span>
+                    </div>
+                    <input type="range" id="video-param-contrast" min="70" max="130" value="100" class="editor-range-slider" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel Editor de Audio -->
+            <div id="audio-editor-panel" style="display:none; flex-direction:column; gap:0.6rem;">
+              <audio id="editor-audio-element" preload="metadata" style="display:none;"></audio>
+              <div class="editor-audio-bar" id="editor-audio-bar">
+                <button type="button" class="editor-audio-play-btn" id="btn-audio-editor-play" aria-label="Reproducir">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" id="audio-editor-play-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+                <div class="editor-wave-anim">
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                  <div class="editor-wave-bar"></div>
+                </div>
+                <span class="editor-audio-time-badge" id="audio-editor-time">00:00 / 00:00</span>
+              </div>
+
+              <!-- Volumen de Voz -->
+              <div class="editor-section-card">
+                <div class="editor-slider-item">
+                  <div class="editor-slider-label-row">
+                    <span class="editor-section-title">Volumen de Voz</span>
+                    <span class="editor-slider-val" id="val-audio-voice-vol">100%</span>
+                  </div>
+                  <input type="range" id="audio-param-voice-vol" min="0" max="150" value="100" class="editor-range-slider" />
+                </div>
+              </div>
+
+              <!-- Música de Fondo -->
+              <div class="editor-section-card">
+                <div class="editor-section-head">
+                  <span class="editor-section-title">Música de Fondo</span>
+                  <span class="editor-badge-info" id="audio-bg-current-name">Sin música</span>
+                </div>
+                <div class="editor-pills-row">
+                  <button type="button" class="editor-pill-btn active" data-ambient="none">Sin música</button>
+                  <button type="button" class="editor-pill-btn" data-ambient="bowls">Cuencos</button>
+                  <button type="button" class="editor-pill-btn" data-ambient="stream">Arroyo Zen</button>
+                  <button type="button" class="editor-pill-btn" data-ambient="om">Armónico OM</button>
+                </div>
+                <div class="editor-slider-item" id="audio-bg-vol-container" style="display:none; margin-top:0.25rem;">
+                  <div class="editor-slider-label-row">
+                    <span>Volumen Ambiente</span>
+                    <span class="editor-slider-val" id="val-audio-bg-vol">30%</span>
+                  </div>
+                  <input type="range" id="audio-param-bg-vol" min="0" max="100" value="30" class="editor-range-slider" />
+                </div>
+              </div>
+
+              <!-- Ecualizador Sencillo -->
+              <div class="editor-section-card">
+                <div class="editor-section-head">
+                  <span class="editor-section-title">Ecualizador</span>
+                  <div class="editor-pills-row">
+                    <button type="button" class="editor-pill-btn active" data-eqpreset="flat">Plano</button>
+                    <button type="button" class="editor-pill-btn" data-eqpreset="voice">Voz Clara</button>
+                    <button type="button" class="editor-pill-btn" data-eqpreset="warm">Zen / Cálido</button>
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.4rem;">
+                  <div class="editor-slider-item">
+                    <div class="editor-slider-label-row">
+                      <span style="font-size:0.68rem;">Graves</span>
+                      <span class="editor-slider-val" id="val-eq-low" style="font-size:0.68rem;">0dB</span>
+                    </div>
+                    <input type="range" id="audio-eq-low" min="-6" max="6" value="0" class="editor-range-slider" />
+                  </div>
+                  <div class="editor-slider-item">
+                    <div class="editor-slider-label-row">
+                      <span style="font-size:0.68rem;">Medios</span>
+                      <span class="editor-slider-val" id="val-eq-mid" style="font-size:0.68rem;">0dB</span>
+                    </div>
+                    <input type="range" id="audio-eq-mid" min="-6" max="6" value="0" class="editor-range-slider" />
+                  </div>
+                  <div class="editor-slider-item">
+                    <div class="editor-slider-label-row">
+                      <span style="font-size:0.68rem;">Agudos</span>
+                      <span class="editor-slider-val" id="val-eq-high" style="font-size:0.68rem;">0dB</span>
+                    </div>
+                    <input type="range" id="audio-eq-high" min="-6" max="6" value="0" class="editor-range-slider" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- Tambien URL externa -->
-          <input type="url" id="form-class-media-url" class="form-input" placeholder="O pegar URL externa (mp4, webm, mp3)…" style="margin-top:0.4rem; font-size:0.8rem;" />
         </div>
 
-        <!-- Imagen de Portada -->
+        <!-- Imagen de Portada (Unificada - Sin Duplicados) -->
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-size:0.78rem;">Imagen de Portada</label>
+          <!-- Selector inicial (cuando no hay imagen) -->
           <label class="file-drop-zone file-drop-zone-sm" id="thumb-file-zone" for="form-class-thumbnail-file">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             <span id="thumb-file-label">Seleccionar imagen del dispositivo</span>
             <input type="file" id="form-class-thumbnail-file" accept="image/*" style="display:none;" />
           </label>
-          <div id="thumb-preview-wrap" style="display:none; margin-top:0.4rem;">
-            <img id="thumb-preview-img" src="" alt="Portada" style="width:100%; max-height:110px; object-fit:cover; border-radius:8px;" />
+          <!-- Portada única con preview (reemplaza al dropzone al cargar o editar) -->
+          <div id="thumb-unified-card" class="thumb-unified-card" style="display:none;">
+            <img id="thumb-preview-img" class="thumb-unified-img" src="" alt="Portada" />
+            <div class="thumb-unified-overlay">
+              <span class="thumb-unified-badge" id="thumb-unified-name">Portada</span>
+              <button type="button" class="thumb-unified-btn" id="btn-change-thumb">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Cambiar</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1652,7 +1824,9 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="login-modal-title">Acceso a Namasté</h3>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body">
         <div class="modal-logo-center">
@@ -1710,7 +1884,9 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <h3 id="checkout-modal-title">Suscripción al Refugio</h3>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body">
 
@@ -1829,7 +2005,9 @@
     <div class="player-modal-dialog">
       <div class="player-video-wrapper">
         <video id="player-video-element" controls playsinline preload="metadata"></video>
-        <button class="player-close-floating" id="btn-close-player-modal" aria-label="Cerrar reproductor">✕</button>
+        <button class="player-close-floating" id="btn-close-player-modal" aria-label="Cerrar reproductor">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
 
       <div class="player-details-scroll">
@@ -1847,9 +2025,9 @@
         <div class="player-compact-controls-bar">
           <div class="player-playback-group">
             <div class="video-ctrl-btns">
-              <button type="button" class="video-ctrl-btn" id="btn-player-skip-back" title="Retroceder 10 segundos">⏪ 10s</button>
+              <button type="button" class="video-ctrl-btn" id="btn-player-skip-back" title="Retroceder 10 segundos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>10s</button>
               <button type="button" class="video-ctrl-btn" id="btn-player-speed" title="Velocidad de reproducción">1.0x</button>
-              <button type="button" class="video-ctrl-btn" id="btn-player-skip-fwd" title="Avanzar 10 segundos">10s ⏩</button>
+              <button type="button" class="video-ctrl-btn" id="btn-player-skip-fwd" title="Avanzar 10 segundos">10s<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-left: 3px;"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg></button>
             </div>
             <span class="player-time-indicator" id="player-progress-indicator">00:00 / 00:00</span>
           </div>
@@ -1907,7 +2085,9 @@
     <div class="profile-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-profile-title">
       <div class="profile-drawer-header">
         <h3 id="drawer-profile-title" style="font-size: 1.25rem;">Mi Espacio & Membresía</h3>
-        <button class="modal-close-btn drawer-close-btn" aria-label="Cerrar perfil">✕</button>
+        <button class="modal-close-btn drawer-close-btn" aria-label="Cerrar perfil">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
 
       <div class="profile-drawer-body">
@@ -2021,7 +2201,9 @@
           <span class="live-badge-dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#28a745; box-shadow:0 0 8px #28a745;"></span>
           <h3 id="live-modal-title" style="margin:0;">Encuentro en Directo</h3>
         </div>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body" style="padding: 1.5rem 1.75rem;">
         <div style="text-align: center; margin-bottom: 1.25rem;">
@@ -2092,7 +2274,9 @@
     <div class="modal-dialog modal-dialog-change-plan" style="max-width: 490px;">
       <div class="modal-header" style="padding: 1.1rem 1.35rem;">
         <h3 id="change-plan-modal-title" style="margin: 0; font-size: 1.15rem;">Gestionar Mi Membresía</h3>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body" style="padding: 1.1rem 1.35rem 1.3rem 1.35rem;">
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.85rem; line-height: 1.4;">
@@ -2121,7 +2305,9 @@
             <span>Constancia, tiempo y sesiones en tu shala</span>
           </div>
         </div>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body" style="padding: 1.35rem 1.5rem;">
         
@@ -2162,7 +2348,12 @@
 
         <!-- Mensaje / Hito Consciente -->
         <div class="progress-streak-banner" id="modal-streak-banner">
-          <span class="progress-streak-banner-icon">🌿</span>
+          <span class="progress-streak-banner-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-terracotta, #b86240); display: block;" aria-hidden="true">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+            </svg>
+          </span>
           <span id="modal-streak-banner-text">¡Hermosa constancia! Cada minuto en el mat cultiva presencia y serenidad.</span>
         </div>
 
@@ -2186,7 +2377,9 @@
     <div class="modal-dialog" style="max-width: 480px;">
       <div class="modal-header">
         <h3 id="receipt-modal-title" style="margin:0;">Comprobante de Membresía</h3>
-        <button class="modal-close-btn" aria-label="Cerrar modal">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar modal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
       <div class="modal-body" style="padding: 1.5rem 1.75rem;" id="receipt-content-area">
         <!-- Renderizado dinámicamente con datos del alumno -->
@@ -2211,7 +2404,9 @@
             <span class="legal-modal-subtitle">Namasté • Transparencia, privacidad y confianza</span>
           </div>
         </div>
-        <button class="modal-close-btn" aria-label="Cerrar ventana de términos">✕</button>
+        <button class="modal-close-btn" aria-label="Cerrar ventana de términos">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
 
       <!-- Segmented Tabs Navigation -->

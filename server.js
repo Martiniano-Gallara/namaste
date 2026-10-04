@@ -1081,9 +1081,9 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n======================================================`);
-  console.log(`🧘 NAMASTÉ — Servidor de Producción y API REST Activo`);
-  console.log(`🌐 URL: http://localhost:${PORT}`);
-  console.log(`📡 API: http://localhost:${PORT}/api/health`);
-  console.log(`💾 Base de datos: ${DB_FILE}`);
+  console.log(`[NAMASTÉ] Servidor de Producción y API REST Activo`);
+  console.log(`[URL] http://localhost:${PORT}`);
+  console.log(`[API] http://localhost:${PORT}/api/health`);
+  console.log(`[DB]  ${DB_FILE}`);
   console.log(`======================================================\n`);
 });

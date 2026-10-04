@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     adminClassesCache: [],
     adminClassFilterFormat: 'all',
     adminClassSearchQuery: '',
-    adminActiveTab: 'tab-users'
+    adminActiveTab: 'tab-classes'
   };
 
   // --- Elementos del DOM ---
@@ -559,18 +559,25 @@ document.addEventListener('DOMContentLoaded', () => {
   function openModal(modalEl) {
     if (!modalEl) return;
     modalEl.classList.add('active');
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
   }
 
   function closeModal(modalEl) {
     if (!modalEl) return;
     modalEl.classList.remove('active');
-    document.body.style.overflow = '';
+    const anyActive = document.querySelector('.modal-backdrop.active, .profile-drawer-backdrop.active, .player-modal-backdrop.active, .admin-modal-backdrop.active, .admin-drawer-backdrop.active');
+    if (!anyActive) {
+      document.documentElement.classList.remove('modal-open');
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+    }
   }
 
   function setupModals() {
     // Cerrar modales con clic en backdrop o botón .modal-close-btn
-    document.querySelectorAll('.modal-backdrop, .profile-drawer-backdrop, .player-modal-backdrop').forEach(backdrop => {
+    document.querySelectorAll('.modal-backdrop, .profile-drawer-backdrop, .player-modal-backdrop, .admin-modal-backdrop, .admin-drawer-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop) {
           closeModal(backdrop);
@@ -583,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.modal-close-btn, .player-close-floating, .drawer-close-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const modal = btn.closest('.modal-backdrop, .profile-drawer-backdrop, .player-modal-backdrop');
+        const modal = btn.closest('.modal-backdrop, .profile-drawer-backdrop, .player-modal-backdrop, .admin-modal-backdrop, .admin-drawer-backdrop');
         if (modal) {
           closeModal(modal);
           if (modal === modals.player) {
@@ -1126,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveBtn = document.getElementById('btn-open-live-modal');
     const isAttending = localStorage.getItem('namaste_attending_live_' + (user.email || 'guest')) === 'true';
     if (liveCardLabel) {
-      liveCardLabel.textContent = isAttending ? '✓ Agendado' : 'Agendar';
+      liveCardLabel.innerHTML = isAttending ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Agendado' : 'Agendar';
     }
     if (liveBtn) {
       if (isAttending) {
@@ -1466,14 +1473,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <img src="${c.thumbnail}" alt="${c.title}" loading="lazy" />
             ${c.isNew ? '<span class="badge-tag badge-new">Nueva</span>' : ''}
             <div class="card-top-right-group">
-              ${isAudio ? '<span class="badge-tag badge-audio">🎧 Audio</span>' : ''}
+              ${isAudio ? '<span class="badge-tag badge-audio"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>Audio</span>' : ''}
               <button class="favorite-btn ${isFav ? 'active' : ''}" data-favorite-id="${c.id}" title="${isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}" aria-label="Favorito">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
               </button>
             </div>
-            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;">🔒 ${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Refugio'}</span>` : ''}
+            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Refugio'}</span>` : ''}
             <span class="class-duration-badge">${c.duration} min</span>
 
             <div class="play-overlay-btn">
@@ -1584,8 +1591,12 @@ document.addEventListener('DOMContentLoaded', () => {
         videoEl.src = streamUrl;
 
         const onMetadataLoaded = () => {
-          if (seekSeconds > 0 && seekSeconds < videoEl.duration) {
-            videoEl.currentTime = seekSeconds;
+          let seek = seekSeconds;
+          if (classObj.videoTrim && classObj.videoTrim.start > 0 && seek < classObj.videoTrim.start) {
+            seek = classObj.videoTrim.start;
+          }
+          if (seek > 0 && seek < videoEl.duration) {
+            videoEl.currentTime = seek;
           }
           videoEl.play().catch(e => {
             console.log('Video autoplay prevented, listo para reproducir manual.', e);
@@ -1594,6 +1605,27 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         videoEl.addEventListener('loadedmetadata', onMetadataLoaded, { once: true });
+
+        // Aplicar ajustes visuales y recorte del editor
+        if (classObj.videoFilters) {
+          const b = classObj.videoFilters.brightness || 100;
+          const c = classObj.videoFilters.contrast || 100;
+          const warm = classObj.videoFilters.preset === 'calido' ? ' sepia(18%) saturate(110%)' : '';
+          videoEl.style.filter = `brightness(${b}%) contrast(${c}%)${warm}`;
+        } else {
+          videoEl.style.filter = '';
+        }
+
+        if (classObj.videoTrim && classObj.videoTrim.end > classObj.videoTrim.start) {
+          videoEl.ontimeupdate = () => {
+            if (videoEl.currentTime >= classObj.videoTrim.end) {
+              videoEl.currentTime = classObj.videoTrim.start;
+            }
+            updatePlayerTimeDisplay();
+          };
+        } else {
+          videoEl.ontimeupdate = null;
+        }
       }).catch(err => {
         showToast(err.message || 'Membresía inactiva o nivel insuficiente para esta práctica.', 'warning');
       });
@@ -1605,7 +1637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const catEl = document.getElementById('player-class-category');
     if (catEl) {
       const isAudio = classObj.format === 'audio' || (!classObj.format && (classObj.category === 'meditacion' || classObj.category === 'relax'));
-      catEl.textContent = isAudio ? `${classObj.categoryLabel} • 🎧 Audio Práctica` : classObj.categoryLabel;
+      catEl.innerHTML = isAudio ? `${escapeHtml(classObj.categoryLabel)} • <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>Audio Práctica` : escapeHtml(classObj.categoryLabel);
     }
     const durEl = document.getElementById('player-class-duration');
     if (durEl) durEl.textContent = `${classObj.duration} min`;
@@ -1626,7 +1658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const propsListEl = document.getElementById('player-class-props');
     if (propsListEl) {
       propsListEl.innerHTML = classObj.props.map(prop => `
-        <li class="player-prop-chip">✓ ${escapeHtml(prop)}</li>
+        <li class="player-prop-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(prop)}</li>
       `).join('');
     }
 
@@ -1746,7 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <span>Completada ✓</span>
+        <span>Completada</span>
       `;
       markCompleteBtn.title = 'Práctica completada';
     } else {
@@ -1829,7 +1861,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (completedClasses.length === 0) {
           listContainer.innerHTML = `
             <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem; background: var(--sand-50); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
-              <div style="font-size: 1.6rem; margin-bottom: 0.35rem;">🧘</div>
+              <div style="margin-bottom: 0.5rem; display: flex; justify-content: center; color: var(--color-terracotta, #b86240);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="5" r="2"></circle>
+                  <path d="M12 9v4"></path>
+                  <path d="m8 13 4 3 4-3"></path>
+                  <path d="m5 17 4-1 3 4 3-4 4 1"></path>
+                </svg>
+              </div>
               <strong style="display: block; color: var(--text-primary); margin-bottom: 0.25rem;">Aún no tienes prácticas registradas</strong>
               <span>Elige cualquier sesión del catálogo para iniciar tu camino hoy mismo.</span>
             </div>
@@ -1904,7 +1943,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (attendText) {
-        attendText.textContent = isAttending ? '✓ Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
+        attendText.innerHTML = isAttending ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
       }
       if (attendBtn) {
         if (isAttending) {
@@ -1942,7 +1981,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const attendText = document.getElementById('btn-live-attend-text');
         if (attendText) {
-          attendText.textContent = newAttendingState ? '✓ Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
+          attendText.innerHTML = newAttendingState ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Asistencia Confirmada (Click para cancelar)' : 'Confirmar mi Asistencia';
         }
 
         if (newAttendingState) {
@@ -2415,7 +2454,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="color:#B65E42; font-size:0.95rem; letter-spacing:1px; line-height:1;">${starsHtml}</div>
           <p class="drawer-review-published-quote">«${escapeHtml(existingReview.quote)}»</p>
           <div class="drawer-review-published-meta">
-            <span>✓ Visible en testimonios de inicio</span>
+            <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Visible en testimonios de inicio</span>
             ${existingReview.dateFormatted ? `<span>• ${escapeHtml(existingReview.dateFormatted)}</span>` : ''}
           </div>
         </div>
@@ -2724,14 +2763,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openAdminDrawer() {
       if (adminDrawerBackdrop) {
-        adminDrawerBackdrop.classList.add('active');
+        openModal(adminDrawerBackdrop);
         if (adminDrawerToggleBtn) adminDrawerToggleBtn.setAttribute('aria-expanded', 'true');
       }
     }
 
     function closeAdminDrawer() {
       if (adminDrawerBackdrop) {
-        adminDrawerBackdrop.classList.remove('active');
+        closeModal(adminDrawerBackdrop);
         if (adminDrawerToggleBtn) adminDrawerToggleBtn.setAttribute('aria-expanded', 'false');
       }
     }
@@ -2772,7 +2811,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminDrawerNewUser) {
       adminDrawerNewUser.addEventListener('click', () => {
         closeAdminDrawer();
-        if (modals.adminCreateUser) modals.adminCreateUser.classList.add('active');
+        if (modals.adminCreateUser) openModal(modals.adminCreateUser);
       });
     }
 
@@ -2829,6 +2868,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         state.adminActiveTab = targetTab;
 
+        document.querySelectorAll('.admin-drawer-nav-btn').forEach(dBtn => {
+          if (dBtn.getAttribute('data-admin-goto-tab') === targetTab) {
+            dBtn.classList.add('active');
+          } else {
+            dBtn.classList.remove('active');
+          }
+        });
+
         if (targetTab === 'tab-transactions') {
           AdminService.getTransactions().then(res => {
             if (res && res.success && res.transactions) {
@@ -2840,6 +2887,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res && res.success && res.classes) {
               state.adminClassesCache = res.classes;
               renderAdminClassesTable();
+            }
+          });
+        } else if (targetTab === 'tab-users') {
+          AdminService.getUsers().then(res => {
+            if (res && res.success && res.users) {
+              state.adminUsersCache = res.users;
+              renderAdminUsersTable();
             }
           });
         }
@@ -2870,7 +2924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnOpenCreateModal) {
       btnOpenCreateModal.addEventListener('click', () => {
         if (modals.adminCreateUser) {
-          modals.adminCreateUser.classList.add('active');
+          openModal(modals.adminCreateUser);
         }
       });
     }
@@ -2881,7 +2935,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn) {
         btn.addEventListener('click', () => {
           if (modals.adminCreateUser) {
-            modals.adminCreateUser.classList.remove('active');
+            closeModal(modals.adminCreateUser);
           }
         });
       }
@@ -2890,7 +2944,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modals.adminCreateUser) {
       modals.adminCreateUser.addEventListener('click', (e) => {
         if (e.target === modals.adminCreateUser) {
-          modals.adminCreateUser.classList.remove('active');
+          closeModal(modals.adminCreateUser);
         }
       });
     }
@@ -2920,7 +2974,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const res = await AdminService.createUser({ name, email, planId, isAnnual, active });
           if (res && res.success) {
             showToast(`Alumna ${name} registrada exitosamente`, 'success');
-            if (modals.adminCreateUser) modals.adminCreateUser.classList.remove('active');
+            if (modals.adminCreateUser) closeModal(modals.adminCreateUser);
             formCreateUser.reset();
             renderAdminDashboard();
           } else {
@@ -2939,7 +2993,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn) {
         btn.addEventListener('click', () => {
           if (modals.adminEditPlan) {
-            modals.adminEditPlan.classList.remove('active');
+            closeModal(modals.adminEditPlan);
           }
         });
       }
@@ -2948,7 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modals.adminEditPlan) {
       modals.adminEditPlan.addEventListener('click', (e) => {
         if (e.target === modals.adminEditPlan) {
-          modals.adminEditPlan.classList.remove('active');
+          closeModal(modals.adminEditPlan);
         }
       });
     }
@@ -2967,7 +3021,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const res = await AdminService.updateUser(userId, { planId: newPlanId });
           if (res && res.success) {
             showToast('Plan de membresía actualizado correctamente', 'success');
-            if (modals.adminEditPlan) modals.adminEditPlan.classList.remove('active');
+            if (modals.adminEditPlan) closeModal(modals.adminEditPlan);
             renderAdminDashboard();
           } else {
             showToast(res.message || 'No se pudo actualizar el plan', 'warning');
@@ -3047,7 +3101,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (selectPlan && planId) selectPlan.value = planId;
 
           if (modals.adminEditPlan) {
-            modals.adminEditPlan.classList.add('active');
+            openModal(modals.adminEditPlan);
           }
           return;
         }
@@ -3154,11 +3208,249 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // 11. Modal de Subir / Editar Clase
-    // State para archivos seleccionados
+    // 11. Modal de Subir / Editar Clase con Editor Mobile-First Integrado
     let _classMediaBlob = null;
     let _classThumbBlob = null;
-    let _classMediaFormat = 'video'; // auto-detectado
+    let _classMediaFormat = 'video';
+    let _classMediaFileName = '';
+
+    // Video Editor State
+    let _videoTrim = { start: 0, end: 0, duration: 0 };
+    let _videoFilters = { brightness: 100, contrast: 100, preset: 'normal' };
+
+    // Audio Editor State
+    let _audioSettings = {
+      voiceVol: 100,
+      ambient: 'none',
+      ambientVol: 30,
+      eq: { low: 0, mid: 0, high: 0, preset: 'flat' }
+    };
+    let _audioCtx = null;
+    let _voiceGainNode = null;
+    let _ambientGainNode = null;
+    let _ambientSourceNode = null;
+    let _ambientLfoNode = null;
+    let _ambientFilterNode = null;
+    let _eqLowNode = null;
+    let _eqMidNode = null;
+    let _eqHighNode = null;
+    let _audioIsPlaying = false;
+
+    function _initAudioContext() {
+      if (!_audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          _audioCtx = new AudioContextClass();
+        }
+      }
+      if (_audioCtx && _audioCtx.state === 'suspended') {
+        _audioCtx.resume();
+      }
+    }
+
+    function _setupAudioGraph(audioElement) {
+      if (!_audioCtx) _initAudioContext();
+      if (!_audioCtx) return;
+
+      if (!_voiceGainNode && audioElement) {
+        try {
+          const source = _audioCtx.createMediaElementSource(audioElement);
+          _voiceGainNode = _audioCtx.createGain();
+          _voiceGainNode.gain.setValueAtTime((_audioSettings.voiceVol || 100) / 100, _audioCtx.currentTime);
+
+          _eqLowNode = _audioCtx.createBiquadFilter();
+          _eqLowNode.type = 'lowshelf';
+          _eqLowNode.frequency.value = 200;
+          _eqLowNode.gain.setValueAtTime(_audioSettings.eq.low || 0, _audioCtx.currentTime);
+
+          _eqMidNode = _audioCtx.createBiquadFilter();
+          _eqMidNode.type = 'peaking';
+          _eqMidNode.frequency.value = 1200;
+          _eqMidNode.Q.value = 1;
+          _eqMidNode.gain.setValueAtTime(_audioSettings.eq.mid || 0, _audioCtx.currentTime);
+
+          _eqHighNode = _audioCtx.createBiquadFilter();
+          _eqHighNode.type = 'highshelf';
+          _eqHighNode.frequency.value = 6000;
+          _eqHighNode.gain.setValueAtTime(_audioSettings.eq.high || 0, _audioCtx.currentTime);
+
+          source.connect(_voiceGainNode);
+          _voiceGainNode.connect(_eqLowNode);
+          _eqLowNode.connect(_eqMidNode);
+          _eqMidNode.connect(_eqHighNode);
+          _eqHighNode.connect(_audioCtx.destination);
+        } catch (e) {
+          console.warn('Audio graph setup notice:', e);
+        }
+      }
+    }
+
+    function _stopAmbientSound() {
+      if (_ambientSourceNode) {
+        try {
+          _ambientSourceNode.stop();
+          _ambientSourceNode.disconnect();
+        } catch (e) {}
+        _ambientSourceNode = null;
+      }
+      if (_ambientLfoNode) {
+        try {
+          _ambientLfoNode.stop();
+          _ambientLfoNode.disconnect();
+        } catch (e) {}
+        _ambientLfoNode = null;
+      }
+      if (_ambientFilterNode) {
+        try { _ambientFilterNode.disconnect(); } catch (e) {}
+        _ambientFilterNode = null;
+      }
+    }
+
+    function _playAmbientSound(type, volumePct) {
+      _stopAmbientSound();
+      if (type === 'none') return;
+      if (!_audioCtx) _initAudioContext();
+      if (!_audioCtx) return;
+
+      if (!_ambientGainNode) {
+        _ambientGainNode = _audioCtx.createGain();
+        _ambientGainNode.connect(_audioCtx.destination);
+      }
+      _ambientGainNode.gain.setValueAtTime(((volumePct || 30) / 100) * 0.28, _audioCtx.currentTime);
+
+      if (type === 'bowls') {
+        // Cuencos tibetanos: tonos armónicos en 216Hz y 432Hz con respiración lenta
+        const osc1 = _audioCtx.createOscillator();
+        const osc2 = _audioCtx.createOscillator();
+        const bowlGain = _audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.value = 216;
+        osc2.type = 'sine';
+        osc2.frequency.value = 432;
+
+        const lfo = _audioCtx.createOscillator();
+        const lfoGain = _audioCtx.createGain();
+        lfo.frequency.value = 0.18;
+        lfoGain.gain.value = 3.5;
+        lfo.connect(osc1.frequency);
+        lfo.start();
+        _ambientLfoNode = lfo;
+
+        osc1.connect(bowlGain);
+        osc2.connect(bowlGain);
+        bowlGain.connect(_ambientGainNode);
+        osc1.start();
+        osc2.start();
+        _ambientSourceNode = osc1;
+      } else if (type === 'om') {
+        // Tono OM (136.1 Hz frecuencia meditativa cósmica)
+        const osc = _audioCtx.createOscillator();
+        const sub = _audioCtx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = 136.1;
+        sub.type = 'sine';
+        sub.frequency.value = 68.05;
+
+        const omGain = _audioCtx.createGain();
+        omGain.gain.value = 0.45;
+        const filter = _audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 420;
+        _ambientFilterNode = filter;
+
+        osc.connect(filter);
+        sub.connect(filter);
+        filter.connect(omGain);
+        omGain.connect(_ambientGainNode);
+        osc.start();
+        sub.start();
+        _ambientSourceNode = osc;
+      } else if (type === 'stream') {
+        // Arroyo Zen: flujo de agua relajante generado sintéticamente
+        const bufferSize = _audioCtx.sampleRate * 2;
+        const noiseBuffer = _audioCtx.createBuffer(1, bufferSize, _audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          output[i] = (lastOut + (0.02 * white)) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.0;
+        }
+
+        const whiteNoise = _audioCtx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+        const filter = _audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 750;
+        filter.Q.value = 0.9;
+        _ambientFilterNode = filter;
+
+        whiteNoise.connect(filter);
+        filter.connect(_ambientGainNode);
+        whiteNoise.start();
+        _ambientSourceNode = whiteNoise;
+      }
+    }
+
+    function _formatTime(sec) {
+      if (isNaN(sec) || sec < 0) sec = 0;
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function _applyVideoFilters() {
+      const vid = document.getElementById('editor-video-preview');
+      if (!vid) return;
+      const b = _videoFilters.brightness;
+      const c = _videoFilters.contrast;
+      const warm = _videoFilters.preset === 'calido' ? ' sepia(18%) saturate(110%)' : '';
+      vid.style.filter = `brightness(${b}%) contrast(${c}%)${warm}`;
+
+      const valB = document.getElementById('val-video-brightness');
+      const valC = document.getElementById('val-video-contrast');
+      if (valB) valB.textContent = `${b}%`;
+      if (valC) valC.textContent = `${c}%`;
+    }
+
+    function _updateVideoTrimUI() {
+      const startEl = document.getElementById('video-trim-start');
+      const endEl = document.getElementById('video-trim-end');
+      const startVal = document.getElementById('trim-start-val');
+      const endVal = document.getElementById('trim-end-val');
+      const info = document.getElementById('video-trim-info');
+
+      if (startEl) startEl.value = _videoTrim.start;
+      if (endEl) endEl.value = _videoTrim.end;
+      if (startVal) startVal.textContent = _formatTime(_videoTrim.start);
+      if (endVal) endVal.textContent = _formatTime(_videoTrim.end);
+      if (info) {
+        const total = Math.max(0, _videoTrim.end - _videoTrim.start);
+        info.textContent = `${_formatTime(_videoTrim.start)} - ${_formatTime(_videoTrim.end)} (${_formatTime(total)})`;
+      }
+    }
+
+    function _applyEqGain() {
+      if (_eqLowNode && _audioCtx) _eqLowNode.gain.setValueAtTime(_audioSettings.eq.low, _audioCtx.currentTime);
+      if (_eqMidNode && _audioCtx) _eqMidNode.gain.setValueAtTime(_audioSettings.eq.mid, _audioCtx.currentTime);
+      if (_eqHighNode && _audioCtx) _eqHighNode.gain.setValueAtTime(_audioSettings.eq.high, _audioCtx.currentTime);
+
+      const lVal = document.getElementById('val-eq-low');
+      const mVal = document.getElementById('val-eq-mid');
+      const hVal = document.getElementById('val-eq-high');
+      if (lVal) lVal.textContent = `${_audioSettings.eq.low > 0 ? '+' : ''}${_audioSettings.eq.low}dB`;
+      if (mVal) mVal.textContent = `${_audioSettings.eq.mid > 0 ? '+' : ''}${_audioSettings.eq.mid}dB`;
+      if (hVal) hVal.textContent = `${_audioSettings.eq.high > 0 ? '+' : ''}${_audioSettings.eq.high}dB`;
+
+      const lIn = document.getElementById('audio-eq-low');
+      const mIn = document.getElementById('audio-eq-mid');
+      const hIn = document.getElementById('audio-eq-high');
+      if (lIn) lIn.value = _audioSettings.eq.low;
+      if (mIn) mIn.value = _audioSettings.eq.mid;
+      if (hIn) hIn.value = _audioSettings.eq.high;
+    }
 
     function _resetClassModal() {
       const form = document.getElementById('admin-class-form');
@@ -3166,26 +3458,78 @@ document.addEventListener('DOMContentLoaded', () => {
       _classMediaBlob = null;
       _classThumbBlob = null;
       _classMediaFormat = 'video';
-      // Reset media preview
-      const mediaWrap = document.getElementById('media-preview-wrap');
-      const mediaVid = document.getElementById('media-preview-video');
-      const mediaAud = document.getElementById('media-preview-audio');
-      const mediaLbl = document.getElementById('media-file-label');
+      _classMediaFileName = '';
+      _videoTrim = { start: 0, end: 0, duration: 0 };
+      _videoFilters = { brightness: 100, contrast: 100, preset: 'normal' };
+      _audioSettings = { voiceVol: 100, ambient: 'none', ambientVol: 30, eq: { low: 0, mid: 0, high: 0, preset: 'flat' } };
+
+      // Reset Video Editor Preview
+      const vid = document.getElementById('editor-video-preview');
+      if (vid) {
+        vid.pause();
+        vid.src = '';
+        vid.style.filter = '';
+      }
+
+      // Reset Audio Editor Preview
+      const aud = document.getElementById('editor-audio-element');
+      if (aud) {
+        aud.pause();
+        aud.src = '';
+      }
+      _stopAmbientSound();
+      _audioIsPlaying = false;
+      const audioBar = document.getElementById('editor-audio-bar');
+      if (audioBar) audioBar.classList.remove('playing');
+      const playIcon = document.getElementById('audio-editor-play-icon');
+      if (playIcon) playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+
+      // Reset Video / Audio Dropzone vs Editor Container (Sin duplicados)
       const mediaZone = document.getElementById('media-file-zone');
-      if (mediaWrap) mediaWrap.style.display = 'none';
-      if (mediaVid) { mediaVid.src = ''; mediaVid.style.display = 'none'; }
-      if (mediaAud) { mediaAud.src = ''; mediaAud.style.display = 'none'; }
-      if (mediaLbl) mediaLbl.textContent = 'Seleccionar video o audio del dispositivo';
-      if (mediaZone) mediaZone.classList.remove('has-file');
-      // Reset thumbnail preview
-      const thumbWrap = document.getElementById('thumb-preview-wrap');
-      const thumbImg = document.getElementById('thumb-preview-img');
-      const thumbLbl = document.getElementById('thumb-file-label');
+      const mediaEditor = document.getElementById('media-editor-container');
+      if (mediaZone) {
+        mediaZone.style.display = 'flex';
+        mediaZone.classList.remove('has-file');
+      }
+      if (mediaEditor) mediaEditor.style.display = 'none';
+
+      // Reset Portada Dropzone vs Tarjeta Unificada (Sin duplicados)
       const thumbZone = document.getElementById('thumb-file-zone');
-      if (thumbWrap) thumbWrap.style.display = 'none';
+      const thumbCard = document.getElementById('thumb-unified-card');
+      const thumbImg = document.getElementById('thumb-preview-img');
+      if (thumbZone) {
+        thumbZone.style.display = 'flex';
+        thumbZone.classList.remove('has-file');
+      }
+      if (thumbCard) thumbCard.style.display = 'none';
       if (thumbImg) thumbImg.src = '';
-      if (thumbLbl) thumbLbl.textContent = 'Seleccionar imagen del dispositivo';
-      if (thumbZone) thumbZone.classList.remove('has-file');
+
+      // Reset Pills & Sliders
+      document.querySelectorAll('[data-vpreset]').forEach(b => b.classList.toggle('active', b.getAttribute('data-vpreset') === 'normal'));
+      document.querySelectorAll('[data-ambient]').forEach(b => b.classList.toggle('active', b.getAttribute('data-ambient') === 'none'));
+      document.querySelectorAll('[data-eqpreset]').forEach(b => b.classList.toggle('active', b.getAttribute('data-eqpreset') === 'flat'));
+
+      const vBrightEl = document.getElementById('video-param-brightness');
+      const vContrastEl = document.getElementById('video-param-contrast');
+      if (vBrightEl) vBrightEl.value = 100;
+      if (vContrastEl) vContrastEl.value = 100;
+      _applyVideoFilters();
+
+      const voiceVolEl = document.getElementById('audio-param-voice-vol');
+      const voiceValEl = document.getElementById('val-audio-voice-vol');
+      if (voiceVolEl) voiceVolEl.value = 100;
+      if (voiceValEl) voiceValEl.textContent = '100%';
+
+      const bgVolContainer = document.getElementById('audio-bg-vol-container');
+      if (bgVolContainer) bgVolContainer.style.display = 'none';
+      const bgName = document.getElementById('audio-bg-current-name');
+      if (bgName) bgName.textContent = 'Sin música';
+      const bgVolEl = document.getElementById('audio-param-bg-vol');
+      const bgValEl = document.getElementById('val-audio-bg-vol');
+      if (bgVolEl) bgVolEl.value = 30;
+      if (bgValEl) bgValEl.textContent = '30%';
+
+      _applyEqGain();
     }
 
     const btnOpenCreateClassModal = document.getElementById('btn-admin-open-create-class');
@@ -3196,7 +3540,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heading) heading.textContent = 'Subir Nueva Práctica';
         const idInput = document.getElementById('form-class-id');
         if (idInput) idInput.value = '';
-        if (modals.adminClass) modals.adminClass.classList.add('active');
+        if (modals.adminClass) openModal(modals.adminClass);
       });
     }
 
@@ -3204,13 +3548,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelClassModal = document.getElementById('btn-cancel-class-modal');
     [btnCloseClassModal, btnCancelClassModal].forEach(btn => {
       if (btn) btn.addEventListener('click', () => {
-        if (modals.adminClass) modals.adminClass.classList.remove('active');
+        _resetClassModal();
+        if (modals.adminClass) closeModal(modals.adminClass);
       });
     });
 
     if (modals.adminClass) {
       modals.adminClass.addEventListener('click', (e) => {
-        if (e.target === modals.adminClass) modals.adminClass.classList.remove('active');
+        if (e.target === modals.adminClass) {
+          _resetClassModal();
+          closeModal(modals.adminClass);
+        }
       });
     }
 
@@ -3221,43 +3569,315 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if (!file) return;
         _classMediaBlob = URL.createObjectURL(file);
+        _classMediaFileName = file.name;
         _classMediaFormat = file.type.startsWith('audio') ? 'audio' : 'video';
-        const label = document.getElementById('media-file-label');
-        const zone = document.getElementById('media-file-zone');
-        const wrap = document.getElementById('media-preview-wrap');
-        const vid = document.getElementById('media-preview-video');
-        const aud = document.getElementById('media-preview-audio');
-        if (label) label.textContent = file.name;
-        if (zone) zone.classList.add('has-file');
-        if (wrap) wrap.style.display = 'block';
-        // Limpiar URL externa
-        const urlInput = document.getElementById('form-class-media-url');
-        if (urlInput) urlInput.value = '';
-        if (_classMediaFormat === 'audio') {
-          if (vid) vid.style.display = 'none';
-          if (aud) { aud.src = _classMediaBlob; aud.style.display = 'block'; }
+
+        // Ocultar zona de selección, mostrar panel editor integrado (Sin duplicados)
+        const mediaZone = document.getElementById('media-file-zone');
+        const mediaEditor = document.getElementById('media-editor-container');
+        if (mediaZone) mediaZone.style.display = 'none';
+        if (mediaEditor) mediaEditor.style.display = 'flex';
+
+        // Actualizar barra de archivo
+        const nameEl = document.getElementById('editor-file-name');
+        const badgeEl = document.getElementById('editor-format-badge');
+        const iconEl = document.getElementById('editor-format-icon');
+        if (nameEl) nameEl.textContent = file.name;
+        if (badgeEl) badgeEl.textContent = _classMediaFormat === 'audio' ? 'Audio' : 'Video';
+        if (iconEl) {
+          iconEl.innerHTML = _classMediaFormat === 'audio'
+            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>'
+            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+        }
+
+        const videoPanel = document.getElementById('video-editor-panel');
+        const audioPanel = document.getElementById('audio-editor-panel');
+
+        if (_classMediaFormat === 'video') {
+          if (audioPanel) audioPanel.style.display = 'none';
+          if (videoPanel) videoPanel.style.display = 'flex';
+          const vid = document.getElementById('editor-video-preview');
+          if (vid) {
+            vid.src = _classMediaBlob;
+            vid.onloadedmetadata = () => {
+              const dur = Math.round(vid.duration) || 60;
+              _videoTrim.duration = dur;
+              _videoTrim.start = 0;
+              _videoTrim.end = dur;
+              const sEl = document.getElementById('video-trim-start');
+              const eEl = document.getElementById('video-trim-end');
+              if (sEl) { sEl.max = dur; sEl.value = 0; }
+              if (eEl) { eEl.max = dur; eEl.value = dur; }
+              _updateVideoTrimUI();
+            };
+          }
         } else {
-          if (aud) aud.style.display = 'none';
-          if (vid) { vid.src = _classMediaBlob; vid.style.display = 'block'; }
+          if (videoPanel) videoPanel.style.display = 'none';
+          if (audioPanel) audioPanel.style.display = 'flex';
+          const aud = document.getElementById('editor-audio-element');
+          if (aud) {
+            aud.src = _classMediaBlob;
+            aud.onloadedmetadata = () => {
+              const tEl = document.getElementById('audio-editor-time');
+              if (tEl) tEl.textContent = `00:00 / ${_formatTime(aud.duration || 0)}`;
+            };
+          }
         }
       });
     }
 
-    // File picker: Imagen de portada
+    const btnChangeMediaFile = document.getElementById('btn-change-media-file');
+    if (btnChangeMediaFile) {
+      btnChangeMediaFile.addEventListener('click', () => {
+        if (mediaFileInput) mediaFileInput.click();
+      });
+    }
+
+    // Controles del Editor de Video (Recorte y Ajustes)
+    const trimStartEl = document.getElementById('video-trim-start');
+    const trimEndEl = document.getElementById('video-trim-end');
+    const editorVid = document.getElementById('editor-video-preview');
+
+    if (trimStartEl) {
+      trimStartEl.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value, 10) || 0;
+        if (val >= _videoTrim.end) {
+          val = Math.max(0, _videoTrim.end - 1);
+          e.target.value = val;
+        }
+        _videoTrim.start = val;
+        if (editorVid) editorVid.currentTime = val;
+        _updateVideoTrimUI();
+      });
+    }
+
+    if (trimEndEl) {
+      trimEndEl.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value, 10) || 0;
+        if (val <= _videoTrim.start) {
+          val = Math.min(_videoTrim.duration, _videoTrim.start + 1);
+          e.target.value = val;
+        }
+        _videoTrim.end = val;
+        if (editorVid) editorVid.currentTime = val;
+        _updateVideoTrimUI();
+      });
+    }
+
+    if (editorVid) {
+      editorVid.addEventListener('timeupdate', () => {
+        if (_videoTrim.end > 0 && editorVid.currentTime >= _videoTrim.end) {
+          editorVid.currentTime = _videoTrim.start;
+        }
+      });
+    }
+
+    const vBrightEl = document.getElementById('video-param-brightness');
+    const vContrastEl = document.getElementById('video-param-contrast');
+    if (vBrightEl) {
+      vBrightEl.addEventListener('input', (e) => {
+        _videoFilters.brightness = parseInt(e.target.value, 10);
+        _applyVideoFilters();
+      });
+    }
+    if (vContrastEl) {
+      vContrastEl.addEventListener('input', (e) => {
+        _videoFilters.contrast = parseInt(e.target.value, 10);
+        _applyVideoFilters();
+      });
+    }
+
+    document.querySelectorAll('[data-vpreset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-vpreset');
+        document.querySelectorAll('[data-vpreset]').forEach(b => b.classList.toggle('active', b === btn));
+        _videoFilters.preset = preset;
+        if (preset === 'normal') {
+          _videoFilters.brightness = 100;
+          _videoFilters.contrast = 100;
+        } else if (preset === 'calido') {
+          _videoFilters.brightness = 106;
+          _videoFilters.contrast = 96;
+        } else if (preset === 'suave') {
+          _videoFilters.brightness = 110;
+          _videoFilters.contrast = 90;
+        }
+        if (vBrightEl) vBrightEl.value = _videoFilters.brightness;
+        if (vContrastEl) vContrastEl.value = _videoFilters.contrast;
+        _applyVideoFilters();
+      });
+    });
+
+    // Controles del Editor de Audio
+    const btnAudioPlay = document.getElementById('btn-audio-editor-play');
+    const editorAudio = document.getElementById('editor-audio-element');
+    const audioBar = document.getElementById('editor-audio-bar');
+    const audioPlayIcon = document.getElementById('audio-editor-play-icon');
+
+    if (btnAudioPlay && editorAudio) {
+      btnAudioPlay.addEventListener('click', () => {
+        _initAudioContext();
+        _setupAudioGraph(editorAudio);
+
+        if (editorAudio.paused) {
+          editorAudio.play().then(() => {
+            _audioIsPlaying = true;
+            if (audioBar) audioBar.classList.add('playing');
+            if (audioPlayIcon) audioPlayIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            if (_audioSettings.ambient !== 'none') {
+              _playAmbientSound(_audioSettings.ambient, _audioSettings.ambientVol);
+            }
+          }).catch(err => console.log('Audio playback notice:', err));
+        } else {
+          editorAudio.pause();
+          _audioIsPlaying = false;
+          if (audioBar) audioBar.classList.remove('playing');
+          if (audioPlayIcon) audioPlayIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+          _stopAmbientSound();
+        }
+      });
+
+      editorAudio.addEventListener('timeupdate', () => {
+        const tEl = document.getElementById('audio-editor-time');
+        if (tEl) {
+          tEl.textContent = `${_formatTime(editorAudio.currentTime || 0)} / ${_formatTime(editorAudio.duration || 0)}`;
+        }
+      });
+
+      editorAudio.addEventListener('ended', () => {
+        _audioIsPlaying = false;
+        if (audioBar) audioBar.classList.remove('playing');
+        if (audioPlayIcon) audioPlayIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+        _stopAmbientSound();
+      });
+    }
+
+    const voiceVolEl = document.getElementById('audio-param-voice-vol');
+    if (voiceVolEl) {
+      voiceVolEl.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        _audioSettings.voiceVol = val;
+        const valEl = document.getElementById('val-audio-voice-vol');
+        if (valEl) valEl.textContent = `${val}%`;
+        if (_voiceGainNode && _audioCtx) {
+          _voiceGainNode.gain.setValueAtTime(val / 100, _audioCtx.currentTime);
+        } else if (editorAudio) {
+          editorAudio.volume = Math.min(1, val / 100);
+        }
+      });
+    }
+
+    const ambientLabels = {
+      none: 'Sin música',
+      bowls: 'Cuencos',
+      stream: 'Arroyo Zen',
+      om: 'Armónico OM'
+    };
+
+    document.querySelectorAll('[data-ambient]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ambient = btn.getAttribute('data-ambient');
+        document.querySelectorAll('[data-ambient]').forEach(b => b.classList.toggle('active', b === btn));
+        _audioSettings.ambient = ambient;
+        const nameEl = document.getElementById('audio-bg-current-name');
+        if (nameEl) nameEl.textContent = ambientLabels[ambient] || 'Sin música';
+
+        const volContainer = document.getElementById('audio-bg-vol-container');
+        if (volContainer) {
+          volContainer.style.display = ambient === 'none' ? 'none' : 'block';
+        }
+
+        if (_audioIsPlaying) {
+          if (ambient === 'none') {
+            _stopAmbientSound();
+          } else {
+            _playAmbientSound(ambient, _audioSettings.ambientVol);
+          }
+        }
+      });
+    });
+
+    const bgVolEl = document.getElementById('audio-param-bg-vol');
+    if (bgVolEl) {
+      bgVolEl.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        _audioSettings.ambientVol = val;
+        const valEl = document.getElementById('val-audio-bg-vol');
+        if (valEl) valEl.textContent = `${val}%`;
+        if (_ambientGainNode && _audioCtx) {
+          _ambientGainNode.gain.setValueAtTime((val / 100) * 0.28, _audioCtx.currentTime);
+        }
+      });
+    }
+
+    const eqLowEl = document.getElementById('audio-eq-low');
+    const eqMidEl = document.getElementById('audio-eq-mid');
+    const eqHighEl = document.getElementById('audio-eq-high');
+    if (eqLowEl) {
+      eqLowEl.addEventListener('input', (e) => {
+        _audioSettings.eq.low = parseInt(e.target.value, 10);
+        _applyEqGain();
+      });
+    }
+    if (eqMidEl) {
+      eqMidEl.addEventListener('input', (e) => {
+        _audioSettings.eq.mid = parseInt(e.target.value, 10);
+        _applyEqGain();
+      });
+    }
+    if (eqHighEl) {
+      eqHighEl.addEventListener('input', (e) => {
+        _audioSettings.eq.high = parseInt(e.target.value, 10);
+        _applyEqGain();
+      });
+    }
+
+    document.querySelectorAll('[data-eqpreset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-eqpreset');
+        document.querySelectorAll('[data-eqpreset]').forEach(b => b.classList.toggle('active', b === btn));
+        _audioSettings.eq.preset = preset;
+        if (preset === 'flat') {
+          _audioSettings.eq.low = 0;
+          _audioSettings.eq.mid = 0;
+          _audioSettings.eq.high = 0;
+        } else if (preset === 'voice') {
+          _audioSettings.eq.low = 1;
+          _audioSettings.eq.mid = 3;
+          _audioSettings.eq.high = 2;
+        } else if (preset === 'warm') {
+          _audioSettings.eq.low = 3;
+          _audioSettings.eq.mid = -1;
+          _audioSettings.eq.high = -2;
+        }
+        _applyEqGain();
+      });
+    });
+
+    // File picker: Imagen de Portada (Unificada)
     const thumbFileInput = document.getElementById('form-class-thumbnail-file');
     if (thumbFileInput) {
       thumbFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         _classThumbBlob = URL.createObjectURL(file);
-        const label = document.getElementById('thumb-file-label');
-        const zone = document.getElementById('thumb-file-zone');
-        const wrap = document.getElementById('thumb-preview-wrap');
-        const img = document.getElementById('thumb-preview-img');
-        if (label) label.textContent = file.name;
-        if (zone) zone.classList.add('has-file');
-        if (wrap) wrap.style.display = 'block';
-        if (img) img.src = _classThumbBlob;
+
+        const thumbZone = document.getElementById('thumb-file-zone');
+        const thumbCard = document.getElementById('thumb-unified-card');
+        const thumbImg = document.getElementById('thumb-preview-img');
+        const thumbName = document.getElementById('thumb-unified-name');
+
+        if (thumbZone) thumbZone.style.display = 'none';
+        if (thumbCard) thumbCard.style.display = 'flex';
+        if (thumbImg) thumbImg.src = _classThumbBlob;
+        if (thumbName) thumbName.textContent = file.name;
+      });
+    }
+
+    const btnChangeThumb = document.getElementById('btn-change-thumb');
+    if (btnChangeThumb) {
+      btnChangeThumb.addEventListener('click', () => {
+        if (thumbFileInput) thumbFileInput.click();
       });
     }
 
@@ -3271,15 +3891,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById('form-class-category')?.value || 'suave';
         const description = document.getElementById('form-class-desc')?.value.trim() || '';
 
-        // Media: blob de archivo local tiene prioridad, luego URL externa
-        const mediaUrl = _classMediaBlob || document.getElementById('form-class-media-url')?.value.trim() || '';
+        // Media: blob local seleccionado o guardado previamente
+        const mediaUrl = _classMediaBlob || '';
         const format = _classMediaFormat || 'video';
 
-        // Thumbnail: blob local tiene prioridad, luego imagen por defecto
+        // Thumbnail: blob local seleccionado o imagen por defecto
         const thumbnail = _classThumbBlob || 'assets/images/shala.jpg';
 
-        if (!title || !mediaUrl) {
-          showToast('Por favor completa el título y el archivo o URL del video/audio', 'warning');
+        if (!title) {
+          showToast('Por favor escribe el título de la práctica', 'warning');
+          return;
+        }
+
+        if (!mediaUrl) {
+          showToast('Por favor selecciona un archivo de video o audio para la práctica', 'warning');
           return;
         }
 
@@ -3289,6 +3914,10 @@ document.addEventListener('DOMContentLoaded', () => {
           meditacion: 'Meditación & Pranayama'
         };
 
+        const calcDuration = _classMediaFormat === 'video' && _videoTrim.end > _videoTrim.start
+          ? Math.max(1, Math.round((_videoTrim.end - _videoTrim.start) / 60))
+          : 35;
+
         const classData = {
           id: classId || undefined,
           title,
@@ -3296,19 +3925,22 @@ document.addEventListener('DOMContentLoaded', () => {
           planRequired,
           category,
           categoryLabel: categoryLabels[category] || 'Práctica Holística',
-          duration: 35,
+          duration: calcDuration,
           videoUrl: mediaUrl,
           thumbnail,
           description,
-          level: 'Todos los niveles'
+          level: 'Todos los niveles',
+          videoTrim: _classMediaFormat === 'video' ? _videoTrim : undefined,
+          videoFilters: _classMediaFormat === 'video' ? _videoFilters : undefined,
+          audioSettings: _classMediaFormat === 'audio' ? _audioSettings : undefined
         };
 
         try {
           const res = await AdminService.saveClass(classData);
           if (res && res.success) {
             showToast(classId ? 'Práctica actualizada exitosamente' : 'Nueva práctica subida y disponible para alumnas', 'success');
-            if (modals.adminClass) modals.adminClass.classList.remove('active');
             _resetClassModal();
+            if (modals.adminClass) closeModal(modals.adminClass);
             state.adminClassesCache = res.classes;
             renderAdminClassesTable();
             const badge = document.getElementById('tab-count-classes');
@@ -3371,27 +4003,96 @@ document.addEventListener('DOMContentLoaded', () => {
             if (planSelect) planSelect.value = classObj.planRequired || 'plan-esencia';
             const catSelect = document.getElementById('form-class-category');
             if (catSelect) catSelect.value = classObj.category || 'suave';
-            const mediaInput = document.getElementById('form-class-media-url');
-            if (mediaInput) mediaInput.value = classObj.videoUrl || '';
             const descInput = document.getElementById('form-class-desc');
             if (descInput) descInput.value = classObj.description || '';
-            // Pre-cargar formato detectado
-            _classMediaFormat = classObj.format || 'video';
 
-            // Mostrar thumbnail existente como preview
-            if (classObj.thumbnail) {
-              _classThumbBlob = classObj.thumbnail;
-              const thumbWrap = document.getElementById('thumb-preview-wrap');
-              const thumbImg = document.getElementById('thumb-preview-img');
-              const thumbLbl = document.getElementById('thumb-file-label');
-              const thumbZone = document.getElementById('thumb-file-zone');
-              if (thumbWrap) thumbWrap.style.display = 'block';
-              if (thumbImg) thumbImg.src = classObj.thumbnail;
-              if (thumbLbl) thumbLbl.textContent = 'Portada actual (seleccionar para cambiar)';
-              if (thumbZone) thumbZone.classList.add('has-file');
+            // Formato y archivo existente
+            _classMediaFormat = classObj.format || (classObj.category === 'meditacion' || classObj.category === 'relax' ? 'audio' : 'video');
+            _classMediaBlob = classObj.videoUrl || '';
+            _classMediaFileName = classObj.title || 'archivo';
+
+            // Mostrar tarjeta de editor y ocultar dropzone inicial (Sin duplicados)
+            const mediaZone = document.getElementById('media-file-zone');
+            const mediaEditor = document.getElementById('media-editor-container');
+            if (mediaZone) mediaZone.style.display = 'none';
+            if (mediaEditor) mediaEditor.style.display = 'flex';
+
+            const nameEl = document.getElementById('editor-file-name');
+            const badgeEl = document.getElementById('editor-format-badge');
+            const iconEl = document.getElementById('editor-format-icon');
+            if (nameEl) nameEl.textContent = _classMediaFileName;
+            if (badgeEl) badgeEl.textContent = _classMediaFormat === 'audio' ? 'Audio' : 'Video';
+            if (iconEl) {
+              iconEl.innerHTML = _classMediaFormat === 'audio'
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>'
+                : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
             }
 
-            if (modals.adminClass) modals.adminClass.classList.add('active');
+            const videoPanel = document.getElementById('video-editor-panel');
+            const audioPanel = document.getElementById('audio-editor-panel');
+
+            if (_classMediaFormat === 'video') {
+              if (audioPanel) audioPanel.style.display = 'none';
+              if (videoPanel) videoPanel.style.display = 'flex';
+              const vid = document.getElementById('editor-video-preview');
+              if (vid && _classMediaBlob) {
+                vid.src = _classMediaBlob;
+                if (classObj.videoTrim) {
+                  _videoTrim = { ...classObj.videoTrim };
+                  _updateVideoTrimUI();
+                } else {
+                  vid.onloadedmetadata = () => {
+                    const dur = Math.round(vid.duration) || 60;
+                    _videoTrim = { start: 0, end: dur, duration: dur };
+                    _updateVideoTrimUI();
+                  };
+                }
+                if (classObj.videoFilters) {
+                  _videoFilters = { ...classObj.videoFilters };
+                  if (vBrightEl) vBrightEl.value = _videoFilters.brightness;
+                  if (vContrastEl) vContrastEl.value = _videoFilters.contrast;
+                  document.querySelectorAll('[data-vpreset]').forEach(b => b.classList.toggle('active', b.getAttribute('data-vpreset') === (_videoFilters.preset || 'normal')));
+                  _applyVideoFilters();
+                }
+              }
+            } else {
+              if (videoPanel) videoPanel.style.display = 'none';
+              if (audioPanel) audioPanel.style.display = 'flex';
+              const aud = document.getElementById('editor-audio-element');
+              if (aud && _classMediaBlob) {
+                aud.src = _classMediaBlob;
+                aud.onloadedmetadata = () => {
+                  const tEl = document.getElementById('audio-editor-time');
+                  if (tEl) tEl.textContent = `00:00 / ${_formatTime(aud.duration || 0)}`;
+                };
+              }
+              if (classObj.audioSettings) {
+                _audioSettings = { ...classObj.audioSettings };
+                if (voiceVolEl) voiceVolEl.value = _audioSettings.voiceVol || 100;
+                document.querySelectorAll('[data-ambient]').forEach(b => b.classList.toggle('active', b.getAttribute('data-ambient') === (_audioSettings.ambient || 'none')));
+                const bgName = document.getElementById('audio-bg-current-name');
+                if (bgName) bgName.textContent = ambientLabels[_audioSettings.ambient] || 'Sin música';
+                const volContainer = document.getElementById('audio-bg-vol-container');
+                if (volContainer) volContainer.style.display = _audioSettings.ambient === 'none' ? 'none' : 'block';
+                if (bgVolEl) bgVolEl.value = _audioSettings.ambientVol || 30;
+                _applyEqGain();
+              }
+            }
+
+            // Mostrar thumbnail existente en tarjeta unificada (Sin duplicados)
+            if (classObj.thumbnail) {
+              _classThumbBlob = classObj.thumbnail;
+              const thumbZone = document.getElementById('thumb-file-zone');
+              const thumbCard = document.getElementById('thumb-unified-card');
+              const thumbImg = document.getElementById('thumb-preview-img');
+              const thumbName = document.getElementById('thumb-unified-name');
+              if (thumbZone) thumbZone.style.display = 'none';
+              if (thumbCard) thumbCard.style.display = 'flex';
+              if (thumbImg) thumbImg.src = classObj.thumbnail;
+              if (thumbName) thumbName.textContent = classObj.thumbnail.split('/').pop();
+            }
+
+            if (modals.adminClass) openModal(modals.adminClass);
           }
           return;
         }
@@ -3776,7 +4477,7 @@ document.addEventListener('DOMContentLoaded', () => {
         @media print { body { margin: 0; padding: 1rem; } }
       </style>
     </head><body>
-      <h1>🪷 Namasté Escuela de Yoga</h1>
+      <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -3px; margin-right: 6px; color: #c0714a;" aria-hidden="true"><path d="M12 2C11 5 7 8 4 9c3 3 7 4 8 11 1-7 5-8 8-11-3-1-7-4-8-7z"/></svg>Namasté Escuela de Yoga</h1>
       <div class="sub">Refugio Consciente Online — Recibo de Pago</div>
       <table>
         <tr><td>N° Recibo</td><td><code>${escapeHtml(receiptNum)}</code></td></tr>
@@ -3848,7 +4549,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td style="width: 24%; text-align: center;">
             <span class="format-badge ${isAudio ? 'audio' : 'video'}">
-              ${isAudio ? '🎧 Audio' : '🎥 Video'}
+              ${isAudio
+                ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>Audio'
+                : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video'
+              }
             </span>
           </td>
           <td style="width: 22%; text-align: center;">
@@ -3874,10 +4578,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="qd-label">Portada:</span>
                   <span class="qd-val" title="${escapeHtml(c.thumbnail || '')}">${escapeHtml((c.thumbnail || '').split('/').pop())}</span>
                 </div>
-                <div class="quick-detail-item" style="grid-column: 1 / -1;">
-                  <span class="qd-label">Archivo:</span>
-                  <span class="qd-val" style="font-family: monospace; font-size: 0.68rem;" title="${escapeHtml(c.videoUrl || '')}">${escapeHtml(c.videoUrl || '')}</span>
-                </div>
                 ${c.description ? `
                 <div class="quick-detail-item" style="grid-column: 1 / -1;">
                   <span class="qd-label">Detalle:</span>
@@ -3886,7 +4586,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div class="quick-actions-row">
                 <button type="button" class="mini-btn btn-preview-class" data-class-id="${c.id}" title="Reproducir como alumna">
-                  ▶ Probar
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: 0; margin-right: 3px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Probar
                 </button>
                 <button type="button" class="mini-btn btn-edit-class" data-class-id="${c.id}" title="Editar práctica">
                   Editar
