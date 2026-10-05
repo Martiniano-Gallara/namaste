@@ -1089,10 +1089,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (subnoteEl) {
           subnoteEl.style.opacity = '0';
           setTimeout(() => {
-            subnoteEl.textContent = cycle === 'annual'
-              ? subnoteEl.getAttribute('data-note-annual')
-              : subnoteEl.getAttribute('data-note-monthly');
-            subnoteEl.style.opacity = '1';
+            const noteText = cycle === 'annual'
+              ? (subnoteEl.getAttribute('data-note-annual') || '')
+              : (subnoteEl.getAttribute('data-note-monthly') || '');
+            subnoteEl.textContent = noteText;
+            if (!noteText || noteText.trim() === '') {
+              subnoteEl.style.display = 'none';
+            } else {
+              subnoteEl.style.display = 'inline-block';
+              subnoteEl.style.opacity = '1';
+            }
           }, 140);
         }
       });
@@ -4941,12 +4947,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (subnoteEl) {
-          subnoteEl.setAttribute('data-note-monthly', 'Pesos argentinos • Facturado mensualmente');
+          subnoteEl.setAttribute('data-note-monthly', '');
           subnoteEl.setAttribute('data-note-annual', `$ ${annualTotalFormatted} ARS/año • ¡2 meses de regalo!`);
           if (state.selectedBillingCycle === 'annual') {
             subnoteEl.textContent = `$ ${annualTotalFormatted} ARS/año • ¡2 meses de regalo!`;
+            subnoteEl.style.display = 'inline-block';
           } else {
-            subnoteEl.textContent = 'Pesos argentinos • Facturado mensualmente';
+            subnoteEl.textContent = '';
+            subnoteEl.style.display = 'none';
           }
         }
 

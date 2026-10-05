@@ -1818,6 +1818,10 @@ body.menu-open {
   transition: opacity 0.2s ease;
 }
 
+.pricing-subnote:empty {
+  display: none !important;
+}
+
 .pricing-features-list {
   list-style: none;
   display: flex;

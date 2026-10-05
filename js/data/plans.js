@@ -17,7 +17,7 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.",
+    description: "Pausas de presencia con Yoga Suave y Clásico.",
     allowedCategories: ["suave", "clasico", "relax", "meditacion"],
     features: [
       "Acceso a +40 clases de Yoga Suave y Clásico",
@@ -43,7 +43,7 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "La experiencia completa del Shala. Acceso total a todas las disciplinas.",
+    description: "La experiencia completa del Shala con acceso total.",
     allowedCategories: ["*"],
     features: [
       "Acceso ilimitado a todo el catálogo (+140 clases)",
@@ -69,7 +69,7 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.",
+    description: "Inmersión profunda, masterclasses y mentoría personal.",
     allowedCategories: ["*"],
     features: [
       "Todo lo de Plan Refugio sin restricciones",
