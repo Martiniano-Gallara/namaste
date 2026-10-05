@@ -30,38 +30,42 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Plan configuration & authorized categories
+// Plan configuration & authorized categories (Pesos Argentinos - ARS)
 const PLANS_CATALOG = {
   'plan-esencia': {
     id: 'plan-esencia',
     name: 'Plan Esencia',
     tag: 'ESENCIA',
-    monthlyPrice: 19,
-    annualPrice: 190,
+    monthlyPrice: 19000,
+    annualPrice: 190000,
+    currency: 'ARS',
     allowedCategories: ['suave', 'clasico']
   },
   'plan-refugio': {
     id: 'plan-refugio',
     name: 'Plan Refugio',
     tag: 'REFUGIO',
-    monthlyPrice: 29,
-    annualPrice: 290,
+    monthlyPrice: 29000,
+    annualPrice: 290000,
+    currency: 'ARS',
     allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'relax']
   },
   'plan-santuario': {
     id: 'plan-refugio',
     name: 'Plan Refugio',
     tag: 'REFUGIO',
-    monthlyPrice: 29,
-    annualPrice: 290,
+    monthlyPrice: 29000,
+    annualPrice: 290000,
+    currency: 'ARS',
     allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'relax']
   },
   'plan-sadhana': {
     id: 'plan-sadhana',
     name: 'Plan Sadhana',
     tag: 'SADHANA',
-    monthlyPrice: 39,
-    annualPrice: 390,
+    monthlyPrice: 39000,
+    annualPrice: 390000,
+    currency: 'ARS',
     allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'ashtanga', 'relax']
   }
 };
@@ -97,7 +101,7 @@ const DEFAULT_DATABASE = {
       memberSince: 'Marzo 2026',
       nextBillingDate: '28 Octubre 2026',
       paymentMethod: 'Visa •••• 4242',
-      billedAmount: 29,
+      billedAmount: 29000,
       createdAt: '2026-03-01T10:00:00Z'
     },
     'usr-invitado': {
@@ -112,7 +116,7 @@ const DEFAULT_DATABASE = {
       memberSince: 'Septiembre 2026',
       nextBillingDate: '28 Octubre 2026',
       paymentMethod: 'Mastercard •••• 5555',
-      billedAmount: 19,
+      billedAmount: 19000,
       createdAt: '2026-09-01T10:00:00Z'
     }
   },
@@ -159,9 +163,9 @@ const DEFAULT_DATABASE = {
       name: 'Plan Esencia',
       tier: 'inicial',
       badge: 'Inicial',
-      priceMonthly: 19,
-      priceAnnualTotal: 190,
-      currency: 'USD',
+      priceMonthly: 19000,
+      priceAnnualTotal: 190000,
+      currency: 'ARS',
       description: 'Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.',
       features: [
         'Acceso a +40 clases de Yoga Suave y Clásico',
@@ -178,9 +182,9 @@ const DEFAULT_DATABASE = {
       name: 'Plan Refugio',
       tier: 'intermedio',
       badge: 'Más Elegido',
-      priceMonthly: 29,
-      priceAnnualTotal: 290,
-      currency: 'USD',
+      priceMonthly: 29000,
+      priceAnnualTotal: 290000,
+      currency: 'ARS',
       description: 'La experiencia completa del Shala. Acceso total a todas las disciplinas.',
       features: [
         'Acceso ilimitado a todo el catálogo (+140 clases)',
@@ -197,9 +201,9 @@ const DEFAULT_DATABASE = {
       name: 'Plan Sadhana',
       tier: 'premium',
       badge: 'Premium',
-      priceMonthly: 39,
-      priceAnnualTotal: 390,
-      currency: 'USD',
+      priceMonthly: 39000,
+      priceAnnualTotal: 390000,
+      currency: 'ARS',
       description: 'Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.',
       features: [
         'Todo lo de Plan Refugio sin restricciones',
@@ -621,7 +625,7 @@ const server = http.createServer(async (req, res) => {
           planId: plan.id,
           planName: plan.name,
           amount,
-          currency: 'USD',
+          currency: 'ARS',
           status: 'pending', // PENDIENTE DE PAGO
           isAnnual,
           paymentMethod,
@@ -1078,7 +1082,7 @@ const server = http.createServer(async (req, res) => {
           planId: plan.id,
           planName: plan.name,
           amount,
-          currency: 'USD',
+          currency: 'ARS',
           status: 'succeeded',
           isAnnual,
           paymentMethod: 'Alta Manual Directora',
@@ -1307,7 +1311,7 @@ const server = http.createServer(async (req, res) => {
               badge,
               priceMonthly,
               priceAnnualTotal,
-              currency: 'USD',
+              currency: 'ARS',
               description,
               features,
               mercadopagoUrl,

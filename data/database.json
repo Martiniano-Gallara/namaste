@@ -29,7 +29,7 @@
       "memberSince": "Marzo 2026",
       "nextBillingDate": "28 Octubre 2026",
       "paymentMethod": "Visa •••• 4242",
-      "billedAmount": 29,
+      "billedAmount": 29000,
       "createdAt": "2026-03-01T10:00:00Z"
     },
     "usr-invitado": {
@@ -44,7 +44,7 @@
       "memberSince": "Septiembre 2026",
       "nextBillingDate": "28 Octubre 2026",
       "paymentMethod": "Mastercard •••• 5555",
-      "billedAmount": 19,
+      "billedAmount": 19000,
       "createdAt": "2026-09-01T10:00:00Z"
     },
     "usr-a80a8ab2": {
@@ -59,7 +59,7 @@
       "memberSince": "Septiembre 2026",
       "nextBillingDate": "28 Septiembre 2027",
       "paymentMethod": "Tarjeta •••• 9999",
-      "billedAmount": 390,
+      "billedAmount": 390000,
       "createdAt": "2026-09-28T19:59:21.646Z"
     },
     "usr-mateo": {
@@ -74,7 +74,7 @@
       "memberSince": "Agosto 2026",
       "nextBillingDate": "15 Octubre 2026",
       "paymentMethod": "Visa Débito •••• 1088",
-      "billedAmount": 19,
+      "billedAmount": 19000,
       "createdAt": "2026-08-15T14:20:00Z"
     },
     "usr-lucia": {
@@ -89,7 +89,7 @@
       "memberSince": "Junio 2026",
       "nextBillingDate": "Pausada (sin cobro)",
       "paymentMethod": "Mastercard •••• 3141",
-      "billedAmount": 29,
+      "billedAmount": 29000,
       "createdAt": "2026-06-10T11:00:00Z"
     }
   },
@@ -253,8 +253,8 @@
       "email": "camila.torres@ejemplo.com",
       "planId": "plan-refugio",
       "planName": "Plan Refugio",
-      "amount": 29,
-      "currency": "USD",
+      "amount": 29000,
+      "currency": "ARS",
       "status": "succeeded",
       "isAnnual": false,
       "paymentMethod": "Alta Manual Directora",
@@ -268,8 +268,8 @@
       "email": "elena@ejemplo.com",
       "planId": "plan-sadhana",
       "planName": "Plan Sadhana",
-      "amount": 390,
-      "currency": "USD",
+      "amount": 390000,
+      "currency": "ARS",
       "status": "succeeded",
       "isAnnual": true,
       "paymentMethod": "Tarjeta •••• 9999",
@@ -283,8 +283,8 @@
       "email": "sofia.varela@ejemplo.com",
       "planId": "plan-refugio",
       "planName": "Plan Refugio",
-      "amount": 29,
-      "currency": "USD",
+      "amount": 29000,
+      "currency": "ARS",
       "status": "succeeded",
       "isAnnual": false,
       "paymentMethod": "Visa •••• 4242",
@@ -298,8 +298,8 @@
       "email": "mateo.benitez@ejemplo.com",
       "planId": "plan-esencia",
       "planName": "Plan Esencia",
-      "amount": 19,
-      "currency": "USD",
+      "amount": 19000,
+      "currency": "ARS",
       "status": "succeeded",
       "isAnnual": false,
       "paymentMethod": "Visa Débito •••• 1088",
@@ -384,7 +384,7 @@
       "timestamp": "2026-09-28T19:59:21.646Z",
       "action": "NEW_SUBSCRIPTION",
       "title": "Nueva membresía contratada",
-      "details": "Elena Rostova adquirió Plan Sadhana Anual ($390/año)",
+      "details": "Elena Rostova adquirió Plan Sadhana Anual ($ 390.000 ARS/año)",
       "userEmail": "elena@ejemplo.com",
       "status": "success"
     },
@@ -451,9 +451,9 @@
       "name": "Plan Esencia",
       "tier": "inicial",
       "badge": "Inicial",
-      "priceMonthly": 19,
-      "priceAnnualTotal": 190,
-      "currency": "USD",
+      "priceMonthly": 19000,
+      "priceAnnualTotal": 190000,
+      "currency": "ARS",
       "description": "Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.",
       "features": [
         "Acceso a +40 clases de Yoga Suave y Clásico",
@@ -470,9 +470,9 @@
       "name": "Plan Refugio",
       "tier": "intermedio",
       "badge": "Más Elegido",
-      "priceMonthly": 29,
-      "priceAnnualTotal": 290,
-      "currency": "USD",
+      "priceMonthly": 29000,
+      "priceAnnualTotal": 290000,
+      "currency": "ARS",
       "description": "La experiencia completa del Shala. Acceso total a todas las disciplinas.",
       "features": [
         "Acceso ilimitado a todo el catálogo (+140 clases)",
@@ -489,9 +489,9 @@
       "name": "Plan Sadhana",
       "tier": "premium",
       "badge": "Premium",
-      "priceMonthly": 39,
-      "priceAnnualTotal": 390,
-      "currency": "USD",
+      "priceMonthly": 39000,
+      "priceAnnualTotal": 390000,
+      "currency": "ARS",
       "description": "Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.",
       "features": [
         "Todo lo de Plan Refugio sin restricciones",

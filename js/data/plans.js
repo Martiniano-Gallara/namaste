@@ -11,11 +11,11 @@ const PLANS_DATA = [
     levelName: "Inicial",
     name: "Plan Esencia",
     badge: "Inicial",
-    priceMonthly: 19,
-    priceAnnualTotal: 190,
-    priceAnnualMonthly: 15.83,
+    priceMonthly: 19000,
+    priceAnnualTotal: 190000,
+    priceAnnualMonthly: 15833,
     pricePeriod: "mes",
-    currency: "USD",
+    currency: "ARS",
     currencySymbol: "$",
     description: "Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.",
     allowedCategories: ["suave", "clasico", "relax", "meditacion"],
@@ -28,7 +28,8 @@ const PLANS_DATA = [
     recommended: false,
     ctaText: "Elegir Plan Esencia",
     codePrefix: "ESENCIA",
-    mercadopagoUrl: "https://www.mercadopago.com.ar"
+    mercadopagoUrl: "https://www.mercadopago.com.ar",
+    mercadopagoUrlAnnual: "https://www.mercadopago.com.ar"
   },
   {
     id: "plan-refugio",
@@ -36,11 +37,11 @@ const PLANS_DATA = [
     levelName: "Intermedio",
     name: "Plan Refugio",
     badge: "Más Elegido",
-    priceMonthly: 29,
-    priceAnnualTotal: 290,
-    priceAnnualMonthly: 24.17,
+    priceMonthly: 29000,
+    priceAnnualTotal: 290000,
+    priceAnnualMonthly: 24167,
     pricePeriod: "mes",
-    currency: "USD",
+    currency: "ARS",
     currencySymbol: "$",
     description: "La experiencia completa del Shala. Acceso total a todas las disciplinas.",
     allowedCategories: ["*"],
@@ -53,7 +54,8 @@ const PLANS_DATA = [
     recommended: true,
     ctaText: "Unirme al Refugio",
     codePrefix: "REFUGIO",
-    mercadopagoUrl: "https://www.mercadopago.com.ar"
+    mercadopagoUrl: "https://www.mercadopago.com.ar",
+    mercadopagoUrlAnnual: "https://www.mercadopago.com.ar"
   },
   {
     id: "plan-sadhana",
@@ -61,11 +63,11 @@ const PLANS_DATA = [
     levelName: "Premium",
     name: "Plan Sadhana",
     badge: "Premium",
-    priceMonthly: 39,
-    priceAnnualTotal: 390,
-    priceAnnualMonthly: 32.50,
+    priceMonthly: 39000,
+    priceAnnualTotal: 390000,
+    priceAnnualMonthly: 32500,
     pricePeriod: "mes",
-    currency: "USD",
+    currency: "ARS",
     currencySymbol: "$",
     description: "Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.",
     allowedCategories: ["*"],
@@ -78,7 +80,8 @@ const PLANS_DATA = [
     recommended: false,
     ctaText: "Elegir Plan Sadhana",
     codePrefix: "SADHANA",
-    mercadopagoUrl: "https://www.mercadopago.com.ar"
+    mercadopagoUrl: "https://www.mercadopago.com.ar",
+    mercadopagoUrlAnnual: "https://www.mercadopago.com.ar"
   }
 ];
 

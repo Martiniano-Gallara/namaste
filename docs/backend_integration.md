@@ -91,7 +91,7 @@ CREATE TABLE transactions (
     receipt_number VARCHAR(50) UNIQUE NOT NULL,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     amount NUMERIC(10, 2) NOT NULL,
-    currency VARCHAR(10) DEFAULT 'USD',
+    currency VARCHAR(10) DEFAULT 'ARS',
     payment_method VARCHAR(50) NOT NULL,
     status VARCHAR(30) DEFAULT 'succeeded',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

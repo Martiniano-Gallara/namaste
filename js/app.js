@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = (document.getElementById('checkout-password')?.value || '').trim();
         const planId = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.id : 'plan-refugio';
         const isAnnual = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
-        const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29;
+        const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29000;
 
         const result = await MembershipService.processCheckout({
           name,
@@ -1114,8 +1114,8 @@ document.addEventListener('DOMContentLoaded', () => {
     state.selectedPlanForCheckout = planToCheckout;
     document.getElementById('checkout-plan-name').textContent = `${plan.name} (${isAnnual ? 'Anual' : 'Mensual'})`;
     document.getElementById('checkout-plan-price').textContent = isAnnual
-      ? `${plan.currencySymbol}${plan.priceAnnualTotal}/año`
-      : `${plan.currencySymbol}${plan.priceMonthly}/${plan.pricePeriod}`;
+      ? `${plan.currencySymbol || '$'} ${Number(plan.priceAnnualTotal).toLocaleString('es-AR')} ARS/año`
+      : `${plan.currencySymbol || '$'} ${Number(plan.priceMonthly).toLocaleString('es-AR')} ARS/${plan.pricePeriod || 'mes'}`;
     
     const subnoteEl = document.getElementById('checkout-plan-subnote');
     if (subnoteEl) {
@@ -2210,7 +2210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <div class="plan-change-action">
                 <div class="plan-change-pricing">
-                  <span class="plan-change-amount">$${plan.priceMonthly}</span>
+                  <span class="plan-change-amount">$ ${Number(plan.priceMonthly).toLocaleString('es-AR')}</span>
                   <span class="plan-change-cadence">/mes</span>
                 </div>
                 ${isCurrent ? `
@@ -2234,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPlanName = btn.getAttribute('data-plan-name');
             const planObj = PLANS_DATA.find(p => p.id === newPlanId);
             const currentUser = AuthService.getCurrentUser();
-            const newAmount = currentUser && currentUser.isAnnual ? (planObj.priceAnnualTotal || planObj.priceMonthly * 10) : (planObj ? planObj.priceMonthly : 29);
+            const newAmount = currentUser && currentUser.isAnnual ? (planObj.priceAnnualTotal || planObj.priceMonthly * 10) : (planObj ? planObj.priceMonthly : 29000);
             AuthService.updateUserProfile({
               planId: newPlanId,
               planName: newPlanName,
@@ -2292,9 +2292,9 @@ document.addEventListener('DOMContentLoaded', () => {
           } catch (e) {}
         }
         if (!amount) {
-          amount = user.planId === 'plan-esencia' ? 19 : (user.planId === 'plan-sadhana' ? 39 : 29);
+          amount = user.planId === 'plan-esencia' ? 19000 : (user.planId === 'plan-sadhana' ? 39000 : 29000);
         }
-        const formattedAmount = `$${Number(amount).toFixed(2)} USD`;
+        const formattedAmount = `$ ${Number(amount).toLocaleString('es-AR')} ARS`;
 
         const contentArea = document.getElementById('receipt-content-area');
         if (contentArea) {
@@ -2500,7 +2500,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (planNameEl) planNameEl.textContent = user.planName || 'Plan Refugio';
 
     const nextBillingEl = document.getElementById('drawer-next-billing');
-    if (nextBillingEl) nextBillingEl.textContent = user.nextBillingDate || '22 Octubre 2026';
+    if (nextBillingEl) nextBillingEl.textContent = user.nextBillingDate || '28 Octubre 2026';
+
+    const billingAmountEl = document.getElementById('drawer-billing-amount');
+    if (billingAmountEl) {
+      if (user.billedAmount) {
+        const periodStr = user.isAnnual || user.billingCycle === 'annual' ? '/año' : '/mes';
+        billingAmountEl.textContent = `($ ${Number(user.billedAmount).toLocaleString('es-AR')} ARS${periodStr})`;
+      } else {
+        billingAmountEl.textContent = '($ 29.000 ARS/mes)';
+      }
+    }
 
     const statusBadge = document.getElementById('drawer-membership-status');
     const pauseBtn = document.getElementById('btn-toggle-pause-membership');
@@ -4394,10 +4404,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // KPI 2: MRR & ARR
         const kpiMrr = document.getElementById('kpi-mrr');
-        if (kpiMrr) kpiMrr.textContent = `$${stats.mrr}`;
+        if (kpiMrr) kpiMrr.textContent = `$ ${Number(stats.mrr).toLocaleString('es-AR')}`;
 
         const kpiArrSub = document.getElementById('kpi-arr-sub');
-        if (kpiArrSub) kpiArrSub.textContent = `Proyección anual: $${stats.arr}`;
+        if (kpiArrSub) kpiArrSub.textContent = `Proyección anual: $ ${Number(stats.arr).toLocaleString('es-AR')}`;
 
         // KPI 3: Horas y Minutos de Práctica
         const kpiTotalHours = document.getElementById('kpi-total-hours');
@@ -4413,7 +4423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // KPI 4: Facturación Histórica
         const kpiTotalRevenue = document.getElementById('kpi-total-revenue');
-        if (kpiTotalRevenue) kpiTotalRevenue.textContent = `$${stats.totalRevenue}`;
+        if (kpiTotalRevenue) kpiTotalRevenue.textContent = `$ ${Number(stats.totalRevenue).toLocaleString('es-AR')}`;
 
         // Contadores en pestañas
         const tabCountUsers = document.getElementById('tab-count-users');
@@ -4629,7 +4639,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
           <td class="col-tx-amount" style="width: 18%; text-align: center; white-space: nowrap;">
-            <strong class="tx-amount-number">$${tx.amount}</strong>
+            <strong class="tx-amount-number">$ ${Number(tx.amount || 0).toLocaleString('es-AR')}</strong>
             <span class="tx-amount-freq">${tx.isAnnual ? '/año' : '/mes'}</span>
           </td>
           <td class="col-user-action" style="width: 24%; text-align: center;">
@@ -4692,16 +4702,16 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .reduce((s, tx) => s + Number(tx.amount || 0), 0);
 
-    kpiTotal.textContent = `$${total.toFixed(0)}`;
+    kpiTotal.textContent = `$ ${Math.round(total).toLocaleString('es-AR')}`;
     kpiCount.textContent = count;
-    kpiMonthly.textContent = `$${thisMonth.toFixed(0)}`;
+    kpiMonthly.textContent = `$ ${Math.round(thisMonth).toLocaleString('es-AR')}`;
   }
 
   /** Abre una ventana de impresión con el recibo de un cobro específico */
   function printTxReceipt(tx) {
     if (!tx) return;
     const planLabel = (tx.planName || (tx.planId === 'plan-esencia' ? 'Plan Esencia' : tx.planId === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio'));
-    const amount = `$${Number(tx.amount || 0).toFixed(2)}`;
+    const amount = `$ ${Number(tx.amount || 0).toLocaleString('es-AR')} ARS`;
     const period = tx.isAnnual ? 'Anual' : 'Mensual';
     const method = tx.paymentMethod === 'mercadopago' ? 'MercadoPago' : 'Tarjeta Débito/Crédito';
     const dateStr = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/D';
@@ -4911,28 +4921,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const monthly = Number(serverPlan.priceMonthly);
         const annualTotal = Number(serverPlan.priceAnnualTotal);
-        const annualMonthly = (annualTotal / 12).toFixed(2).replace(/\.00$/, '');
+        const annualMonthly = Math.round(annualTotal / 12);
+
+        const monthlyFormatted = monthly.toLocaleString('es-AR');
+        const annualMonthlyFormatted = annualMonthly.toLocaleString('es-AR');
+        const annualTotalFormatted = annualTotal.toLocaleString('es-AR');
 
         if (titleEl && serverPlan.name) titleEl.textContent = serverPlan.name;
         if (descEl && serverPlan.description) descEl.textContent = serverPlan.description;
 
         if (amountEl) {
-          amountEl.setAttribute('data-price-monthly', monthly);
-          amountEl.setAttribute('data-price-annual', annualMonthly);
+          amountEl.setAttribute('data-price-monthly', monthlyFormatted);
+          amountEl.setAttribute('data-price-annual', annualMonthlyFormatted);
           if (state.selectedBillingCycle === 'annual') {
-            amountEl.textContent = annualMonthly;
+            amountEl.textContent = annualMonthlyFormatted;
           } else {
-            amountEl.textContent = monthly;
+            amountEl.textContent = monthlyFormatted;
           }
         }
 
         if (subnoteEl) {
-          subnoteEl.setAttribute('data-note-monthly', 'Facturado mensualmente');
-          subnoteEl.setAttribute('data-note-annual', `$${annualTotal}/año • ¡2 meses de regalo!`);
+          subnoteEl.setAttribute('data-note-monthly', 'Pesos argentinos • Facturado mensualmente');
+          subnoteEl.setAttribute('data-note-annual', `$ ${annualTotalFormatted} ARS/año • ¡2 meses de regalo!`);
           if (state.selectedBillingCycle === 'annual') {
-            subnoteEl.textContent = `$${annualTotal}/año • ¡2 meses de regalo!`;
+            subnoteEl.textContent = `$ ${annualTotalFormatted} ARS/año • ¡2 meses de regalo!`;
           } else {
-            subnoteEl.textContent = 'Facturado mensualmente';
+            subnoteEl.textContent = 'Pesos argentinos • Facturado mensualmente';
           }
         }
 
@@ -5010,7 +5024,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = plansMap[planId] || PLANS_DATA.find(x => x.id === planId) || {};
       const isRec = p.recommended || planId === 'plan-refugio';
       const badgeText = p.badge || (planId === 'plan-esencia' ? 'Inicial' : (planId === 'plan-refugio' ? 'Más Elegido' : 'Premium'));
-      const monthly = p.priceMonthly || (planId === 'plan-esencia' ? 19 : (planId === 'plan-refugio' ? 29 : 39));
+      const monthly = p.priceMonthly || (planId === 'plan-esencia' ? 19000 : (planId === 'plan-refugio' ? 29000 : 39000));
       const annualTotal = p.priceAnnualTotal || (monthly * 10);
       const mpMonthly = p.mercadopagoUrl || 'https://www.mercadopago.com.ar';
       const mpAnnual = p.mercadopagoUrlAnnual || mpMonthly;
@@ -5027,10 +5041,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Precios Mensual & Anual Total -->
           <div class="admin-plan-price-row">
             <div class="admin-plan-field">
-              <label>Precio Mensual <span class="field-hint">USD/mes</span></label>
+              <label>Precio Mensual <span class="field-hint">ARS / mes</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
-                <input type="number" min="1" max="9999" step="1" required 
+                <input type="number" min="100" max="9999999" step="100" required 
                   id="inp-price-monthly-${planId}" 
                   name="priceMonthly" 
                   value="${monthly}" 
@@ -5039,10 +5053,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="admin-plan-field">
-              <label>Precio Anual Total <span class="field-hint">USD/año</span></label>
+              <label>Precio Anual Total <span class="field-hint">ARS / año</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
-                <input type="number" min="1" max="99999" step="1" required 
+                <input type="number" min="1000" max="99999999" step="1000" required 
                   id="inp-price-annual-${planId}" 
                   name="priceAnnualTotal" 
                   value="${annualTotal}" 
