@@ -3849,6 +3849,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const vid = document.getElementById('editor-video-preview');
           if (vid) {
             vid.src = _classMediaBlob;
+            vid.load();
             vid.onloadedmetadata = () => {
               const dur = Math.round(vid.duration) || 60;
               _videoTrim.duration = dur;
@@ -3859,6 +3860,9 @@ document.addEventListener('DOMContentLoaded', () => {
               if (sEl) { sEl.max = dur; sEl.value = 0; }
               if (eEl) { eEl.max = dur; eEl.value = dur; }
               _updateVideoTrimUI();
+            };
+            vid.onerror = (e) => {
+              console.warn('[Video Preview] Advertencia al decodificar formato local:', e);
             };
           }
         } else {
