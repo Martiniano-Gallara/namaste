@@ -1516,20 +1516,113 @@ body.modal-open {
   margin-bottom: 1.75rem;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .admin-plans-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1.1rem;
+    padding-bottom: 0.85rem;
+    -webkit-overflow-scrolling: touch;
   }
+  .admin-plan-card {
+    min-width: 295px;
+    max-width: 325px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+}
+
+.admin-plan-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-features-list-points {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-feature-point-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-feature-point-row .feature-bullet-check {
+  color: var(--color-olive, #5B6B46);
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.admin-feature-point-row input {
+  flex: 1;
+  font-size: 0.82rem;
+  padding: 0.38rem 0.6rem;
+  background: #FFFFFF;
+  border: 1px solid #DFD5C8;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.admin-feature-point-row input:focus {
+  border-color: var(--terracotta);
+  outline: none;
+}
+
+.btn-remove-feature-point {
+  background: none;
+  border: none;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: #A3968B;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s ease;
+}
+
+.btn-remove-feature-point:hover {
+  color: #C0392B;
+}
+
+.btn-add-feature-point {
+  background: none;
+  border: none;
+  color: var(--terracotta);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.btn-add-feature-point:hover {
+  color: var(--terracotta-dark);
+  text-decoration: underline;
 }
 
 .admin-plan-card {
   background-color: #FAF7F2;
   border: 1.5px solid #E5DCD0;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 1.05rem;
+  gap: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
 }

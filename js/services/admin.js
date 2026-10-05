@@ -146,15 +146,75 @@ const AdminService = (() => {
           memberSince: 'Junio 2026',
           nextBillingDate: 'Pausada (sin cobro)',
           paymentMethod: 'Mastercard •••• 3141',
-          billedAmount: 29,
+          billedAmount: 29000,
           streakDays: 4,
           totalMinutes: 95,
           completedCount: 1,
           favoritesCount: 1
         }
       ];
-      localStorage.setItem('namaste_admin_users_cache', JSON.stringify(localUsers));
+    } else {
+      // Auto-migración si el usuario tenía caché viejo con montos en dólares (< 1000)
+      if (localUsers.some(u => u.billedAmount && u.billedAmount < 1000)) {
+        localStorage.removeItem('namaste_admin_users_cache');
+        return fallbackHandler(endpoint, options);
+      }
     }
+
+    const localTransactions = [
+      {
+        id: 'tx_local_01',
+        receiptNumber: 'REC-2026-743715',
+        name: 'Elena Rostova',
+        email: 'elena@ejemplo.com',
+        planName: 'Plan Sadhana',
+        planId: 'plan-sadhana',
+        amount: 390000,
+        currency: 'ARS',
+        status: 'succeeded',
+        isAnnual: true,
+        timestamp: '2026-09-28T19:59:21.646Z'
+      },
+      {
+        id: 'tx_local_02',
+        receiptNumber: 'REC-2026-619204',
+        name: 'Sofía Varela',
+        email: 'sofia.varela@ejemplo.com',
+        planName: 'Plan Refugio',
+        planId: 'plan-refugio',
+        amount: 29000,
+        currency: 'ARS',
+        status: 'succeeded',
+        isAnnual: false,
+        timestamp: '2026-09-28T10:00:00.000Z'
+      },
+      {
+        id: 'tx_local_03',
+        receiptNumber: 'REC-2026-324507',
+        name: 'Camila Torres',
+        email: 'camila.torres@ejemplo.com',
+        planName: 'Plan Refugio',
+        planId: 'plan-refugio',
+        amount: 29000,
+        currency: 'ARS',
+        status: 'succeeded',
+        isAnnual: false,
+        timestamp: '2026-10-01T20:55:45.085Z'
+      },
+      {
+        id: 'tx_local_04',
+        receiptNumber: 'REC-2026-118492',
+        name: 'Practicante Inicial',
+        email: 'invitado@namaste.com',
+        planName: 'Plan Esencia',
+        planId: 'plan-esencia',
+        amount: 19000,
+        currency: 'ARS',
+        status: 'succeeded',
+        isAnnual: false,
+        timestamp: '2026-09-27T10:00:00.000Z'
+      }
+    ];
 
     let localLogs = safeJsonParse(localStorage.getItem('namaste_admin_logs_cache'), null);
     if (!localLogs) {
@@ -205,6 +265,7 @@ const AdminService = (() => {
 
       const totalPracticeMinutes = localUsers.reduce((s, u) => s + (u.totalMinutes || 0), 0);
       const totalCompletedClasses = localUsers.reduce((s, u) => s + (u.completedCount || 0), 0);
+      const totalRevenue = localTransactions.reduce((s, tx) => s + (Number(tx.amount) || 0), 0) || 467000;
 
       return {
         success: true,
@@ -214,13 +275,13 @@ const AdminService = (() => {
           pausedUsers,
           mrr,
           arr,
-          totalRevenue: 438,
+          totalRevenue,
           totalPracticeMinutes,
           totalCompletedClasses,
           planCounts
         },
         recentLogs: localLogs.slice(0, 8),
-        recentTransactions: []
+        recentTransactions: localTransactions.slice(0, 5)
       };
     }
 

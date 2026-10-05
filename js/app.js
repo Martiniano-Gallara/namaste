@@ -668,19 +668,91 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupLoginForm() {
     const form = document.getElementById('login-form');
     const input = document.getElementById('access-code-input');
+    const passwordInput = document.getElementById('login-password-input');
+    const togglePwdVisBtn = document.getElementById('btn-toggle-login-pwd-vis');
+    const toggleForgotBtn = document.getElementById('btn-toggle-forgot-password');
+    const forgotPanel = document.getElementById('forgot-password-panel');
+    const forgotCloseBtn = document.getElementById('btn-close-forgot-panel');
+    const forgotEmailInput = document.getElementById('forgot-email-input');
+    const sendWhatsappBtn = document.getElementById('btn-send-whatsapp-recovery');
     const feedback = document.getElementById('login-feedback');
     const demoBtn = document.getElementById('btn-use-demo-code');
     const adminBtn = document.getElementById('btn-use-admin-code');
+
+    // Número oficial de WhatsApp de Valeria para soporte y recuperación
+    const VALERIA_WHATSAPP_PHONE = '5491138859944';
 
     if (input) {
       input.addEventListener('input', () => {
         feedback.style.display = 'none';
       });
     }
+    if (passwordInput) {
+      passwordInput.addEventListener('input', () => {
+        feedback.style.display = 'none';
+      });
+    }
+
+    // Alternar visibilidad de contraseña
+    if (togglePwdVisBtn && passwordInput) {
+      togglePwdVisBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        togglePwdVisBtn.innerHTML = isPassword ? `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        ` : `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        `;
+      });
+    }
+
+    // Abrir/cerrar panel de "¿Olvidaste tu contraseña?"
+    if (toggleForgotBtn && forgotPanel) {
+      toggleForgotBtn.addEventListener('click', () => {
+        const isShown = forgotPanel.style.display === 'block';
+        forgotPanel.style.display = isShown ? 'none' : 'block';
+        if (!isShown && forgotEmailInput) {
+          if (!forgotEmailInput.value && input && input.value) {
+            forgotEmailInput.value = input.value.trim();
+          }
+          forgotEmailInput.focus();
+        }
+      });
+    }
+
+    if (forgotCloseBtn && forgotPanel) {
+      forgotCloseBtn.addEventListener('click', () => {
+        forgotPanel.style.display = 'none';
+      });
+    }
+
+    // Botón para enviar por WhatsApp directo a Valeria
+    if (sendWhatsappBtn) {
+      sendWhatsappBtn.addEventListener('click', () => {
+        const email = (forgotEmailInput?.value || input?.value || '').trim();
+        if (!email) {
+          showToast('Por favor, ingresa tu correo para enviárselo a Valeria por WhatsApp.', 'warning');
+          if (forgotEmailInput) forgotEmailInput.focus();
+          return;
+        }
+
+        const msgText = `Hola Valeria, olvidé mi contraseña para acceder a la plataforma Namasté. Mi correo registrado es: ${email}. ¿Podrías ayudarme a restablecerla? ¡Muchas gracias!`;
+        const waUrl = `https://wa.me/${VALERIA_WHATSAPP_PHONE}?text=${encodeURIComponent(msgText)}`;
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+        showToast('Abriendo WhatsApp directo de Valeria...', 'info', 4000);
+      });
+    }
 
     if (demoBtn && input) {
       demoBtn.addEventListener('click', () => {
         input.value = 'sofia.varela@ejemplo.com';
+        if (passwordInput) passwordInput.value = 'namaste123';
         feedback.style.display = 'none';
         if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
       });
@@ -689,6 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminBtn && input) {
       adminBtn.addEventListener('click', () => {
         input.value = 'valeria.manassero@namaste.com';
+        if (passwordInput) passwordInput.value = 'valeria2026';
         feedback.style.display = 'none';
         if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
       });
@@ -698,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const identifier = (input.value || '').trim();
+        const password = (passwordInput ? passwordInput.value : '').trim();
         if (!identifier) return;
 
         const submitBtn = document.getElementById('btn-submit-code-login');
@@ -707,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-          const result = await AuthService.login(identifier);
+          const result = await AuthService.login(identifier, password);
 
           if (result.success) {
             const user = result.user;
@@ -724,6 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
               closeModal(modals.login);
               input.value = '';
+              if (passwordInput) passwordInput.value = '';
               feedback.style.display = 'none';
               if (isAdmin) {
                 switchView('admin');
@@ -4322,13 +4397,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const updatedPlansPayload = {};
 
         planKeys.forEach(planId => {
+          const card = document.querySelector(`.admin-plan-card[data-admin-plan-id="${planId}"]`);
           const pMonthly = Number(document.getElementById(`inp-price-monthly-${planId}`)?.value || 0);
           const pAnnual = Number(document.getElementById(`inp-price-annual-${planId}`)?.value || 0);
           const mpMonthly = document.getElementById(`inp-mp-monthly-${planId}`)?.value.trim() || 'https://www.mercadopago.com.ar';
           const mpAnnual = document.getElementById(`inp-mp-annual-${planId}`)?.value.trim() || mpMonthly;
           const desc = document.getElementById(`inp-desc-${planId}`)?.value.trim() || '';
-          const rawFeat = document.getElementById(`inp-features-${planId}`)?.value.trim() || '';
-          const features = rawFeat.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+          // Obtener los beneficios separados punto por punto desde los inputs individuales
+          const featureInputs = card ? card.querySelectorAll('.plan-feature-input') : [];
+          const features = Array.from(featureInputs)
+            .map(inp => inp.value.trim())
+            .filter(str => str.length > 0);
 
           const existing = (state.adminPlansCache && state.adminPlansCache[planId]) || PLANS_DATA.find(x => x.id === planId) || {};
 
@@ -4350,7 +4430,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('¡Planes y Mercado Pago guardados con éxito en la base de datos!', 'success', 5000);
             if (statusEl) {
               const now = new Date();
-              statusEl.textContent = `Sincronizado con database.json (${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} hs)`;
+              statusEl.textContent = `Sincronizado con base de datos (${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} hs)`;
             }
 
             // Actualizar PLANS_DATA y DOM público inmediatamente sin recargar
@@ -4365,7 +4445,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnHtml;
+            submitBtn.innerHTML = originalBtnHtml || `
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>Guardar Configuración de Planes</span>
+            `;
           }
         }
       });
@@ -5021,35 +5108,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Renderiza las 3 tarjetas de configuración de planes en el panel de administración
+   * Formato horizontal slide (1 / 2 / 3) y beneficios punto por punto separados
    */
   function renderAdminPlansCards(plansMap) {
     const grid = document.getElementById('admin-plans-grid');
     if (!grid) return;
 
-    const planKeys = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
+    const planKeys = [
+      { id: 'plan-esencia', num: 1, fallbackBadge: 'Inicial', fallbackMonthly: 19000 },
+      { id: 'plan-refugio', num: 2, fallbackBadge: 'Más Elegido', fallbackMonthly: 29000 },
+      { id: 'plan-sadhana', num: 3, fallbackBadge: 'Premium', fallbackMonthly: 39000 }
+    ];
 
-    grid.innerHTML = planKeys.map(planId => {
+    grid.innerHTML = planKeys.map(({ id: planId, num, fallbackBadge, fallbackMonthly }) => {
       const p = plansMap[planId] || PLANS_DATA.find(x => x.id === planId) || {};
       const isRec = p.recommended || planId === 'plan-refugio';
-      const badgeText = p.badge || (planId === 'plan-esencia' ? 'Inicial' : (planId === 'plan-refugio' ? 'Más Elegido' : 'Premium'));
-      const monthly = p.priceMonthly || (planId === 'plan-esencia' ? 19000 : (planId === 'plan-refugio' ? 29000 : 39000));
+      const badgeText = p.badge || fallbackBadge;
+      const monthly = p.priceMonthly || fallbackMonthly;
       const annualTotal = p.priceAnnualTotal || (monthly * 10);
       const mpMonthly = p.mercadopagoUrl || 'https://www.mercadopago.com.ar';
       const mpAnnual = p.mercadopagoUrlAnnual || mpMonthly;
       const desc = p.description || '';
-      const featuresStr = Array.isArray(p.features) ? p.features.join('\n') : '';
+      const featuresArr = Array.isArray(p.features) && p.features.length > 0 
+        ? p.features 
+        : ['Acceso ilimitado a clases', 'Comunidad en vivo'];
+
+      const featuresRowsHtml = featuresArr.map(feat => `
+        <div class="admin-feature-point-row">
+          <span class="feature-bullet-check">✓</span>
+          <input type="text" class="plan-feature-input" value="${escapeHtml(feat)}" placeholder="Ej: Clases ilimitadas en vivo" required />
+          <button type="button" class="btn-remove-feature-point" title="Eliminar este beneficio" aria-label="Eliminar punto">&times;</button>
+        </div>
+      `).join('');
 
       return `
         <div class="admin-plan-card ${isRec ? 'recommended' : ''}" data-admin-plan-id="${p.id || planId}">
-          <div class="admin-plan-card-header">
-            <h3 class="admin-plan-name-tag">${escapeHtml(p.name || planId)}</h3>
+          <div class="admin-plan-card-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="admin-plan-step-num">${num}</span>
+              <h3 class="admin-plan-name-tag" style="margin: 0; font-size: 1.05rem; font-weight: 700;">${escapeHtml(p.name || planId)}</h3>
+            </div>
             <span class="admin-plan-badge-pill ${isRec ? 'popular' : ''}">${escapeHtml(badgeText)}</span>
           </div>
 
-          <!-- Precios Mensual & Anual Total -->
-          <div class="admin-plan-price-row">
+          <!-- Precios Mensual & Anual Total en ARS -->
+          <div class="admin-plan-price-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
             <div class="admin-plan-field">
-              <label>Precio Mensual <span class="field-hint">ARS / mes</span></label>
+              <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Precio Mensual <span class="field-hint">(ARS)</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="100" max="9999999" step="100" required 
@@ -5061,7 +5166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="admin-plan-field">
-              <label>Precio Anual Total <span class="field-hint">ARS / año</span></label>
+              <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Precio Anual <span class="field-hint">(ARS)</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="1000" max="99999999" step="1000" required 
@@ -5075,7 +5180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Enlace Mercado Pago Mensual -->
           <div class="admin-plan-field">
-            <label>Enlace Mercado Pago (Cobro Mensual) <span class="field-hint">Link de Pago / Botón</span></label>
+            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Enlace Mensual <span class="field-hint">(Mercado Pago)</span></label>
             <div class="admin-mp-input-wrap">
               <input type="url" required 
                 id="inp-mp-monthly-${planId}" 
@@ -5083,7 +5188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 placeholder="https://mpago.la/... o mercadopago.com" 
                 value="${escapeHtml(mpMonthly)}" 
                 data-plan-id="${planId}" />
-              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-monthly-${planId}" title="Abrir y verificar link en nueva pestaña">
+              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-monthly-${planId}" title="Abrir enlace mensual en nueva pestaña">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -5096,7 +5201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Enlace Mercado Pago Anual -->
           <div class="admin-plan-field">
-            <label>Enlace Mercado Pago (Cobro Anual) <span class="field-hint">Link con Descuento</span></label>
+            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Enlace Anual <span class="field-hint">(Mercado Pago)</span></label>
             <div class="admin-mp-input-wrap">
               <input type="url" required 
                 id="inp-mp-annual-${planId}" 
@@ -5104,7 +5209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 placeholder="https://mpago.la/... o mercadopago.com" 
                 value="${escapeHtml(mpAnnual)}" 
                 data-plan-id="${planId}" />
-              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-annual-${planId}" title="Abrir y verificar link anual en nueva pestaña">
+              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-annual-${planId}" title="Abrir enlace anual en nueva pestaña">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -5115,17 +5220,21 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
 
-          <!-- Descripción del Plan -->
+          <!-- Descripción Breve -->
           <div class="admin-plan-field">
-            <label>Descripción Breve</label>
-            <textarea rows="2" name="description" id="inp-desc-${planId}" data-plan-id="${planId}">${escapeHtml(desc)}</textarea>
+            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Descripción Breve</label>
+            <input type="text" name="description" id="inp-desc-${planId}" value="${escapeHtml(desc)}" placeholder="Resumen conciso del plan" data-plan-id="${planId}" style="width: 100%; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid #DFD5C8; border-radius: 6px;" />
           </div>
 
-          <!-- Beneficios / Características (1 por línea) -->
+          <!-- Beneficios Separados Punto por Punto -->
           <div class="admin-plan-field">
-            <label>Beneficios Incluidos <span class="field-hint">1 beneficio por línea</span></label>
-            <textarea rows="3" name="features" id="inp-features-${planId}" data-plan-id="${planId}">${escapeHtml(featuresStr)}</textarea>
-            <span class="admin-features-hint">Cada línea será una viñeta con tilde (✓) en la tabla de inicio.</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+              <label style="font-size: 0.78rem; font-weight: 600; margin: 0;">Beneficios <span class="field-hint">(Puntos individuales)</span></label>
+              <button type="button" class="btn-add-feature-point" data-plan-id="${planId}">+ Agregar punto</button>
+            </div>
+            <div class="admin-features-list-points" id="features-list-${planId}">
+              ${featuresRowsHtml}
+            </div>
           </div>
         </div>
       `;
@@ -5146,6 +5255,44 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Por favor, ingresa primero una URL para probar el enlace.', 'warning');
         }
       });
+    });
+
+    // Conectar botón "+ Agregar punto" para cada plan
+    grid.querySelectorAll('.btn-add-feature-point').forEach(addBtn => {
+      addBtn.addEventListener('click', () => {
+        const planId = addBtn.getAttribute('data-plan-id');
+        const listContainer = document.getElementById(`features-list-${planId}`);
+        if (!listContainer) return;
+
+        const newRow = document.createElement('div');
+        newRow.className = 'admin-feature-point-row';
+        newRow.innerHTML = `
+          <span class="feature-bullet-check">✓</span>
+          <input type="text" class="plan-feature-input" value="" placeholder="Nuevo beneficio..." required />
+          <button type="button" class="btn-remove-feature-point" title="Eliminar este beneficio" aria-label="Eliminar punto">&times;</button>
+        `;
+        listContainer.appendChild(newRow);
+
+        const newInp = newRow.querySelector('.plan-feature-input');
+        if (newInp) newInp.focus();
+      });
+    });
+
+    // Delegación de eventos para eliminar puntos (botones &times;)
+    grid.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.btn-remove-feature-point');
+      if (removeBtn) {
+        const row = removeBtn.closest('.admin-feature-point-row');
+        const container = removeBtn.closest('.admin-features-list-points');
+        if (row && container) {
+          // Mantener al menos 1 punto
+          if (container.querySelectorAll('.admin-feature-point-row').length > 1) {
+            row.remove();
+          } else {
+            showToast('El plan debe tener al menos un beneficio.', 'warning');
+          }
+        }
+      }
     });
   }
 
