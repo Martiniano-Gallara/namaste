@@ -4,6 +4,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api/|assets/|css/|js/|data/|favicon).*)/?",
+      "destination": "/index.html"
     }
   ],
   "headers": [
