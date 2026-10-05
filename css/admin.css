@@ -1458,97 +1458,122 @@ body.modal-open {
   }
 }
 
-/* Atajo rápido: PLANES arriba y 3 planes debajo en fila horizontal */
+/* Atajo rápido: PLANES arriba y 3 planes debajo en fila horizontal - Diseño Premium Segmented */
 .admin-plans-switcher-bar {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  padding: 0.75rem 0.95rem;
-  background-color: #FAF6F0;
-  border: 1px solid #E5DCD0;
-  border-radius: 12px;
+  align-items: stretch;
+  gap: 0.55rem;
+  margin-bottom: 1.35rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, #FBF8F3 0%, #F5EFE6 100%);
+  border: 1px solid #E6DCD1;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(42, 36, 33, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   box-sizing: border-box;
   width: 100%;
 }
 
 .admin-plans-switcher-label {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #6B5D53;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-body, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #7A695E;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding-left: 0.15rem;
+  letter-spacing: 0.08em;
+  padding-left: 0.2rem;
   line-height: 1;
+}
+
+.admin-plans-switcher-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--terracotta, #B65E42);
 }
 
 .admin-plans-switcher-pills {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.55rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
   width: 100%;
+  background: rgba(228, 219, 208, 0.45);
+  padding: 0.3rem;
+  border-radius: 999px;
   box-sizing: border-box;
+  border: 1px solid rgba(210, 198, 185, 0.5);
 }
 
 .admin-plan-switch-pill {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.5rem 0.65rem;
-  background-color: #FFFFFF;
-  border: 1.5px solid #E0D4C6;
+  padding: 0.52rem 0.75rem;
+  background: transparent;
+  border: none;
   border-radius: 999px;
+  font-family: var(--font-body, "Plus Jakarta Sans", sans-serif);
   font-size: 0.82rem;
   font-weight: 600;
-  color: #4F433C;
+  color: #5C4E45;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   box-sizing: border-box;
   width: 100%;
+  user-select: none;
 }
 
-.admin-plan-switch-pill:hover {
-  background-color: #F5EFE6;
-  border-color: #D2C4B3;
+.admin-plan-switch-pill:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.6);
   color: #2A2421;
 }
 
 .admin-plan-switch-pill.active {
-  background-color: var(--terracotta, #B65E42);
-  border-color: var(--terracotta-dark, #9C4B32);
+  background: linear-gradient(135deg, #BE674B 0%, #A65237 100%);
   color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(182, 94, 66, 0.28);
+  box-shadow: 0 3px 10px rgba(166, 82, 55, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .admin-plan-switch-pill .pill-num {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.07);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .admin-plan-switch-pill.active .pill-num {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.25);
   color: #FFFFFF;
 }
 
+.admin-plan-switch-pill .pill-title {
+  letter-spacing: 0.01em;
+}
+
 .admin-plan-switch-pill .pill-star {
-  color: #E6A23C;
+  color: #E29A32;
   font-size: 0.85rem;
   line-height: 1;
+  transition: transform 0.2s ease;
 }
 
 .admin-plan-switch-pill.active .pill-star {
-  color: #FFE699;
+  color: #FFDE99;
 }
 
 /* Grilla de Planes */
