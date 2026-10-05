@@ -884,6 +884,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Botón de acceso inmediato desde la pantalla de éxito
+    const btnEnterPlatformDirect = document.getElementById('btn-enter-platform-direct');
+    if (btnEnterPlatformDirect) {
+      btnEnterPlatformDirect.addEventListener('click', () => {
+        closeModal(modals.checkout);
+        switchView('platform');
+        showToast('¡Bienvenido/a a tu Refugio!', 'success');
+      });
+    }
+  }
+
   /**
    * Verifica los parámetros de retorno de Mercado Pago al volver al sitio
    * Activa automáticamente la cuenta solo si el pago se completó con éxito.
@@ -1026,17 +1037,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function removePendingPaymentSimulator() {
     const existing = document.getElementById('mp-simulation-widget');
     if (existing) existing.remove();
-  }
-
-    // Botón de acceso inmediato desde la pantalla de éxito
-    const btnEnterPlatformDirect = document.getElementById('btn-enter-platform-direct');
-    if (btnEnterPlatformDirect) {
-      btnEnterPlatformDirect.addEventListener('click', () => {
-        closeModal(modals.checkout);
-        switchView('platform');
-        showToast('¡Bienvenido/a a tu Refugio!', 'success');
-      });
-    }
   }
 
   /**
