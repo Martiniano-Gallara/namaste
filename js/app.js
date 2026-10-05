@@ -5143,18 +5143,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return `
         <div class="admin-plan-card ${isRec ? 'recommended' : ''}" data-admin-plan-id="${p.id || planId}">
-          <div class="admin-plan-card-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem;">
+          <div class="admin-plan-card-header">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <span class="admin-plan-step-num">${num}</span>
-              <h3 class="admin-plan-name-tag" style="margin: 0; font-size: 1.05rem; font-weight: 700;">${escapeHtml(p.name || planId)}</h3>
+              <h3 class="admin-plan-name-tag">${escapeHtml(p.name || planId)}</h3>
             </div>
             <span class="admin-plan-badge-pill ${isRec ? 'popular' : ''}">${escapeHtml(badgeText)}</span>
           </div>
 
           <!-- Precios Mensual & Anual Total en ARS -->
-          <div class="admin-plan-price-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+          <div class="admin-plan-price-row">
             <div class="admin-plan-field">
-              <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Precio Mensual <span class="field-hint">(ARS)</span></label>
+              <label>PRECIO MENSUAL <span class="field-hint">(ARS)</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="100" max="9999999" step="100" required 
@@ -5166,7 +5166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="admin-plan-field">
-              <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Precio Anual <span class="field-hint">(ARS)</span></label>
+              <label>PRECIO ANUAL <span class="field-hint">(ARS)</span></label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="1000" max="99999999" step="1000" required 
@@ -5180,7 +5180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Enlace Mercado Pago Mensual -->
           <div class="admin-plan-field">
-            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Enlace Mensual <span class="field-hint">(Mercado Pago)</span></label>
+            <label>ENLACE MENSUAL <span class="field-hint">(Mercado Pago)</span></label>
             <div class="admin-mp-input-wrap">
               <input type="url" required 
                 id="inp-mp-monthly-${planId}" 
@@ -5201,7 +5201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Enlace Mercado Pago Anual -->
           <div class="admin-plan-field">
-            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Enlace Anual <span class="field-hint">(Mercado Pago)</span></label>
+            <label>ENLACE ANUAL <span class="field-hint">(Mercado Pago)</span></label>
             <div class="admin-mp-input-wrap">
               <input type="url" required 
                 id="inp-mp-annual-${planId}" 
@@ -5222,14 +5222,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Descripción Breve -->
           <div class="admin-plan-field">
-            <label style="font-size: 0.78rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Descripción Breve</label>
-            <input type="text" name="description" id="inp-desc-${planId}" value="${escapeHtml(desc)}" placeholder="Resumen conciso del plan" data-plan-id="${planId}" style="width: 100%; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid #DFD5C8; border-radius: 6px;" />
+            <label>DESCRIPCIÓN BREVE</label>
+            <input type="text" name="description" id="inp-desc-${planId}" value="${escapeHtml(desc)}" placeholder="Resumen conciso del plan" data-plan-id="${planId}" />
           </div>
 
           <!-- Beneficios Separados Punto por Punto -->
           <div class="admin-plan-field">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
-              <label style="font-size: 0.78rem; font-weight: 600; margin: 0;">Beneficios <span class="field-hint">(Puntos individuales)</span></label>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.15rem;">
+              <label style="margin: 0;">BENEFICIOS <span class="field-hint">(Puntos individuales)</span></label>
               <button type="button" class="btn-add-feature-point" data-plan-id="${planId}">+ Agregar punto</button>
             </div>
             <div class="admin-features-list-points" id="features-list-${planId}">
@@ -5294,6 +5294,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    // Conectar atajos rápidos 1 / 2 / 3 de la barra superior
+    setupAdminPlansSwitcher(grid);
+  }
+
+  /**
+   * Atajo rápido para alternar entre los planes 1 / 2 / 3
+   */
+  function setupAdminPlansSwitcher(grid) {
+    const pills = document.querySelectorAll('.admin-plan-switch-pill');
+    if (!pills.length) return;
+
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const targetPlanId = pill.getAttribute('data-target-plan');
+        const targetCard = grid.querySelector(`.admin-plan-card[data-admin-plan-id="${targetPlanId}"]`);
+
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          targetCard.style.transition = 'outline 0.2s ease, box-shadow 0.2s ease';
+          targetCard.style.outline = '2px solid var(--terracotta, #B65E42)';
+          setTimeout(() => {
+            targetCard.style.outline = 'none';
+          }, 1200);
+        }
+      });
+    });
+
+    // Sincronizar pill activa si el usuario scrollea horizontalmente
+    grid.addEventListener('scroll', () => {
+      const cards = grid.querySelectorAll('.admin-plan-card');
+      const gridRect = grid.getBoundingClientRect();
+      const gridCenter = gridRect.left + gridRect.width / 2;
+
+      let closestPlanId = null;
+      let minDistance = Infinity;
+
+      cards.forEach(card => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const dist = Math.abs(cardCenter - gridCenter);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestPlanId = card.getAttribute('data-admin-plan-id');
+        }
+      });
+
+      if (closestPlanId) {
+        pills.forEach(pill => {
+          if (pill.getAttribute('data-target-plan') === closestPlanId) {
+            pill.classList.add('active');
+          } else {
+            pill.classList.remove('active');
+          }
+        });
+      }
+    }, { passive: true });
   }
 
   // Arrancar aplicación
