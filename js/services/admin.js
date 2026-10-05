@@ -316,6 +316,24 @@ const AdminService = (() => {
       };
     }
 
+    if (endpoint === '/plans') {
+      let localPlans = safeJsonParse(localStorage.getItem('namaste_plans_cache'), null);
+      if (!localPlans && typeof PLANS_DATA !== 'undefined') {
+        localPlans = {};
+        PLANS_DATA.forEach(p => { localPlans[p.id] = { ...p }; });
+      }
+      if (method === 'POST') {
+        const body = safeJsonParse(options.body, {});
+        const incoming = body.plans || body;
+        if (incoming) {
+          localPlans = { ...(localPlans || {}), ...incoming };
+          localStorage.setItem('namaste_plans_cache', JSON.stringify(localPlans));
+        }
+        return { success: true, plans: localPlans, message: 'Planes guardados exitosamente' };
+      }
+      return { success: true, plans: localPlans || {} };
+    }
+
     return { success: false, message: 'Endpoint fallback no implementado' };
   }
 
@@ -389,7 +407,12 @@ const AdminService = (() => {
     getTransactions: () => fetchJson('/transactions'),
     getClasses: () => Promise.resolve({ success: true, classes: getLocalClasses() }),
     saveClass: (classData) => Promise.resolve(saveLocalClass(classData)),
-    deleteClass: (classId) => Promise.resolve(deleteLocalClass(classId))
+    deleteClass: (classId) => Promise.resolve(deleteLocalClass(classId)),
+    getPlans: () => fetchJson('/plans'),
+    savePlans: (plansData) => fetchJson('/plans', {
+      method: 'POST',
+      body: JSON.stringify({ plans: plansData })
+    })
   };
 })();
 

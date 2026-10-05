@@ -152,13 +152,87 @@ const DEFAULT_DATABASE = {
       }
     }
   },
-  transactions: []
+  transactions: [],
+  plans: {
+    'plan-esencia': {
+      id: 'plan-esencia',
+      name: 'Plan Esencia',
+      tier: 'inicial',
+      badge: 'Inicial',
+      priceMonthly: 19,
+      priceAnnualTotal: 190,
+      currency: 'USD',
+      description: 'Para quienes inician y desean pausas de presencia con Yoga Suave y Clásico.',
+      features: [
+        'Acceso a +40 clases de Yoga Suave y Clásico',
+        'Meditaciones guiadas y Yoga Relax nocturno',
+        '2 clases nuevas añadidas cada mes',
+        'Acceso en móvil, tablet y computadora'
+      ],
+      mercadopagoUrl: 'https://www.mercadopago.com.ar',
+      mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
+      updatedAt: '2026-10-05T10:00:00Z'
+    },
+    'plan-refugio': {
+      id: 'plan-refugio',
+      name: 'Plan Refugio',
+      tier: 'intermedio',
+      badge: 'Más Elegido',
+      priceMonthly: 29,
+      priceAnnualTotal: 290,
+      currency: 'USD',
+      description: 'La experiencia completa del Shala. Acceso total a todas las disciplinas.',
+      features: [
+        'Acceso ilimitado a todo el catálogo (+140 clases)',
+        'Todos los estilos: Vinyasa, Hatha, Yin Yoga y Pranayama',
+        'Nuevas clases grabadas cada semana',
+        'Encuentros mensuales en vivo por Zoom (Satsang)'
+      ],
+      mercadopagoUrl: 'https://www.mercadopago.com.ar',
+      mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
+      updatedAt: '2026-10-05T10:00:00Z'
+    },
+    'plan-sadhana': {
+      id: 'plan-sadhana',
+      name: 'Plan Sadhana',
+      tier: 'premium',
+      badge: 'Premium',
+      priceMonthly: 39,
+      priceAnnualTotal: 390,
+      currency: 'USD',
+      description: 'Inmersión profunda. Práctica avanzada, masterclasses y mentoría personal.',
+      features: [
+        'Todo lo de Plan Refugio sin restricciones',
+        'Sesión individual de bienvenida de 30 min por Zoom',
+        'Masterclasses y series de meditación avanzada',
+        'Cuaderno digital de Sadhana y soporte directo'
+      ],
+      mercadopagoUrl: 'https://www.mercadopago.com.ar',
+      mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
+      updatedAt: '2026-10-05T10:00:00Z'
+    }
+  }
 };
+
+function syncCatalogWithDb(database) {
+  if (!database || !database.plans) return;
+  Object.keys(database.plans).forEach(pId => {
+    if (PLANS_CATALOG[pId]) {
+      if (typeof database.plans[pId].priceMonthly === 'number') {
+        PLANS_CATALOG[pId].monthlyPrice = database.plans[pId].priceMonthly;
+      }
+      if (typeof database.plans[pId].priceAnnualTotal === 'number') {
+        PLANS_CATALOG[pId].annualPrice = database.plans[pId].priceAnnualTotal;
+      }
+    }
+  });
+}
 
 function loadDatabase() {
   try {
     if (!fs.existsSync(DB_FILE)) {
       saveDatabase(DEFAULT_DATABASE);
+      syncCatalogWithDb(DEFAULT_DATABASE);
       return JSON.parse(JSON.stringify(DEFAULT_DATABASE));
     }
     const raw = fs.readFileSync(DB_FILE, 'utf8');
@@ -167,9 +241,15 @@ function loadDatabase() {
     if (!parsed.users) parsed.users = {};
     if (!parsed.progress) parsed.progress = {};
     if (!Array.isArray(parsed.transactions)) parsed.transactions = [];
+    if (!parsed.plans || Object.keys(parsed.plans).length === 0) {
+      parsed.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
+      saveDatabase(parsed);
+    }
+    syncCatalogWithDb(parsed);
     return parsed;
   } catch (err) {
     console.error('[DB] Error loading database, using default seed:', err);
+    syncCatalogWithDb(DEFAULT_DATABASE);
     return JSON.parse(JSON.stringify(DEFAULT_DATABASE));
   }
 }
@@ -1090,6 +1170,180 @@ const server = http.createServer(async (req, res) => {
       // 11.7 Admin: Financial Transactions
       if (pathname === '/api/admin/transactions' && req.method === 'GET') {
         return sendJson(res, 200, { success: true, transactions: db.transactions || [] });
+      }
+
+      // ======================================================================
+      // 12. GESTIÓN PERSISTENTE DE PLANES & MERCADO PAGO (100% SEGURO & DINÁMICO)
+      // ======================================================================
+
+      // 12.1 Catálogo Público de Planes (Sincronizado con la Landing y Checkout)
+      if (pathname === '/api/plans' && req.method === 'GET') {
+        if (!db.plans || Object.keys(db.plans).length === 0) {
+          db.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
+          saveDatabase(db);
+        }
+        return sendJson(res, 200, {
+          success: true,
+          plans: Object.values(db.plans),
+          plansMap: db.plans,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // 12.2 Admin: Obtener Configuración de Planes
+      if (pathname === '/api/admin/plans' && req.method === 'GET') {
+        const auth = getAuthenticatedUser(req);
+        if (!auth || (!auth.user.isAdmin && auth.user.role !== 'admin')) {
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Acceso denegado. Se requieren credenciales de Administradora para consultar la configuración de planes.'
+          });
+        }
+
+        if (!db.plans || Object.keys(db.plans).length === 0) {
+          db.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
+          saveDatabase(db);
+        }
+
+        return sendJson(res, 200, {
+          success: true,
+          plans: db.plans,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // 12.3 Admin: Guardar y Sincronizar Planes & Enlaces de Mercado Pago (1000% Seguro)
+      if (pathname === '/api/admin/plans' && req.method === 'POST') {
+        const auth = getAuthenticatedUser(req);
+        if (!auth || (!auth.user.isAdmin && auth.user.role !== 'admin')) {
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Acceso denegado. Solo la Directora/Administradora puede modificar precios y enlaces de Mercado Pago.'
+          });
+        }
+
+        const body = await parseJsonBody(req);
+        const incomingPlans = body.plans || body;
+
+        if (!incomingPlans || typeof incomingPlans !== 'object') {
+          return sendJson(res, 400, {
+            success: false,
+            message: 'Formato de datos de planes no válido.'
+          });
+        }
+
+        if (!db.plans) {
+          db.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
+        }
+
+        // Helper de saneamiento riguroso de URLs
+        const sanitizeSafeUrl = (raw) => {
+          if (!raw || typeof raw !== 'string') return '';
+          const trimmed = raw.trim();
+          if (!trimmed) return '';
+          // Prohibir esquemas peligrosos de inyección de script
+          if (/^(javascript|vbscript|data):/i.test(trimmed)) {
+            throw new Error('Esquema de URL no permitido por motivos de seguridad.');
+          }
+          // Sanitizar caracteres HTML peligrosos
+          const clean = trimmed.replace(/[<>"'`]/g, '');
+          if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+            return `https://${clean}`;
+          }
+          return clean;
+        };
+
+        const allowedPlanIds = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
+        const updatedPlansList = [];
+
+        try {
+          const plansEntries = Array.isArray(incomingPlans)
+            ? incomingPlans.map(p => [p.id, p])
+            : Object.entries(incomingPlans);
+
+          for (const [key, planData] of plansEntries) {
+            const planId = planData.id || key;
+            if (!allowedPlanIds.includes(planId)) continue;
+
+            const existing = db.plans[planId] || (DEFAULT_DATABASE.plans && DEFAULT_DATABASE.plans[planId]) || {};
+
+            // Validación estricta de precios
+            const priceMonthly = Number(planData.priceMonthly !== undefined ? planData.priceMonthly : existing.priceMonthly);
+            if (isNaN(priceMonthly) || priceMonthly <= 0) {
+              return sendJson(res, 400, {
+                success: false,
+                message: `El precio mensual para ${planData.name || planId} debe ser un número mayor a 0.`
+              });
+            }
+
+            const priceAnnualTotal = Number(planData.priceAnnualTotal !== undefined ? planData.priceAnnualTotal : existing.priceAnnualTotal);
+            if (isNaN(priceAnnualTotal) || priceAnnualTotal <= 0) {
+              return sendJson(res, 400, {
+                success: false,
+                message: `El precio anual para ${planData.name || planId} debe ser un número mayor a 0.`
+              });
+            }
+
+            const mercadopagoUrl = sanitizeSafeUrl(planData.mercadopagoUrl || existing.mercadopagoUrl || 'https://www.mercadopago.com.ar');
+            const mercadopagoUrlAnnual = sanitizeSafeUrl(planData.mercadopagoUrlAnnual || planData.mercadopagoUrl || existing.mercadopagoUrlAnnual || mercadopagoUrl);
+
+            // Sanitizar textos descriptivos
+            const name = (planData.name || existing.name || planId).trim().replace(/[<>]/g, '');
+            const badge = (planData.badge || existing.badge || '').trim().replace(/[<>]/g, '');
+            const description = (planData.description || existing.description || '').trim().replace(/[<>]/g, '');
+
+            let features = existing.features || [];
+            if (Array.isArray(planData.features)) {
+              features = planData.features
+                .map(f => (typeof f === 'string' ? f.trim().replace(/[<>]/g, '') : ''))
+                .filter(f => f.length > 0);
+            }
+
+            db.plans[planId] = {
+              ...existing,
+              id: planId,
+              name,
+              tier: existing.tier || 'intermedio',
+              badge,
+              priceMonthly,
+              priceAnnualTotal,
+              currency: 'USD',
+              description,
+              features,
+              mercadopagoUrl,
+              mercadopagoUrlAnnual,
+              updatedAt: new Date().toISOString()
+            };
+
+            updatedPlansList.push(name);
+          }
+
+          // Sincronizar catálogo server-side y registrar log de auditoría
+          syncCatalogWithDb(db);
+
+          recordAuditLog(
+            db,
+            'PLANS_CONFIG_SAVED',
+            'Configuración de Planes y Mercado Pago actualizada',
+            `Planes sincronizados: ${updatedPlansList.join(', ')} por ${auth.user.name}`,
+            auth.user.email,
+            'success'
+          );
+
+          saveDatabase(db);
+
+          return sendJson(res, 200, {
+            success: true,
+            plans: db.plans,
+            message: 'Configuración de planes y enlaces de Mercado Pago guardada exitosamente en la base de datos.'
+          });
+
+        } catch (valErr) {
+          return sendJson(res, 400, {
+            success: false,
+            message: valErr.message || 'Error al validar la información de planes.'
+          });
+        }
       }
 
       // Route not found in /api

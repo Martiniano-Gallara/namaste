@@ -1255,7 +1255,7 @@
     <!-- Contenido Principal: 2 Pestañas Simplificadas -->
     <main class="admin-tabs-section">
       <div class="container">
-        <!-- Navegación de 3 Pestañas Simplificadas -->
+        <!-- Navegación de Pestañas del Panel de Control -->
         <div class="admin-tabs-nav">
           <button type="button" class="admin-tab-btn active" data-tab="tab-classes" id="admin-tab-btn-classes">
             <span>Clases</span>
@@ -1267,6 +1267,9 @@
           </button>
           <button type="button" class="admin-tab-btn" data-tab="tab-transactions" id="admin-tab-btn-transactions">
             <span style="white-space: nowrap;">Cobros</span>
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tab-plans" id="admin-tab-btn-plans">
+            <span style="white-space: nowrap;">Planes & Mercado Pago</span>
           </button>
         </div>
 
@@ -1406,6 +1409,62 @@
           </div>
         </div>
 
+        <!-- Pestaña 4: Planes & Mercado Pago (100% Sincronizado con la Landing y Base de Datos) -->
+        <div class="admin-tab-panel" id="panel-tab-plans" style="display: none;">
+          <div class="admin-plans-management-card">
+            <div class="admin-plans-header-row">
+              <div class="admin-plans-header-info">
+                <div class="admin-section-eyebrow">
+                  <span class="db-status-dot"></span>
+                  Sincronización en Tiempo Real con Base de Datos & Web Pública
+                </div>
+                <h2 class="admin-plans-title">Membresías y Enlaces de Mercado Pago</h2>
+                <p class="admin-plans-subtitle">
+                  Configura aquí los precios oficiales y tus enlaces directos de cobro de Mercado Pago. Cualquier modificación se sincroniza inmediatamente en la sección <strong>Membresías de Inicio</strong> y en el <strong>Checkout</strong> de registro sin necesidad de recargar.
+                </p>
+              </div>
+              <div class="admin-plans-header-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span>Base de Datos 100% Segura</span>
+              </div>
+            </div>
+
+            <!-- Formulario de Configuración de Planes -->
+            <form id="admin-plans-form" class="admin-plans-form" autocomplete="off">
+              <div class="admin-plans-grid" id="admin-plans-grid">
+                <!-- Se inyecta dinámicamente con los planes de la base de datos -->
+              </div>
+
+              <!-- Barra de Acciones y Guardado -->
+              <div class="admin-plans-actions-bar">
+                <div class="admin-plans-save-status" id="admin-plans-save-status">
+                  <span class="status-icon-check">✓</span>
+                  <span id="admin-plans-status-text">Base de datos sincronizada y activa</span>
+                </div>
+                <div class="admin-plans-btn-group">
+                  <button type="button" class="btn btn-secondary" id="btn-admin-preview-landing-plans">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>Ver Planes en Inicio</span>
+                  </button>
+                  <button type="submit" class="btn btn-primary btn-save-plans" id="btn-admin-save-plans">
+                    <svg class="save-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span>Guardar Cambios en Base de Datos</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
       </div>
     </main>
 
@@ -1459,6 +1518,15 @@
                     <line x1="1" y1="10" x2="23" y2="10"></line>
                   </svg>
                   <span>Cobros</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="admin-drawer-nav-btn" data-admin-goto-tab="tab-plans">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                    <line x1="2" y1="10" x2="22" y2="10"></line>
+                  </svg>
+                  <span>Planes & Mercado Pago</span>
                 </button>
               </li>
             </ul>

@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     adminClassesCache: [],
     adminClassFilterFormat: 'all',
     adminClassSearchQuery: '',
-    adminActiveTab: 'tab-classes'
+    adminActiveTab: 'tab-classes',
+    adminPlansCache: null
   };
 
   // --- Elementos del DOM ---
@@ -173,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBillingSwitcher();
     setupScrollSpy();
     setupAdminDashboard();
+    syncPublicPlansFromDatabase();
     renderTestimonialsSlider();
     window.addEventListener('namaste:reviews-updated', () => {
       renderTestimonialsSlider();
@@ -870,7 +872,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // URL o deep-link para abonar en Mercado Pago
           const planData = PLANS_DATA.find(p => p.id === planId);
-          const mpUrl = (planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar';
+          const isAnnualPlan = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
+          const mpUrl = (isAnnualPlan && planData && planData.mercadopagoUrlAnnual)
+            ? planData.mercadopagoUrlAnnual
+            : ((planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar');
 
           // Mostrar tarjeta flotante de simulación para desarrollo/pruebas locales
           renderPendingPaymentSimulator();
@@ -3048,6 +3053,8 @@ document.addEventListener('DOMContentLoaded', () => {
               renderAdminUsersTable();
             }
           });
+        } else if (targetTab === 'tab-plans') {
+          loadAndRenderAdminPlans();
         }
       });
     });
@@ -4274,6 +4281,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
+    // 12. Gestión de Planes & Mercado Pago (Formulario y Sincronización)
+    const adminPlansForm = document.getElementById('admin-plans-form');
+    if (adminPlansForm) {
+      adminPlansForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-admin-save-plans');
+        const statusEl = document.getElementById('admin-plans-status-text');
+
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `
+            <svg class="spin-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="2" x2="12" y2="6"></line>
+              <line x1="12" y1="18" x2="12" y2="22"></line>
+            </svg>
+            <span>Guardando en base de datos...</span>
+          `;
+        }
+
+        const planKeys = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
+        const updatedPlansPayload = {};
+
+        planKeys.forEach(planId => {
+          const pMonthly = Number(document.getElementById(`inp-price-monthly-${planId}`)?.value || 0);
+          const pAnnual = Number(document.getElementById(`inp-price-annual-${planId}`)?.value || 0);
+          const mpMonthly = document.getElementById(`inp-mp-monthly-${planId}`)?.value.trim() || 'https://www.mercadopago.com.ar';
+          const mpAnnual = document.getElementById(`inp-mp-annual-${planId}`)?.value.trim() || mpMonthly;
+          const desc = document.getElementById(`inp-desc-${planId}`)?.value.trim() || '';
+          const rawFeat = document.getElementById(`inp-features-${planId}`)?.value.trim() || '';
+          const features = rawFeat.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+          const existing = (state.adminPlansCache && state.adminPlansCache[planId]) || PLANS_DATA.find(x => x.id === planId) || {};
+
+          updatedPlansPayload[planId] = {
+            ...existing,
+            id: planId,
+            priceMonthly: pMonthly,
+            priceAnnualTotal: pAnnual,
+            mercadopagoUrl: mpMonthly,
+            mercadopagoUrlAnnual: mpAnnual,
+            description: desc,
+            features
+          };
+        });
+
+        try {
+          const saveRes = await AdminService.savePlans(updatedPlansPayload);
+          if (saveRes && saveRes.success) {
+            showToast('¡Planes y Mercado Pago guardados con éxito en la base de datos!', 'success', 5000);
+            if (statusEl) {
+              const now = new Date();
+              statusEl.textContent = `Sincronizado con database.json (${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} hs)`;
+            }
+
+            // Actualizar PLANS_DATA y DOM público inmediatamente sin recargar
+            applyPlansToFrontend(Object.values(updatedPlansPayload));
+            state.adminPlansCache = updatedPlansPayload;
+          } else {
+            showToast((saveRes && saveRes.message) || 'Error al guardar los planes en el servidor.', 'error');
+          }
+        } catch (err) {
+          console.error('[AdminPlansSave]', err);
+          showToast('Error de conexión al guardar los planes.', 'error');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
+        }
+      });
+    }
+
+    // Botón "Ver Planes en Inicio"
+    const btnPreviewLandingPlans = document.getElementById('btn-admin-preview-landing-plans');
+    if (btnPreviewLandingPlans) {
+      btnPreviewLandingPlans.addEventListener('click', () => {
+        switchView('landing');
+        const planesSection = document.getElementById('planes');
+        if (planesSection) {
+          planesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
   }
 
   /**
@@ -4344,6 +4436,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.adminActiveTab === 'tab-classes') {
           renderAdminClassesTable();
         }
+      }
+
+      if (state.adminActiveTab === 'tab-plans') {
+        loadAndRenderAdminPlans();
       }
 
       if (syncText) syncText.textContent = 'Sincronizado con Base de Datos';
@@ -4769,6 +4865,266 @@ document.addEventListener('DOMContentLoaded', () => {
     const hours = String(date.getHours()).padStart(2, '0');
     const mins = String(date.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}:${mins} hs`;
+  }
+
+  // ========================================================================
+  // SINCRONIZACIÓN EN TIEMPO REAL: PLANES & MERCADO PAGO
+  // ========================================================================
+
+  /**
+   * Sincroniza los planes desde la API pública (/api/plans) conectada a la base de datos
+   */
+  async function syncPublicPlansFromDatabase() {
+    try {
+      const res = await fetch('/api/plans');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.plans) && data.plans.length > 0) {
+          applyPlansToFrontend(data.plans);
+        }
+      }
+    } catch (err) {
+      console.warn('[PlansSync] Usando datos locales de planes:', err);
+    }
+  }
+
+  /**
+   * Aplica la lista de planes a la landing page pública y al catálogo en memoria
+   */
+  function applyPlansToFrontend(plansList) {
+    if (!Array.isArray(plansList)) return;
+
+    plansList.forEach(serverPlan => {
+      // 1. Actualizar catálogo global PLANS_DATA en memoria
+      const localPlan = PLANS_DATA.find(p => p.id === serverPlan.id);
+      if (localPlan) {
+        Object.assign(localPlan, serverPlan);
+      }
+
+      // 2. Actualizar tarjetas del DOM en sección #planes
+      const card = document.querySelector(`.pricing-card[data-plan="${serverPlan.id}"]`);
+      if (card) {
+        const amountEl = card.querySelector('.pricing-amount');
+        const subnoteEl = card.querySelector('.pricing-subnote');
+        const descEl = card.querySelector('.pricing-desc');
+        const titleEl = card.querySelector('.pricing-plan-name');
+
+        const monthly = Number(serverPlan.priceMonthly);
+        const annualTotal = Number(serverPlan.priceAnnualTotal);
+        const annualMonthly = (annualTotal / 12).toFixed(2).replace(/\.00$/, '');
+
+        if (titleEl && serverPlan.name) titleEl.textContent = serverPlan.name;
+        if (descEl && serverPlan.description) descEl.textContent = serverPlan.description;
+
+        if (amountEl) {
+          amountEl.setAttribute('data-price-monthly', monthly);
+          amountEl.setAttribute('data-price-annual', annualMonthly);
+          if (state.selectedBillingCycle === 'annual') {
+            amountEl.textContent = annualMonthly;
+          } else {
+            amountEl.textContent = monthly;
+          }
+        }
+
+        if (subnoteEl) {
+          subnoteEl.setAttribute('data-note-monthly', 'Facturado mensualmente');
+          subnoteEl.setAttribute('data-note-annual', `$${annualTotal}/año • ¡2 meses de regalo!`);
+          if (state.selectedBillingCycle === 'annual') {
+            subnoteEl.textContent = `$${annualTotal}/año • ¡2 meses de regalo!`;
+          } else {
+            subnoteEl.textContent = 'Facturado mensualmente';
+          }
+        }
+
+        // Actualizar lista de beneficios si viene especificada
+        if (Array.isArray(serverPlan.features) && serverPlan.features.length > 0) {
+          const featListEl = card.querySelector('.pricing-features-list');
+          if (featListEl) {
+            featListEl.innerHTML = serverPlan.features.map(f => `
+              <li class="pricing-feature-item">
+                <svg class="feature-check" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>${escapeHtml(f)}</span>
+              </li>
+            `).join('');
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Carga los planes de la administración y renderiza las tarjetas de edición
+   */
+  async function loadAndRenderAdminPlans() {
+    const grid = document.getElementById('admin-plans-grid');
+    if (!grid) return;
+
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: #7A6C62;">
+        <svg class="spin-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-bottom: 0.5rem;">
+          <line x1="12" y1="2" x2="12" y2="6"></line>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+          <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+          <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+        </svg>
+        <p style="margin: 0; font-size: 0.9rem; font-weight: 500;">Conectando con base de datos de planes...</p>
+      </div>
+    `;
+
+    try {
+      const res = await AdminService.getPlans();
+      let plansMap = {};
+      if (res && res.success && res.plans) {
+        if (Array.isArray(res.plans)) {
+          res.plans.forEach(p => { plansMap[p.id] = p; });
+        } else {
+          plansMap = res.plans;
+        }
+      } else {
+        PLANS_DATA.forEach(p => { plansMap[p.id] = p; });
+      }
+
+      state.adminPlansCache = plansMap;
+      renderAdminPlansCards(plansMap);
+    } catch (err) {
+      console.error('[AdminPlans] Error al cargar:', err);
+      const fallbackMap = {};
+      PLANS_DATA.forEach(p => { fallbackMap[p.id] = p; });
+      renderAdminPlansCards(fallbackMap);
+    }
+  }
+
+  /**
+   * Renderiza las 3 tarjetas de configuración de planes en el panel de administración
+   */
+  function renderAdminPlansCards(plansMap) {
+    const grid = document.getElementById('admin-plans-grid');
+    if (!grid) return;
+
+    const planKeys = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
+
+    grid.innerHTML = planKeys.map(planId => {
+      const p = plansMap[planId] || PLANS_DATA.find(x => x.id === planId) || {};
+      const isRec = p.recommended || planId === 'plan-refugio';
+      const badgeText = p.badge || (planId === 'plan-esencia' ? 'Inicial' : (planId === 'plan-refugio' ? 'Más Elegido' : 'Premium'));
+      const monthly = p.priceMonthly || (planId === 'plan-esencia' ? 19 : (planId === 'plan-refugio' ? 29 : 39));
+      const annualTotal = p.priceAnnualTotal || (monthly * 10);
+      const mpMonthly = p.mercadopagoUrl || 'https://www.mercadopago.com.ar';
+      const mpAnnual = p.mercadopagoUrlAnnual || mpMonthly;
+      const desc = p.description || '';
+      const featuresStr = Array.isArray(p.features) ? p.features.join('\n') : '';
+
+      return `
+        <div class="admin-plan-card ${isRec ? 'recommended' : ''}" data-admin-plan-id="${p.id || planId}">
+          <div class="admin-plan-card-header">
+            <h3 class="admin-plan-name-tag">${escapeHtml(p.name || planId)}</h3>
+            <span class="admin-plan-badge-pill ${isRec ? 'popular' : ''}">${escapeHtml(badgeText)}</span>
+          </div>
+
+          <!-- Precios Mensual & Anual Total -->
+          <div class="admin-plan-price-row">
+            <div class="admin-plan-field">
+              <label>Precio Mensual <span class="field-hint">USD/mes</span></label>
+              <div class="admin-price-input-wrap">
+                <span class="admin-price-prefix">$</span>
+                <input type="number" min="1" max="9999" step="1" required 
+                  id="inp-price-monthly-${planId}" 
+                  name="priceMonthly" 
+                  value="${monthly}" 
+                  data-plan-id="${planId}" />
+              </div>
+            </div>
+
+            <div class="admin-plan-field">
+              <label>Precio Anual Total <span class="field-hint">USD/año</span></label>
+              <div class="admin-price-input-wrap">
+                <span class="admin-price-prefix">$</span>
+                <input type="number" min="1" max="99999" step="1" required 
+                  id="inp-price-annual-${planId}" 
+                  name="priceAnnualTotal" 
+                  value="${annualTotal}" 
+                  data-plan-id="${planId}" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Enlace Mercado Pago Mensual -->
+          <div class="admin-plan-field">
+            <label>Enlace Mercado Pago (Cobro Mensual) <span class="field-hint">Link de Pago / Botón</span></label>
+            <div class="admin-mp-input-wrap">
+              <input type="url" required 
+                id="inp-mp-monthly-${planId}" 
+                name="mercadopagoUrl" 
+                placeholder="https://mpago.la/... o mercadopago.com" 
+                value="${escapeHtml(mpMonthly)}" 
+                data-plan-id="${planId}" />
+              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-monthly-${planId}" title="Abrir y verificar link en nueva pestaña">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                Probar
+              </button>
+            </div>
+          </div>
+
+          <!-- Enlace Mercado Pago Anual -->
+          <div class="admin-plan-field">
+            <label>Enlace Mercado Pago (Cobro Anual) <span class="field-hint">Link con Descuento</span></label>
+            <div class="admin-mp-input-wrap">
+              <input type="url" required 
+                id="inp-mp-annual-${planId}" 
+                name="mercadopagoUrlAnnual" 
+                placeholder="https://mpago.la/... o mercadopago.com" 
+                value="${escapeHtml(mpAnnual)}" 
+                data-plan-id="${planId}" />
+              <button type="button" class="admin-btn-test-link btn-test-mp-link" data-input-target="inp-mp-annual-${planId}" title="Abrir y verificar link anual en nueva pestaña">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                Probar
+              </button>
+            </div>
+          </div>
+
+          <!-- Descripción del Plan -->
+          <div class="admin-plan-field">
+            <label>Descripción Breve</label>
+            <textarea rows="2" name="description" id="inp-desc-${planId}" data-plan-id="${planId}">${escapeHtml(desc)}</textarea>
+          </div>
+
+          <!-- Beneficios / Características (1 por línea) -->
+          <div class="admin-plan-field">
+            <label>Beneficios Incluidos <span class="field-hint">1 beneficio por línea</span></label>
+            <textarea rows="3" name="features" id="inp-features-${planId}" data-plan-id="${planId}">${escapeHtml(featuresStr)}</textarea>
+            <span class="admin-features-hint">Cada línea será una viñeta con tilde (✓) en la tabla de inicio.</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Conectar botones de prueba de links
+    grid.querySelectorAll('.btn-test-mp-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-input-target');
+        const input = document.getElementById(targetId);
+        if (input && input.value) {
+          let url = input.value.trim();
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+          showToast('Por favor, ingresa primero una URL para probar el enlace.', 'warning');
+        }
+      });
+    });
   }
 
   // Arrancar aplicación
