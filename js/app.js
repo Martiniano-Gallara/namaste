@@ -5151,10 +5151,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="admin-plan-badge-pill ${isRec ? 'popular' : ''}">${escapeHtml(badgeText)}</span>
           </div>
 
-          <!-- Precios Mensual & Anual Total en ARS -->
+          <!-- Precios Mensual & Anual Total -->
           <div class="admin-plan-price-row">
             <div class="admin-plan-field">
-              <label>PRECIO MENSUAL <span class="field-hint">(ARS)</span></label>
+              <label>PRECIO MENSUAL</label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="100" max="9999999" step="100" required 
@@ -5166,7 +5166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="admin-plan-field">
-              <label>PRECIO ANUAL <span class="field-hint">(ARS)</span></label>
+              <label>PRECIO ANUAL</label>
               <div class="admin-price-input-wrap">
                 <span class="admin-price-prefix">$</span>
                 <input type="number" min="1000" max="99999999" step="1000" required 

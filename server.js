@@ -167,16 +167,16 @@ const DEFAULT_DATABASE = {
       priceMonthly: 19000,
       priceAnnualTotal: 190000,
       currency: 'ARS',
-      description: 'Pausas de presencia con Yoga Suave y Clásico.',
+      description: '1 clase semanal de Yoga Clásico con meditaciones guiadas.',
       features: [
-        'Acceso a +40 clases de Yoga Suave y Clásico',
-        'Meditaciones guiadas y Yoga Relax nocturno',
-        '2 clases nuevas añadidas cada mes',
-        'Acceso en móvil, tablet y computadora'
+        '1 clase semanal de Yoga Clásico',
+        'Meditaciones guiadas y relajación',
+        'Acceso en móvil, tablet y computadora',
+        'Comunidad consciente del Shala'
       ],
       mercadopagoUrl: 'https://www.mercadopago.com.ar',
       mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-05T10:00:00Z'
+      updatedAt: '2026-10-05T14:00:00Z'
     },
     'plan-refugio': {
       id: 'plan-refugio',
@@ -186,16 +186,16 @@ const DEFAULT_DATABASE = {
       priceMonthly: 29000,
       priceAnnualTotal: 290000,
       currency: 'ARS',
-      description: 'La experiencia completa del Shala con acceso total.',
+      description: '2 clases semanales de Yoga Clásico y Dinámico + meditación.',
       features: [
-        'Acceso ilimitado a todo el catálogo (+140 clases)',
-        'Todos los estilos: Vinyasa, Hatha, Yin Yoga y Pranayama',
-        'Nuevas clases grabadas cada semana',
-        'Encuentros mensuales en vivo por Zoom (Satsang)'
+        '2 clases semanales (Yoga Clásico y Yoga Dinámico)',
+        'Prácticas de meditación y pranayama',
+        'Acceso completo a grabaciones del Shala',
+        'Encuentros mensuales en comunidad'
       ],
       mercadopagoUrl: 'https://www.mercadopago.com.ar',
       mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-05T10:00:00Z'
+      updatedAt: '2026-10-05T14:00:00Z'
     },
     'plan-sadhana': {
       id: 'plan-sadhana',
@@ -205,16 +205,16 @@ const DEFAULT_DATABASE = {
       priceMonthly: 39000,
       priceAnnualTotal: 390000,
       currency: 'ARS',
-      description: 'Inmersión profunda, masterclasses y mentoría personal.',
+      description: '3 clases semanales, meditaciones, clases en vivo y masterclasses.',
       features: [
-        'Todo lo de Plan Refugio sin restricciones',
-        'Sesión individual de bienvenida de 30 min por Zoom',
-        'Masterclasses y series de meditación avanzada',
-        'Cuaderno digital de Sadhana y soporte directo'
+        '3 clases semanales de práctica integral',
+        'Meditaciones profundas guiadas',
+        'Acceso a clases online en vivo',
+        'Masterclasses exclusivas en vivo'
       ],
       mercadopagoUrl: 'https://www.mercadopago.com.ar',
       mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-05T10:00:00Z'
+      updatedAt: '2026-10-05T14:00:00Z'
     }
   }
 };

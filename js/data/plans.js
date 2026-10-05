@@ -17,13 +17,13 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "Pausas de presencia con Yoga Suave y Clásico.",
+    description: "1 clase semanal de Yoga Clásico con meditaciones guiadas.",
     allowedCategories: ["suave", "clasico", "relax", "meditacion"],
     features: [
-      "Acceso a +40 clases de Yoga Suave y Clásico",
-      "Meditaciones guiadas y Yoga Relax nocturno",
-      "2 clases nuevas añadidas cada mes",
-      "Acceso en móvil, tablet y computadora"
+      "1 clase semanal de Yoga Clásico",
+      "Meditaciones guiadas y relajación",
+      "Acceso en móvil, tablet y computadora",
+      "Comunidad consciente del Shala"
     ],
     recommended: false,
     ctaText: "Elegir Plan Esencia",
@@ -43,13 +43,13 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "La experiencia completa del Shala con acceso total.",
+    description: "2 clases semanales de Yoga Clásico y Dinámico + meditación.",
     allowedCategories: ["*"],
     features: [
-      "Acceso ilimitado a todo el catálogo (+140 clases)",
-      "Todos los estilos: Vinyasa, Hatha, Yin Yoga y Pranayama",
-      "Nuevas clases grabadas cada semana",
-      "Encuentros mensuales en vivo por Zoom (Satsang)"
+      "2 clases semanales (Yoga Clásico y Yoga Dinámico)",
+      "Prácticas de meditación y pranayama",
+      "Acceso completo a grabaciones del Shala",
+      "Encuentros mensuales en comunidad"
     ],
     recommended: true,
     ctaText: "Unirme al Refugio",
@@ -69,13 +69,13 @@ const PLANS_DATA = [
     pricePeriod: "mes",
     currency: "ARS",
     currencySymbol: "$",
-    description: "Inmersión profunda, masterclasses y mentoría personal.",
+    description: "3 clases semanales, meditaciones, clases en vivo y masterclasses.",
     allowedCategories: ["*"],
     features: [
-      "Todo lo de Plan Refugio sin restricciones",
-      "Sesión individual de bienvenida de 30 min por Zoom",
-      "Masterclasses y series de meditación avanzada",
-      "Cuaderno digital de Sadhana y soporte directo"
+      "3 clases semanales de práctica integral",
+      "Meditaciones profundas guiadas",
+      "Acceso a clases online en vivo",
+      "Masterclasses exclusivas en vivo"
     ],
     recommended: false,
     ctaText: "Elegir Plan Sadhana",
