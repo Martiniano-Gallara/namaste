@@ -422,9 +422,21 @@ function recordAuditLog(database, action, title, details, userEmail = '', status
 
 let db = loadDatabase();
 
-// Sincronización en vivo desde Supabase PostgreSQL
+// Sincronización en vivo desde Supabase PostgreSQL (Preservando hashes criptográficos de contraseñas)
 loadFromSupabase().then(remoteDb => {
   if (remoteDb && remoteDb.users && Object.keys(remoteDb.users).length > 0) {
+    const defaultAdminHash = hashPassword(process.env.ADMIN_PASSWORD || 'valeria2026');
+    const defaultStudentHash = hashPassword(process.env.DEMO_PASSWORD || 'namaste123');
+
+    Object.values(remoteDb.users).forEach(u => {
+      if (u.passwordHash) return;
+      if (db.users[u.id] && db.users[u.id].passwordHash) {
+        u.passwordHash = db.users[u.id].passwordHash;
+      } else {
+        u.passwordHash = (u.role === 'admin' || u.isAdmin) ? defaultAdminHash : defaultStudentHash;
+      }
+    });
+
     db.users = remoteDb.users;
     if (remoteDb.plans) db.plans = remoteDb.plans;
     if (remoteDb.transactions) db.transactions = remoteDb.transactions;
