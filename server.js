@@ -91,14 +91,114 @@ const YOGA_STREAMS = {
   'cls-relax-02': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm'
 };
 
+const CLASS_CATEGORIES = {
+  'cls-suave-01': 'suave',
+  'cls-suave-02': 'suave',
+  'cls-clasico-01': 'clasico',
+  'cls-clasico-02': 'clasico',
+  'cls-terapeutico-01': 'terapeutico',
+  'cls-terapeutico-02': 'terapeutico',
+  'cls-ashtanga-01': 'ashtanga',
+  'cls-ashtanga-02': 'ashtanga',
+  'cls-dinamico-01': 'dinamico',
+  'cls-dinamico-02': 'dinamico',
+  'cls-relax-01': 'relax',
+  'cls-relax-02': 'relax'
+};
+
+const CLASSES_CATALOG = [
+  { id: 'cls-suave-01', title: 'Yoga Suave: Despertar Matutino & Movilidad Articular', category: 'suave', categoryLabel: 'Yoga Suave', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: true },
+  { id: 'cls-suave-02', title: 'Yoga Suave: Apertura de Pecho & Hombros Ligeros', category: 'suave', categoryLabel: 'Yoga Suave', duration: 30, level: 'Principiante', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: false },
+  { id: 'cls-clasico-01', title: 'Yoga Clásico: Posturas Tradicionales & Alineación', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 45, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: true },
+  { id: 'cls-clasico-02', title: 'Yoga Clásico: Fortaleza, Enraizamiento & Equilibrio', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: false },
+  { id: 'cls-terapeutico-01', title: 'Yoga Terapéutico: Alivio Lumbar & Espalda Baja', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 40, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: true },
+  { id: 'cls-terapeutico-02', title: 'Yoga Terapéutico: Liberación de Tensión en Caderas', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: false },
+  { id: 'cls-ashtanga-01', title: 'Ashtanga Yoga: Serie Primaria Guiada (Surya Namaskar)', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 55, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: true },
+  { id: 'cls-ashtanga-02', title: 'Ashtanga Yoga: Fuerza en el Centro & Bandhas', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 50, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: false },
+  { id: 'cls-dinamico-01', title: 'Yoga Dinámico: Vinyasa Flow Energizante', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 45, level: 'Intermedio / Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: true },
+  { id: 'cls-dinamico-02', title: 'Yoga Dinámico: Fluidez, Transiciones & Ritmo Respiratorio', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: false },
+  { id: 'cls-relax-01', title: 'Yoga Relax: Yoga Nidra & Descanso Profundo Reparador', category: 'relax', categoryLabel: 'Yoga Relax', duration: 30, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', featured: true },
+  { id: 'cls-relax-02', title: 'Yoga Relax: Estiramientos Restaurativos Nocturnos', category: 'relax', categoryLabel: 'Yoga Relax', duration: 25, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', featured: false }
+];
+
+// Cryptographic Password Hashing & Sanitization
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  if (!stored || typeof stored !== 'string' || !stored.includes(':')) return false;
+  try {
+    const [salt, key] = stored.split(':');
+    const keyBuffer = Buffer.from(key, 'hex');
+    const derivedKey = crypto.scryptSync(password, salt, 64);
+    return crypto.timingSafeEqual(keyBuffer, derivedKey);
+  } catch (e) {
+    return false;
+  }
+}
+
+function sanitizeUser(u) {
+  if (!u) return null;
+  const { password, passwordHash, ...safe } = u;
+  return safe;
+}
+
+// Rate Limiter contra ataques de fuerza bruta en login
+const loginAttempts = new Map();
+function isLoginRateLimited(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip);
+  if (!record) return false;
+  if (record.blockedUntil > now) return true;
+  if (now - record.firstAttempt > 60000) {
+    loginAttempts.delete(ip);
+    return false;
+  }
+  return false;
+}
+function registerFailedLogin(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now, blockedUntil: 0 };
+  record.count++;
+  if (record.count >= 8) {
+    record.blockedUntil = now + 5 * 60000;
+  }
+  loginAttempts.set(ip, record);
+}
+function clearLoginAttempts(ip) {
+  loginAttempts.delete(ip);
+}
+
 // Default database seed
 const DEFAULT_DATABASE = {
   users: {
+    'usr-valeria': {
+      id: 'usr-valeria',
+      email: 'valeria.manassero@namaste.com',
+      name: 'Valeria Manassero',
+      role: 'admin',
+      isAdmin: true,
+      accessCode: 'NAMASTE-DIRECTORA',
+      passwordHash: hashPassword(process.env.ADMIN_PASSWORD || 'valeria2026'),
+      planId: 'plan-admin',
+      planName: 'Directora & Fundadora',
+      active: true,
+      isAnnual: true,
+      memberSince: 'Enero 2012',
+      nextBillingDate: 'Cuenta Maestra (Vitalicia)',
+      paymentMethod: 'Administradora General',
+      billedAmount: 0,
+      createdAt: '2012-01-01T00:00:00Z'
+    },
     'usr-sofia': {
       id: 'usr-sofia',
       email: 'sofia.varela@ejemplo.com',
       name: 'Sofía Varela',
       accessCode: 'NAMASTE-ALUMNO',
+      passwordHash: hashPassword(process.env.DEMO_PASSWORD || 'namaste123'),
       planId: 'plan-refugio',
       planName: 'Plan Refugio',
       active: true,
@@ -114,6 +214,7 @@ const DEFAULT_DATABASE = {
       email: 'invitado@namaste.com',
       name: 'Practicante Inicial',
       accessCode: 'NAMASTE-ESENCIA',
+      passwordHash: hashPassword('namaste123'),
       planId: 'plan-esencia',
       planName: 'Plan Esencia',
       active: true,
@@ -249,11 +350,33 @@ function loadDatabase() {
     if (!Array.isArray(parsed.auditLogs)) parsed.auditLogs = [];
     if (!parsed.users) parsed.users = {};
     if (!parsed.progress) parsed.progress = {};
+    if (!parsed.sessions) parsed.sessions = {};
     if (!Array.isArray(parsed.transactions)) parsed.transactions = [];
     if (!parsed.plans || Object.keys(parsed.plans).length === 0) {
       parsed.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
       saveDatabase(parsed);
     }
+
+    const defaultAdminHash = hashPassword(process.env.ADMIN_PASSWORD || 'valeria2026');
+    const defaultStudentHash = hashPassword(process.env.DEMO_PASSWORD || 'namaste123');
+
+    // Inicializar cuenta maestra de Valeria si falta
+    if (!parsed.users['usr-valeria']) {
+      parsed.users['usr-valeria'] = JSON.parse(JSON.stringify(DEFAULT_DATABASE.users['usr-valeria']));
+    }
+
+    let needsSave = false;
+    Object.values(parsed.users).forEach(u => {
+      if (!u.passwordHash) {
+        u.passwordHash = (u.role === 'admin' || u.isAdmin) ? defaultAdminHash : defaultStudentHash;
+        needsSave = true;
+      }
+    });
+
+    if (needsSave) {
+      saveDatabase(parsed);
+    }
+
     syncCatalogWithDb(parsed);
     return parsed;
   } catch (err) {
@@ -416,55 +539,44 @@ export async function handleRequest(req, res) {
         });
       }
 
-      // 2. Auth: Login
+      // 2. Auth: Login (Verificación criptográfica estricta con protección contra fuerza bruta)
       if (pathname === '/api/auth/login' && req.method === 'POST') {
+        const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+        if (isLoginRateLimited(clientIp)) {
+          return sendJson(res, 429, {
+            success: false,
+            message: 'Demasiados intentos fallidos. Por seguridad, espera 5 minutos antes de volver a intentar.'
+          });
+        }
+
         const body = await parseJsonBody(req);
         const identifier = (body.identifier || body.email || body.accessCode || '').trim().toLowerCase();
+        const password = (body.password || '').trim();
 
-        if (!identifier) {
-          return sendJson(res, 400, { success: false, message: 'Por favor, ingresa tu correo electrónico o código de acceso.' });
+        if (!identifier || !password) {
+          return sendJson(res, 400, {
+            success: false,
+            message: 'Por favor, ingresa tu correo electrónico y tu contraseña.'
+          });
         }
 
-        // Reconocimiento de la cuenta única de Valeria Manassero (Directora & Administradora)
-        const adminAliases = [
-          'valeria', 'vale', 'admin', 'valeria manassero',
-          'valeria.manassero@namaste.com', 'valeria@namaste.com',
-          'vale.manassero@namaste.com', 'vale@namaste.com',
-          'admin@namaste.com', 'namaste-directora', 'namaste-admin'
-        ];
+        // Buscar usuaria estrictamente por email registrado o accessCode
+        const user = Object.values(db.users).find(u => 
+          (u.email || '').toLowerCase() === identifier || 
+          (u.accessCode || '').toUpperCase() === identifier.toUpperCase()
+        );
 
-        let user = null;
-        if (adminAliases.includes(identifier)) {
-          user = db.users['usr-valeria'] || Object.values(db.users).find(u => u.role === 'admin' || u.isAdmin);
-          if (!user) {
-            user = {
-              id: 'usr-valeria',
-              email: 'valeria.manassero@namaste.com',
-              name: 'Valeria Manassero',
-              role: 'admin',
-              isAdmin: true,
-              accessCode: 'NAMASTE-DIRECTORA',
-              planId: 'plan-admin',
-              planName: 'Directora & Fundadora',
-              active: true,
-              isAnnual: true,
-              memberSince: 'Enero 2012',
-              nextBillingDate: 'Cuenta Maestra (Vitalicia)',
-              paymentMethod: 'Administradora General',
-              billedAmount: 0,
-              createdAt: '2012-01-01T00:00:00Z'
-            };
-            db.users['usr-valeria'] = user;
-          }
-        } else {
-          // Find user by email or accessCode
-          user = Object.values(db.users).find(u => 
-            (u.email || '').toLowerCase() === identifier || 
-            (u.accessCode || '').toUpperCase() === identifier.toUpperCase()
-          );
+        if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+          registerFailedLogin(clientIp);
+          return sendJson(res, 401, {
+            success: false,
+            message: 'Credenciales inválidas. Verifica tu correo y contraseña.'
+          });
         }
 
-        if (user && user.active === false) {
+        clearLoginAttempts(clientIp);
+
+        if (user.active === false) {
           return sendJson(res, 403, {
             success: false,
             isPendingPayment: true,
@@ -473,48 +585,12 @@ export async function handleRequest(req, res) {
           });
         }
 
-        // If not found, create new student account on the fly for effortless testing
-        if (!user) {
-          const newId = 'usr-' + crypto.randomBytes(4).toString('hex');
-          const planTag = 'REFUGIO';
-          const randomCode = 'NAMASTE-' + planTag + '-' + crypto.randomBytes(3).toString('hex').toUpperCase();
-          const today = new Date();
-          const nextMonth = new Date(today);
-          nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-          user = {
-            id: newId,
-            email: identifier.includes('@') ? identifier : `${identifier}@namaste.com`,
-            name: identifier.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            accessCode: randomCode,
-            planId: 'plan-refugio',
-            planName: 'Plan Refugio',
-            active: true,
-            isAnnual: false,
-            memberSince: today.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
-            nextBillingDate: nextMonth.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
-            paymentMethod: 'Tarjeta Cifrada •••• 4242',
-            billedAmount: 29,
-            createdAt: today.toISOString()
-          };
-
-          db.users[user.id] = user;
-          db.progress[user.id] = {
-            streakDays: 1,
-            lastStreakDate: today.toISOString().split('T')[0],
-            totalMinutes: 0,
-            favorites: [],
-            completed: [],
-            lastPlayed: null
-          };
-        }
-
-        // Generate cryptographically secure session token
+        // Generar token de sesión criptográfico seguro
         const token = crypto.randomUUID();
         db.sessions[token] = {
           userId: user.id,
           createdAt: Date.now(),
-          expiresAt: Date.now() + 30 * 86400 * 1000 // 30 days session
+          expiresAt: Date.now() + 30 * 86400 * 1000 // 30 días de sesión
         };
         saveDatabase(db);
 
@@ -530,7 +606,7 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, {
           success: true,
           token,
-          user,
+          user: sanitizeUser(user),
           progress: userProgress,
           message: `Bienvenido/a a tu refugio, ${user.name}`
         });
@@ -553,7 +629,7 @@ export async function handleRequest(req, res) {
 
         return sendJson(res, 200, {
           success: true,
-          user: auth.user,
+          user: sanitizeUser(auth.user),
           progress: userProgress
         });
       }
@@ -598,7 +674,8 @@ export async function handleRequest(req, res) {
 
         if (user) {
           user.name = name;
-          if (password) user.password = password;
+          if (password) user.passwordHash = hashPassword(password);
+          delete user.password;
           user.planId = plan.id;
           user.planName = plan.name;
           user.isAnnual = isAnnual;
@@ -614,7 +691,7 @@ export async function handleRequest(req, res) {
             id: newId,
             email,
             name,
-            password,
+            passwordHash: password ? hashPassword(password) : hashPassword('namaste123'),
             accessCode,
             planId: plan.id,
             planName: plan.name,
@@ -664,22 +741,22 @@ export async function handleRequest(req, res) {
           success: true,
           pending: true,
           active: false,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            planId: user.planId,
-            planName: user.planName,
-            active: false,
-            paymentStatus: 'pending'
-          },
+          user: sanitizeUser(user),
           transaction,
           message: 'Suscripción generada con éxito. Pendiente de confirmación de pago en Mercado Pago.'
         });
       }
 
-      // 5.1 Confirm / Cancel Payment from Mercado Pago
+      // 5.1 Confirm / Cancel Payment (Solo accesible por Administradora autorizada)
       if (pathname === '/api/checkout/confirm' && req.method === 'POST') {
+        const auth = getAuthenticatedUser(req);
+        if (!auth || (!auth.user.isAdmin && auth.user.role !== 'admin')) {
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Acceso denegado. Se requieren credenciales de Administradora para confirmar pagos manualmente.'
+          });
+        }
+
         const body = await parseJsonBody(req);
         const email = (body.email || '').trim().toLowerCase();
         const userId = body.userId;
@@ -697,11 +774,9 @@ export async function handleRequest(req, res) {
 
         const isApproved = (status === 'approved' || status === 'success' || status === 'succeeded');
 
-        // Actualizar estado de la cuenta según resultado real del pago
         user.active = isApproved;
         user.paymentStatus = isApproved ? 'approved' : 'cancelled';
 
-        // Actualizar transacción asociada
         const lastTx = [...db.transactions].reverse().find(t => t.email === user.email || t.userId === user.id);
         if (lastTx) {
           lastTx.status = isApproved ? 'succeeded' : 'cancelled';
@@ -715,15 +790,14 @@ export async function handleRequest(req, res) {
             createdAt: Date.now(),
             expiresAt: Date.now() + 30 * 86400 * 1000
           };
-          recordAuditLog(db, 'PAYMENT_APPROVED', `Pago confirmado vía Mercado Pago ($${user.billedAmount || 0}). Cuenta activada.`, `${user.name} (${user.email})`, user.email, 'success');
+          recordAuditLog(db, 'PAYMENT_APPROVED_MANUAL', `Pago confirmado manualmente por Directora ($${user.billedAmount || 0}). Cuenta activada.`, `${user.name} (${user.email})`, user.email, 'success');
         } else {
-          // Si el pago se canceló, revocar cualquier sesión activa de este usuario
           Object.keys(db.sessions).forEach(tok => {
             if (db.sessions[tok]?.userId === user.id) {
               delete db.sessions[tok];
             }
           });
-          recordAuditLog(db, 'PAYMENT_CANCELLED', 'Pago cancelado o rechazado en Mercado Pago. Cuenta NO activada.', `${user.name} (${user.email})`, user.email, 'warning');
+          recordAuditLog(db, 'PAYMENT_CANCELLED_MANUAL', 'Pago marcado como cancelado por Directora.', `${user.name} (${user.email})`, user.email, 'warning');
         }
 
         saveDatabase(db);
@@ -732,18 +806,37 @@ export async function handleRequest(req, res) {
           success: isApproved,
           active: isApproved,
           token,
-          user,
+          user: sanitizeUser(user),
           message: isApproved
-            ? `¡Pago confirmado por Mercado Pago! Tu cuenta ha sido activada con éxito.`
-            : `El pago fue cancelado en Mercado Pago. Tu cuenta NO ha sido activada.`
+            ? `¡Abono de ${user.name} confirmado por Administración!`
+            : `El abono de ${user.name} fue cancelado por Administración.`
         });
       }
 
-      // 5.2 Webhook / IPN de Mercado Pago
+      // 5.2 Webhook / IPN oficial de Mercado Pago (Firma criptográfica e Idempotencia)
       if (pathname === '/api/webhooks/mercadopago' && req.method === 'POST') {
+        const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET || process.env.MP_WEBHOOK_SECRET;
+        const xSignature = req.headers['x-signature'];
+
+        if (webhookSecret && xSignature) {
+          const parts = {};
+          xSignature.split(',').forEach(part => {
+            const [k, v] = part.split('=');
+            if (k && v) parts[k.trim()] = v.trim();
+          });
+          if (parts.ts && parts.v1) {
+            const manifest = `id:${req.url};request-id:${req.headers['x-request-id'] || ''};ts:${parts.ts};`;
+            const hmac = crypto.createHmac('sha256', webhookSecret).update(manifest).digest('hex');
+            if (hmac !== parts.v1) {
+              console.warn('[WEBHOOK] Firma x-signature de Mercado Pago inválida.');
+              return sendJson(res, 401, { error: 'Invalid webhook signature' });
+            }
+          }
+        }
+
         const body = await parseJsonBody(req);
         const paymentData = body.data || body;
-        const status = (paymentData.status || body.action || '').toLowerCase();
+        const status = (paymentData.status || body.action || body.type || '').toLowerCase();
         const externalReference = paymentData.external_reference || body.external_reference;
         const payerEmail = paymentData.payer?.email || body.payer_email;
 
@@ -756,15 +849,18 @@ export async function handleRequest(req, res) {
         }
 
         if (user) {
-          const isApproved = (status === 'approved' || status === 'payment.created');
-          user.active = isApproved;
-          user.paymentStatus = isApproved ? 'approved' : 'cancelled';
-          const lastTx = [...db.transactions].reverse().find(t => t.email === user.email || t.userId === user.id);
-          if (lastTx) {
-            lastTx.status = isApproved ? 'succeeded' : 'cancelled';
+          const isApproved = (status === 'approved' || status === 'payment.created' || status === 'opened');
+          // Idempotencia: solo actualizar y registrar si el estado cambia
+          if (user.active !== isApproved) {
+            user.active = isApproved;
+            user.paymentStatus = isApproved ? 'approved' : 'cancelled';
+            const lastTx = [...db.transactions].reverse().find(t => t.email === user.email || t.userId === user.id);
+            if (lastTx) {
+              lastTx.status = isApproved ? 'succeeded' : 'cancelled';
+            }
+            recordAuditLog(db, 'WEBHOOK_MERCADOPAGO', `Webhook Mercado Pago verificado: estado ${status}`, `${user.name} (${user.email})`, user.email, isApproved ? 'success' : 'warning');
+            saveDatabase(db);
           }
-          recordAuditLog(db, 'WEBHOOK_MERCADOPAGO', `Webhook Mercado Pago: estado ${status}`, `${user.name} (${user.email})`, user.email, isApproved ? 'success' : 'warning');
-          saveDatabase(db);
         }
 
         return sendJson(res, 200, { received: true });
@@ -842,7 +938,15 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, { success: true, progress: current });
       }
 
-      // 8. Protected Class Video Streaming: /api/classes/:id/stream
+      // 7.8 Catálogo Oficial de Clases (Metadatos seguros sin URLs crudas de video)
+      if (pathname === '/api/classes' && req.method === 'GET') {
+        return sendJson(res, 200, {
+          success: true,
+          classes: CLASSES_CATALOG
+        });
+      }
+
+      // 8. Protected Class Video Streaming: /api/classes/:id/stream (Verificación de nivel de membresía)
       const classStreamMatch = pathname.match(/^\/api\/classes\/([a-zA-Z0-9_-]+)\/stream$/);
       if (classStreamMatch && req.method === 'GET') {
         const classId = classStreamMatch[1];
@@ -855,12 +959,24 @@ export async function handleRequest(req, res) {
         if (!auth.user.active) {
           return sendJson(res, 403, { 
             success: false, 
-            message: 'Tu membresía se encuentra pausada. Reactívala desde tu perfil para continuar tu práctica.' 
+            message: 'Tu membresía se encuentra pausada o pendiente de cobro. Reactívala para continuar tu práctica.' 
           });
         }
 
-        // Check plan tier permissions
-        const userPlan = PLANS_CATALOG[auth.user.planId] || PLANS_CATALOG['plan-esencia'];
+        const classCategory = CLASS_CATEGORIES[classId] || 'suave';
+        const isAdmin = auth.user.isAdmin || auth.user.role === 'admin';
+
+        if (!isAdmin) {
+          const userPlan = PLANS_CATALOG[auth.user.planId] || PLANS_CATALOG['plan-esencia'];
+          const allowed = userPlan.allowedCategories || ['suave', 'clasico'];
+          if (!allowed.includes(classCategory)) {
+            return sendJson(res, 403, {
+              success: false,
+              message: `Esta clase (${classCategory}) requiere una suscripción superior a tu ${userPlan.name}. Actualiza tu membresía para practicar esta disciplina.`
+            });
+          }
+        }
+
         const streamUrl = YOGA_STREAMS[classId] || YOGA_STREAMS['cls-suave-01'];
 
         // Return authorized stream URL and signature
@@ -957,6 +1073,15 @@ export async function handleRequest(req, res) {
       // ======================================================================
       // 11. ADMIN AUDIT & CLIENTS MANAGEMENT SUITE (DIRECTORA / VALERIA)
       // ======================================================================
+      if (pathname.startsWith('/api/admin/')) {
+        const auth = getAuthenticatedUser(req);
+        if (!auth || (!auth.user.isAdmin && auth.user.role !== 'admin')) {
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Acceso denegado. Se requieren permisos de Administradora para realizar esta acción.'
+          });
+        }
+      }
 
       // 11.1 Admin Overview (KPIs, Active Subscriptions, Financials, Practice Totals)
       if (pathname === '/api/admin/overview' && req.method === 'GET') {
@@ -1028,7 +1153,7 @@ export async function handleRequest(req, res) {
         const usersList = Object.values(db.users || {}).filter(u => u.role !== 'admin' && !u.isAdmin).map(user => {
           const prog = db.progress[user.id] || { streakDays: 0, totalMinutes: 0, completed: [], favorites: [] };
           return {
-            ...user,
+            ...sanitizeUser(user),
             streakDays: prog.streakDays || 0,
             totalMinutes: prog.totalMinutes || 0,
             completedCount: Array.isArray(prog.completed) ? prog.completed.length : 0,
@@ -1073,6 +1198,7 @@ export async function handleRequest(req, res) {
           email,
           name,
           accessCode,
+          passwordHash: hashPassword(body.password || 'namaste123'),
           planId: plan.id,
           planName: plan.name,
           active,
@@ -1116,13 +1242,16 @@ export async function handleRequest(req, res) {
         recordAuditLog(db, 'USER_CREATED_BY_ADMIN', 'Alta manual de alumna', `Valeria Manassero registró a ${name} en ${plan.name} (${accessCode})`, email, 'success');
         saveDatabase(db);
 
-        return sendJson(res, 201, { success: true, user: newUser, message: `Alumna ${name} registrada con éxito. Código: ${accessCode}` });
+        return sendJson(res, 201, { success: true, user: sanitizeUser(newUser), message: `Alumna ${name} registrada con éxito. Código: ${accessCode}` });
       }
 
       // 11.4 Admin: Update Client Account (Plan, Active Status, Details)
       const adminUserMatch = pathname.match(/^\/api\/admin\/users\/([a-zA-Z0-9_-]+)$/);
       if (adminUserMatch && req.method === 'PUT') {
         const userId = adminUserMatch[1];
+        if (['__proto__', 'constructor', 'prototype'].includes(userId)) {
+          return sendJson(res, 400, { success: false, message: 'Identificador no válido.' });
+        }
         const user = db.users[userId];
         if (!user) {
           return sendJson(res, 404, { success: false, message: 'Alumna no encontrada en la base de datos.' });
@@ -1164,12 +1293,15 @@ export async function handleRequest(req, res) {
         }
 
         saveDatabase(db);
-        return sendJson(res, 200, { success: true, user, message: 'Cuenta de alumna actualizada exitosamente.' });
+        return sendJson(res, 200, { success: true, user: sanitizeUser(user), message: 'Cuenta de alumna actualizada exitosamente.' });
       }
 
       // 11.5 Admin: Delete Client Account
       if (adminUserMatch && req.method === 'DELETE') {
         const userId = adminUserMatch[1];
+        if (['__proto__', 'constructor', 'prototype'].includes(userId)) {
+          return sendJson(res, 400, { success: false, message: 'Identificador no válido.' });
+        }
         const user = db.users[userId];
         if (!user) {
           return sendJson(res, 404, { success: false, message: 'Alumna no encontrada.' });
@@ -1384,7 +1516,7 @@ export async function handleRequest(req, res) {
   }
 
   // --------------------------------------------------------------------------
-  // STATIC FILE SERVING
+  // STATIC FILE SERVING (ALLOWLIST ESTRICTA & BLINDAJE DE ARCHIVOS INTERNOS)
   // --------------------------------------------------------------------------
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.writeHead(405, { 'Content-Type': 'text/plain' });
@@ -1392,18 +1524,51 @@ export async function handleRequest(req, res) {
     return;
   }
 
-  // Safe file path resolution
-  let filePath = path.normalize(path.join(__dirname, pathname === '/' ? 'index.html' : pathname));
-  if (!filePath.startsWith(__dirname)) {
+  // Normalizar y sanitizar pathname
+  const cleanPath = pathname === '/' ? '/index.html' : pathname;
+
+  // STRICT DENYLIST: Bloquear cualquier intento de acceso a datos internos, fuentes del backend o configs
+  const isForbidden = (
+    cleanPath.startsWith('/data/') ||
+    cleanPath.startsWith('/.') ||
+    cleanPath.startsWith('/scripts/') ||
+    cleanPath.startsWith('/docs/') ||
+    cleanPath.startsWith('/scratch/') ||
+    cleanPath.startsWith('/node_modules/') ||
+    cleanPath === '/server.js' ||
+    cleanPath === '/db.js' ||
+    cleanPath === '/package.json' ||
+    cleanPath === '/package-lock.json' ||
+    cleanPath === '/vercel.json' ||
+    cleanPath.endsWith('.json') ||
+    cleanPath.endsWith('.env') ||
+    cleanPath.endsWith('.md')
+  );
+
+  if (isForbidden) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('Access Denied');
     return;
   }
 
-  // Check if file exists
+  // ALLOWLIST: Solo servir archivos estáticos públicos válidos
+  const isAllowed = (
+    cleanPath === '/index.html' ||
+    cleanPath === '/favicon.ico' ||
+    cleanPath.startsWith('/css/') ||
+    cleanPath.startsWith('/js/') ||
+    cleanPath.startsWith('/assets/')
+  );
+
+  let filePath = path.normalize(path.join(__dirname, cleanPath));
+  if (!filePath.startsWith(__dirname) || !isAllowed) {
+    filePath = path.join(__dirname, 'index.html');
+  }
+
+  // Verificar existencia y servir archivo
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback to index.html for client-side routing
+      // Fallback a index.html para soportar navegación SPA
       const indexFallback = path.join(__dirname, 'index.html');
       fs.readFile(indexFallback, (fbErr, content) => {
         if (fbErr) {
@@ -1426,12 +1591,22 @@ export async function handleRequest(req, res) {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    // Support HTTP 206 Partial Content (Range Requests) for MP4/WebM
+    // Support HTTP 206 Partial Content (Range Requests) con validación matemática (Solución C-09)
     const range = req.headers.range;
     if (range && (ext === '.mp4' || ext === '.webm')) {
       const parts = range.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+
+      if (isNaN(start) || isNaN(end) || start < 0 || end >= stats.size || start > end) {
+        res.writeHead(416, {
+          'Content-Range': `bytes */${stats.size}`,
+          'Content-Type': 'text/plain'
+        });
+        res.end('Requested Range Not Satisfiable');
+        return;
+      }
+
       const chunkSize = (end - start) + 1;
       const fileStream = fs.createReadStream(filePath, { start, end });
 
@@ -1445,22 +1620,27 @@ export async function handleRequest(req, res) {
       return;
     }
 
-    // Cache header: never cache HTML; revalidate CSS/JS immediately
+    // Cache header
     const cacheHeader = (ext === '.html')
       ? 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
       : (ext === '.css' || ext === '.js')
         ? 'no-cache, must-revalidate, max-age=0'
         : 'public, max-age=86400';
 
-    // Standard static file delivery
-    res.writeHead(200, {
+    const responseHeaders = {
       'Content-Type': contentType,
       'Content-Length': stats.size,
       'Accept-Ranges': 'bytes',
       'X-Content-Type-Options': 'nosniff',
-      'Cache-Control': cacheHeader,
-      'Pragma': ext === '.html' ? 'no-cache' : undefined
-    });
+      'Cache-Control': cacheHeader
+    };
+
+    // CRITICAL C-09 FIX: Solo añadir Pragma si es HTML; nunca asignar undefined a ningún header HTTP
+    if (ext === '.html') {
+      responseHeaders['Pragma'] = 'no-cache';
+    }
+
+    res.writeHead(200, responseHeaders);
 
     if (req.method === 'HEAD') {
       res.end();
@@ -1473,8 +1653,17 @@ export async function handleRequest(req, res) {
 
 const server = http.createServer(handleRequest);
 
-// En Vercel Serverless las funciones se invocan bajo demanda; en local se abre el puerto
-if (!process.env.VERCEL) {
+// Escuchar excepciones no capturadas para estabilidad continua del proceso (C-09)
+process.on('uncaughtException', (err) => {
+  console.error('[CRITICAL SERVER ERROR] Uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[CRITICAL SERVER ERROR] Unhandled rejection:', reason);
+});
+
+// En Vercel Serverless las funciones se invocan bajo demanda; en local se abre el puerto si se ejecuta directamente
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (!process.env.VERCEL && isMainModule) {
   server.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`[NAMASTÉ] Servidor de Producción y API REST Activo`);

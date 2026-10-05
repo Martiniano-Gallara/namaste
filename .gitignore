@@ -18,3 +18,8 @@ yarn-error.log*
 .env
 .env.local
 .env*.local
+
+# Database & Runtime Data
+/data/*.json
+/data/*.tmp*
+/data/database.json

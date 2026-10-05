@@ -7,8 +7,7 @@ const ProgressService = (() => {
   const isStatic = () => {
     if (typeof window === 'undefined') return true;
     return window.location.hostname.includes('github.io') ||
-           window.location.protocol === 'file:' ||
-           (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port);
+           window.location.protocol === 'file:';
   };
 
   let cachedUserId = null;

@@ -201,6 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleHashRouting() {
     const hash = (window.location.hash || '').toLowerCase();
     if (hash === '#auditoria' || hash === '#admin' || hash === '#backoffice') {
+      const currentUser = AuthService.getCurrentUser();
+      if (!currentUser || (!currentUser.isAdmin && currentUser.role !== 'admin')) {
+        switchView('landing');
+        if (modals && modals.login) openModal(modals.login);
+        return;
+      }
       switchView('admin');
     } else if (hash === '#refugio' || hash === '#plataforma') {
       switchView('platform');
@@ -312,6 +318,13 @@ document.addEventListener('DOMContentLoaded', () => {
     state.currentView = viewName;
 
     if (viewName === 'admin') {
+      const currentUser = AuthService.getCurrentUser();
+      if (!currentUser || (!currentUser.isAdmin && currentUser.role !== 'admin')) {
+        showToast('Acceso restringido. Debes iniciar sesión como administradora.', 'warning');
+        openModal(modals.login);
+        switchView('landing');
+        return;
+      }
       if (views.landing) views.landing.style.display = 'none';
       if (views.platform) views.platform.style.display = 'none';
       if (views.admin) views.admin.style.display = 'block';
@@ -952,12 +965,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ? planData.mercadopagoUrlAnnual
             : ((planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar');
 
-          // Mostrar tarjeta flotante de simulación para desarrollo/pruebas locales
-          renderPendingPaymentSimulator();
-
+          // Redireccionar al link oficial de cobro de Mercado Pago
           setTimeout(() => {
             window.location.href = mpUrl;
-          }, 850);
+          }, 600);
         } else {
           showToast((result && result.message) || 'Hubo un error al procesar tu suscripción.', 'error');
         }
@@ -977,24 +988,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /**
    * Verifica los parámetros de retorno de Mercado Pago al volver al sitio
-   * Activa automáticamente la cuenta solo si el pago se completó con éxito.
+   * La activación real se gestiona por el servidor mediante webhook verificado.
    */
   async function checkMercadoPagoPaymentReturn() {
     const urlParams = new URLSearchParams(window.location.search);
     const payment = urlParams.get('payment') || urlParams.get('status') || urlParams.get('collection_status') || urlParams.get('payment_status');
 
-    let pendingData = null;
-    try {
-      const raw = localStorage.getItem('namaste_pending_payment');
-      if (raw) pendingData = JSON.parse(raw);
-    } catch (e) {}
-
     if (!payment && !urlParams.has('collection_status') && !urlParams.has('payment_status')) {
-      if (pendingData) renderPendingPaymentSimulator();
       return;
     }
 
-    const email = urlParams.get('email') || urlParams.get('external_reference') || (pendingData ? pendingData.email : null);
+    const email = urlParams.get('email') || urlParams.get('external_reference');
 
     const isApproved = (
       payment === 'success' ||
@@ -1014,104 +1018,39 @@ document.addEventListener('DOMContentLoaded', () => {
       urlParams.get('status') === 'rejected'
     );
 
-    if (isApproved && email) {
-      // 1. ACTIVACIÓN AUTOMÁTICA: SOLO SI EL PAGO SE EJECUTA CORRECTAMENTE
-      const result = await MembershipService.confirmPayment(email, 'approved', {
-        paymentId: urlParams.get('payment_id') || urlParams.get('collection_id')
-      });
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+    } catch (e) {}
 
-      try {
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
-      } catch (e) {}
-
-      removePendingPaymentSimulator();
-
-      if (result && result.active) {
-        showToast('¡Pago confirmado en Mercado Pago! Tu cuenta ha sido activada automáticamente. ¡Bienvenida a tu Refugio!', 'success', 7000);
-        switchView('platform');
+    if (isApproved) {
+      // Verificar si el webhook de Mercado Pago ya acreditó la cuenta en el servidor
+      const token = AuthService.getToken();
+      if (token) {
+        try {
+          const res = await fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user && data.user.active) {
+              showToast('¡Pago acreditado por Mercado Pago! Tu membresía está activa. ¡Bienvenida a tu Refugio!', 'success', 7000);
+              switchView('platform');
+              return;
+            }
+          }
+        } catch (e) {}
       }
+
+      showToast('Tu pago fue registrado. Mercado Pago está procesando la acreditación; en unos instantes tu cuenta quedará activa.', 'info', 7000);
     } else if (isCancelled) {
-      // 2. PAGO CANCELADO / RECHAZADO: NO SE DEBE ACTIVAR LA CUENTA
-      if (email) {
-        await MembershipService.confirmPayment(email, 'cancelled');
-      }
       AuthService.logout();
-
-      try {
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
-      } catch (e) {}
-
-      removePendingPaymentSimulator();
-
-      showToast('El pago fue cancelado o no se completó en Mercado Pago. Tu cuenta NO ha sido activada.', 'error', 7000);
+      showToast('El pago no fue completado en Mercado Pago. La membresía permanece inactiva.', 'error', 7000);
       switchView('landing');
     }
   }
 
-  /**
-   * Widget interactivo para facilitar pruebas de desarrollo y validación de cobro en Mercado Pago
-   */
   function renderPendingPaymentSimulator() {
-    let pending = null;
-    try {
-      const raw = localStorage.getItem('namaste_pending_payment');
-      if (raw) pending = JSON.parse(raw);
-    } catch (e) {}
-
-    const existing = document.getElementById('mp-simulation-widget');
-    if (!pending) {
-      if (existing) existing.remove();
-      return;
-    }
-
-    if (existing) return;
-
-    const widget = document.createElement('div');
-    widget.id = 'mp-simulation-widget';
-    widget.className = 'mp-simulation-widget';
-    widget.innerHTML = `
-      <div class="mp-simulation-header">
-        <div style="display:flex; align-items:center; gap:0.4rem;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#009EE3" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-          <strong style="font-size:0.84rem; color:var(--text-primary);">Mercado Pago • Verificación</strong>
-        </div>
-        <button type="button" class="mp-simulation-close" aria-label="Cerrar">&times;</button>
-      </div>
-      <p style="font-size:0.8rem; margin:0 0 0.65rem 0; color:var(--text-secondary); line-height: 1.35;">
-        Suscripción para <strong>${pending.name || 'Alumna'}</strong> (${pending.email}) está <strong>inactiva</strong> hasta confirmar el cobro.
-      </p>
-      <div style="display:flex; gap:0.45rem;">
-        <button type="button" class="btn btn-primary" id="btn-mp-sim-approve" style="padding:0.42rem 0.65rem; font-size:0.77rem; flex:1; background-color:#2E7D32; border-color:#2E7D32;">
-          ✓ Abonar (Activar)
-        </button>
-        <button type="button" class="btn btn-secondary" id="btn-mp-sim-cancel" style="padding:0.42rem 0.65rem; font-size:0.77rem; flex:1; color:#C62828; border-color:rgba(198,40,40,0.35);">
-          ✕ Cancelar Pago
-        </button>
-      </div>
-    `;
-
-    document.body.appendChild(widget);
-
-    widget.querySelector('.mp-simulation-close')?.addEventListener('click', () => {
-      widget.remove();
-    });
-
-    widget.querySelector('#btn-mp-sim-approve')?.addEventListener('click', async () => {
-      const res = await MembershipService.confirmPayment(pending.email, 'approved');
-      widget.remove();
-      if (res && res.active) {
-        showToast('¡Pago verificado con éxito! Cuenta activada automáticamente.', 'success', 6000);
-        switchView('platform');
-      }
-    });
-
-    widget.querySelector('#btn-mp-sim-cancel')?.addEventListener('click', async () => {
-      await MembershipService.confirmPayment(pending.email, 'cancelled');
-      widget.remove();
-      AuthService.logout();
-      showToast('Pago cancelado en Mercado Pago. La cuenta NO fue activada.', 'error', 6000);
-      switchView('landing');
-    });
+    // Simulator eliminado por seguridad
   }
 
   function removePendingPaymentSimulator() {
@@ -4479,6 +4418,12 @@ document.addEventListener('DOMContentLoaded', () => {
    * Carga y renderiza en vivo todas las métricas, cuentas y logs del panel
    */
   async function renderAdminDashboard() {
+    const currentUser = AuthService.getCurrentUser();
+    if (!currentUser || (!currentUser.isAdmin && currentUser.role !== 'admin')) {
+      switchView('landing');
+      return;
+    }
+
     const syncText = document.getElementById('admin-sync-text');
     if (syncText) syncText.textContent = 'Actualizando datos...';
 

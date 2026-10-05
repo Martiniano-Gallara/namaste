@@ -8,10 +8,9 @@ const AdminService = (() => {
   const API_BASE = '/api/admin';
 
   async function fetchJson(endpoint, options = {}) {
-    // Si estamos en GitHub Pages o entorno estático sin backend, usar almacenamiento resiliente directo
+    // Si estamos en GitHub Pages o entorno estático sin backend, usar almacenamiento local
     const isStatic = window.location.hostname.includes('github.io') ||
-                     window.location.protocol === 'file:' ||
-                     (!['localhost', '127.0.0.1'].includes(window.location.hostname));
+                     window.location.protocol === 'file:';
 
     if (isStatic) {
       return fallbackHandler(endpoint, options);
@@ -31,17 +30,22 @@ const AdminService = (() => {
       });
 
       if (!res.ok) {
-        return fallbackHandler(endpoint, options);
+        const errorData = await res.json().catch(() => ({}));
+        return {
+          success: false,
+          status: res.status,
+          message: errorData.message || `Error ${res.status}: Acceso no autorizado o fallo del servidor.`
+        };
       }
 
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        return fallbackHandler(endpoint, options);
+        return { success: false, message: 'Respuesta inválida del servidor.' };
       }
 
       return await res.json();
     } catch (err) {
-      return fallbackHandler(endpoint, options);
+      return { success: false, message: 'No se pudo contactar al servidor de administración.' };
     }
   }
 

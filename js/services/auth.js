@@ -117,71 +117,77 @@ const AuthService = (() => {
   const isStatic = () => {
     if (typeof window === 'undefined') return true;
     return window.location.hostname.includes('github.io') ||
-           window.location.protocol === 'file:' ||
-           (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port);
+           window.location.protocol === 'file:';
   };
 
-  // Login transparente que intenta el backend REST y sincroniza
-  const login = async (identifier) => {
+  // Login seguro que autentica contra API REST con contraseña
+  const login = async (identifier, password = '') => {
     if (!identifier || typeof identifier !== 'string') {
       return { success: false, message: 'Por favor ingresa tu correo electrónico o datos de acceso.' };
     }
 
     const clean = identifier.trim().toLowerCase();
+    const cleanPwd = (password || '').trim();
 
-    // 1. Intentar autenticación contra API REST si NO es entorno estático (como GitHub Pages)
+    if (!cleanPwd) {
+      return { success: false, message: 'Por favor ingresa tu contraseña.' };
+    }
+
+    // 1. Autenticación oficial contra API REST en servidores activos (Localhost & Vercel)
     if (!isStatic() && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: clean })
+          body: JSON.stringify({ identifier: clean, password: cleanPwd })
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.user) {
-            setToken(data.token);
-            localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
-            saveUserRecord(data.user);
-            if (data.progress && typeof ProgressService !== 'undefined') {
-              ProgressService.setInitialProgress(data.user.id, data.progress);
-            }
-            window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: data.user }));
-            return { success: true, user: data.user };
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok && data.success && data.user) {
+          setToken(data.token);
+          localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
+          saveUserRecord(data.user);
+          if (data.progress && typeof ProgressService !== 'undefined') {
+            ProgressService.setInitialProgress(data.user.id, data.progress);
           }
+          window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: data.user }));
+          return { success: true, user: data.user };
         }
+
+        // Si el servidor devolvió un error de autenticación, devolverlo sin bypass
+        return {
+          success: false,
+          isPendingPayment: data.isPendingPayment || false,
+          userEmail: data.userEmail || clean,
+          message: data.message || 'Credenciales inválidas. Verifica tu correo y contraseña.'
+        };
       } catch (err) {
-        // En caso de que el backend no responda, usar fallback local
+        return {
+          success: false,
+          message: 'No fue posible conectar con el servidor de Namasté. Por favor verifica tu conexión a internet.'
+        };
       }
     }
 
-    // 2. Fallback de demostración / offline / GitHub Pages (sin peticiones de red bloqueadas)
-    const adminAliases = [
-      'valeria', 'vale', 'admin', 'valeria manassero',
-      'valeria.manassero@namaste.com', 'valeria@namaste.com',
-      'vale.manassero@namaste.com', 'vale@namaste.com',
-      'admin@namaste.com', 'namaste-directora', 'namaste-admin'
-    ];
-
+    // 2. Modo estático restringido (Solo GitHub Pages / file:)
     const allUsers = getStoredUsers();
-    let user = null;
-
-    if (adminAliases.includes(clean)) {
-      user = DEFAULT_USERS['NAMASTE-DIRECTORA'];
-    } else {
-      user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
-      if (!user) {
-        user = allUsers[clean.toUpperCase()];
-      }
+    let user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
+    if (!user) {
+      user = allUsers[clean.toUpperCase()];
     }
 
-    // Si aún no existe, crear la cuenta de alumna automáticamente al vuelo para no trabar el acceso
-    if (!user) {
-      const isEmail = clean.includes('@');
-      const userName = clean.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Practicante';
-      const userEmail = isEmail ? clean : `${clean}@namaste.com`;
-      user = registerNewMember(userName, userEmail, 'plan-refugio', 'Plan Refugio');
+    if (clean === 'valeria.manassero@namaste.com' || clean === 'namaste-directora') {
+      if (cleanPwd !== 'valeria2026') {
+        return { success: false, message: 'Contraseña de administradora incorrecta.' };
+      }
+      user = DEFAULT_USERS['NAMASTE-DIRECTORA'];
+    } else if (user) {
+      if (cleanPwd !== 'namaste123') {
+        return { success: false, message: 'Contraseña incorrecta. Por favor verifica tu clave.' };
+      }
+    } else {
+      return { success: false, message: 'No existe una cuenta registrada con este correo. Por favor suscríbete desde la página principal.' };
     }
 
     if (!user.active) {

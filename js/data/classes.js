@@ -354,8 +354,7 @@ const ClassesService = (() => {
 
     const isStatic = typeof window !== 'undefined' && (
       window.location.hostname.includes('github.io') ||
-      window.location.protocol === 'file:' ||
-      (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.port)
+      window.location.protocol === 'file:'
     );
 
     if (isStatic) {

@@ -1,0 +1,99 @@
+{
+  "users": {
+    "usr-valeria": {
+      "id": "usr-valeria",
+      "email": "valeria.manassero@namaste.com",
+      "name": "Valeria Manassero",
+      "role": "admin",
+      "isAdmin": true,
+      "accessCode": "NAMASTE-DIRECTORA",
+      "planId": "plan-admin",
+      "planName": "Directora & Fundadora",
+      "active": true,
+      "isAnnual": true,
+      "memberSince": "Enero 2012",
+      "nextBillingDate": "Cuenta Maestra (Vitalicia)",
+      "paymentMethod": "Administradora General",
+      "billedAmount": 0,
+      "createdAt": "2012-01-01T00:00:00Z"
+    },
+    "usr-sofia": {
+      "id": "usr-sofia",
+      "email": "sofia.varela@ejemplo.com",
+      "name": "Sofía Varela",
+      "accessCode": "NAMASTE-ALUMNO",
+      "planId": "plan-refugio",
+      "planName": "Plan Refugio",
+      "active": true,
+      "isAnnual": false,
+      "memberSince": "Marzo 2026",
+      "nextBillingDate": "28 Octubre 2026",
+      "paymentMethod": "Visa •••• 4242",
+      "billedAmount": 29000,
+      "createdAt": "2026-03-01T10:00:00Z"
+    }
+  },
+  "sessions": {},
+  "progress": {},
+  "transactions": [],
+  "auditLogs": [],
+  "plans": {
+    "plan-esencia": {
+      "id": "plan-esencia",
+      "name": "Plan Esencia",
+      "tier": "inicial",
+      "badge": "Inicial",
+      "priceMonthly": 19000,
+      "priceAnnualTotal": 190000,
+      "currency": "ARS",
+      "description": "1 clase semanal de Yoga Clásico con meditaciones guiadas.",
+      "features": [
+        "1 clase semanal de Yoga Clásico",
+        "Meditaciones guiadas y relajación",
+        "Acceso en móvil, tablet y computadora",
+        "Comunidad consciente del Shala"
+      ],
+      "mercadopagoUrl": "https://www.mercadopago.com.ar",
+      "mercadopagoUrlAnnual": "https://www.mercadopago.com.ar",
+      "updatedAt": "2026-10-05T14:00:00Z"
+    },
+    "plan-refugio": {
+      "id": "plan-refugio",
+      "name": "Plan Refugio",
+      "tier": "intermedio",
+      "badge": "Más Elegido",
+      "priceMonthly": 29000,
+      "priceAnnualTotal": 290000,
+      "currency": "ARS",
+      "description": "2 clases semanales de Yoga Clásico y Dinámico + meditación.",
+      "features": [
+        "2 clases semanales (Yoga Clásico y Yoga Dinámico)",
+        "Prácticas de meditación y pranayama",
+        "Acceso completo a grabaciones del Shala",
+        "Encuentros mensuales en comunidad"
+      ],
+      "mercadopagoUrl": "https://www.mercadopago.com.ar",
+      "mercadopagoUrlAnnual": "https://www.mercadopago.com.ar",
+      "updatedAt": "2026-10-05T14:00:00Z"
+    },
+    "plan-sadhana": {
+      "id": "plan-sadhana",
+      "name": "Plan Sadhana",
+      "tier": "premium",
+      "badge": "Premium",
+      "priceMonthly": 39000,
+      "priceAnnualTotal": 390000,
+      "currency": "ARS",
+      "description": "3 clases semanales, meditaciones, clases en vivo y masterclasses.",
+      "features": [
+        "3 clases semanales de práctica integral",
+        "Meditaciones profundas guiadas",
+        "Acceso a clases online en vivo",
+        "Masterclasses exclusivas en vivo"
+      ],
+      "mercadopagoUrl": "https://www.mercadopago.com.ar",
+      "mercadopagoUrlAnnual": "https://www.mercadopago.com.ar",
+      "updatedAt": "2026-10-05T14:00:00Z"
+    }
+  }
+}
