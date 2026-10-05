@@ -2407,6 +2407,178 @@ body.menu-open {
   color: var(--olive);
 }
 
+/* ==========================================================================
+   MODAL DE SUSCRIPCIÓN COMPACTO (CHECKOUT COMPRIMIDO)
+   ========================================================================== */
+#modal-checkout .modal-dialog-checkout {
+  max-width: 410px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 36px rgba(44, 30, 22, 0.22);
+}
+
+#modal-checkout .modal-header {
+  padding: 1rem 1.25rem 0.8rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+#modal-checkout .modal-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+#modal-checkout .modal-body {
+  padding: 1rem 1.25rem 1.25rem 1.25rem;
+}
+
+.checkout-plan-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--sand-50);
+  border: 1px solid var(--border-subtle);
+  padding: 0.65rem 0.95rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.85rem;
+}
+
+.checkout-plan-summary strong {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  display: block;
+  line-height: 1.2;
+}
+
+.checkout-plan-summary .checkout-plan-subnote {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.checkout-plan-summary .checkout-plan-price-tag {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--terracotta);
+  line-height: 1;
+}
+
+.checkout-form-group {
+  margin-bottom: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.checkout-form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.checkout-form-input {
+  width: 100%;
+  padding: 0.58rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.checkout-form-input:focus {
+  border-color: var(--terracotta);
+  box-shadow: 0 0 0 3px var(--terracotta-glow);
+}
+
+.checkout-pwd-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.checkout-pwd-wrap .checkout-form-input {
+  padding-right: 2.35rem;
+}
+
+.btn-toggle-pwd {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color var(--transition-fast);
+}
+
+.btn-toggle-pwd:hover {
+  color: var(--terracotta);
+}
+
+/* ==========================================================================
+   WIDGET FLOTANTE DE SIMULACIÓN Y VERIFICACIÓN DE MERCADO PAGO
+   ========================================================================== */
+.mp-simulation-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  max-width: 380px;
+  width: calc(100vw - 36px);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-left: 4px solid #009EE3;
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  padding: 0.9rem 1.1rem;
+  animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mp-simulation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.mp-simulation-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background var(--transition-fast);
+}
+
+.mp-simulation-close:hover {
+  background-color: var(--sand-100);
+  color: var(--text-primary);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Espaciado para navegación suave debajo del header fijo */
 section[id],
 #hero,

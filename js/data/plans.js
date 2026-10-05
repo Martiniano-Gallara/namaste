@@ -27,7 +27,8 @@ const PLANS_DATA = [
     ],
     recommended: false,
     ctaText: "Elegir Plan Esencia",
-    codePrefix: "ESENCIA"
+    codePrefix: "ESENCIA",
+    mercadopagoUrl: "https://www.mercadopago.com.ar"
   },
   {
     id: "plan-refugio",
@@ -51,7 +52,8 @@ const PLANS_DATA = [
     ],
     recommended: true,
     ctaText: "Unirme al Refugio",
-    codePrefix: "REFUGIO"
+    codePrefix: "REFUGIO",
+    mercadopagoUrl: "https://www.mercadopago.com.ar"
   },
   {
     id: "plan-sadhana",
@@ -75,7 +77,8 @@ const PLANS_DATA = [
     ],
     recommended: false,
     ctaText: "Elegir Plan Sadhana",
-    codePrefix: "SADHANA"
+    codePrefix: "SADHANA",
+    mercadopagoUrl: "https://www.mercadopago.com.ar"
   }
 ];
 

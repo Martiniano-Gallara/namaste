@@ -356,6 +356,15 @@ const server = http.createServer(async (req, res) => {
           );
         }
 
+        if (user && user.active === false) {
+          return sendJson(res, 403, {
+            success: false,
+            isPendingPayment: true,
+            userEmail: user.email,
+            message: 'Tu cuenta no está activa porque el pago está pendiente o fue cancelado. Completa tu abono en Mercado Pago para habilitarla.'
+          });
+        }
+
         // If not found, create new student account on the fly for effortless testing
         if (!user) {
           const newId = 'usr-' + crypto.randomBytes(4).toString('hex');
@@ -456,9 +465,10 @@ const server = http.createServer(async (req, res) => {
         const body = await parseJsonBody(req);
         const email = (body.email || '').trim().toLowerCase();
         const name = (body.name || 'Practicante').trim();
+        const password = (body.password || '').trim();
         const planId = body.planId || 'plan-refugio';
         const isAnnual = Boolean(body.isAnnual);
-        const paymentMethod = body.paymentMethod || 'Tarjeta Cifrada •••• 4242';
+        const paymentMethod = body.paymentMethod || 'MercadoPago';
 
         if (!email || !email.includes('@')) {
           return sendJson(res, 400, { success: false, message: 'Por favor, proporciona un correo electrónico válido.' });
@@ -480,10 +490,12 @@ const server = http.createServer(async (req, res) => {
 
         if (user) {
           user.name = name;
+          if (password) user.password = password;
           user.planId = plan.id;
           user.planName = plan.name;
           user.isAnnual = isAnnual;
-          user.active = true;
+          user.active = false; // INACTIVA HASTA CONFIRMAR PAGO
+          user.paymentStatus = 'pending';
           user.billedAmount = amount;
           user.paymentMethod = paymentMethod;
           user.nextBillingDate = nextBilling.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -494,10 +506,12 @@ const server = http.createServer(async (req, res) => {
             id: newId,
             email,
             name,
+            password,
             accessCode,
             planId: plan.id,
             planName: plan.name,
-            active: true,
+            active: false, // INACTIVA HASTA CONFIRMAR PAGO
+            paymentStatus: 'pending',
             isAnnual,
             memberSince: today.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
             nextBillingDate: nextBilling.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
@@ -516,7 +530,7 @@ const server = http.createServer(async (req, res) => {
           };
         }
 
-        // Register transaction
+        // Register pending transaction
         const txId = 'tx_' + crypto.randomBytes(8).toString('hex');
         const receiptNumber = 'REC-2026-' + Math.floor(100000 + Math.random() * 900000);
         const transaction = {
@@ -528,30 +542,124 @@ const server = http.createServer(async (req, res) => {
           planName: plan.name,
           amount,
           currency: 'USD',
-          status: 'succeeded',
+          status: 'pending', // PENDIENTE DE PAGO
           isAnnual,
           paymentMethod,
           timestamp: today.toISOString()
         };
         db.transactions.push(transaction);
 
-        // Issue session token
-        const token = crypto.randomUUID();
-        db.sessions[token] = {
-          userId: user.id,
-          createdAt: Date.now(),
-          expiresAt: Date.now() + 30 * 86400 * 1000
-        };
-
+        recordAuditLog(db, 'CHECKOUT_INITIATED', `Suscripción iniciada pendiente de pago en Mercado Pago ($${amount})`, `${user.name} (${user.email})`, user.email, 'info');
         saveDatabase(db);
 
         return sendJson(res, 200, {
           success: true,
+          pending: true,
+          active: false,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            planId: user.planId,
+            planName: user.planName,
+            active: false,
+            paymentStatus: 'pending'
+          },
+          transaction,
+          message: 'Suscripción generada con éxito. Pendiente de confirmación de pago en Mercado Pago.'
+        });
+      }
+
+      // 5.1 Confirm / Cancel Payment from Mercado Pago
+      if (pathname === '/api/checkout/confirm' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const email = (body.email || '').trim().toLowerCase();
+        const userId = body.userId;
+        const status = (body.status || 'approved').toLowerCase(); // 'approved' | 'cancelled' | 'rejected'
+
+        let user = null;
+        if (userId) user = db.users[userId];
+        if (!user && email) {
+          user = Object.values(db.users).find(u => (u.email || '').toLowerCase() === email);
+        }
+
+        if (!user) {
+          return sendJson(res, 404, { success: false, message: 'Usuario no encontrado para procesar estado de pago.' });
+        }
+
+        const isApproved = (status === 'approved' || status === 'success' || status === 'succeeded');
+
+        // Actualizar estado de la cuenta según resultado real del pago
+        user.active = isApproved;
+        user.paymentStatus = isApproved ? 'approved' : 'cancelled';
+
+        // Actualizar transacción asociada
+        const lastTx = [...db.transactions].reverse().find(t => t.email === user.email || t.userId === user.id);
+        if (lastTx) {
+          lastTx.status = isApproved ? 'succeeded' : 'cancelled';
+        }
+
+        let token = null;
+        if (isApproved) {
+          token = crypto.randomUUID();
+          db.sessions[token] = {
+            userId: user.id,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + 30 * 86400 * 1000
+          };
+          recordAuditLog(db, 'PAYMENT_APPROVED', `Pago confirmado vía Mercado Pago ($${user.billedAmount || 0}). Cuenta activada.`, `${user.name} (${user.email})`, user.email, 'success');
+        } else {
+          // Si el pago se canceló, revocar cualquier sesión activa de este usuario
+          Object.keys(db.sessions).forEach(tok => {
+            if (db.sessions[tok]?.userId === user.id) {
+              delete db.sessions[tok];
+            }
+          });
+          recordAuditLog(db, 'PAYMENT_CANCELLED', 'Pago cancelado o rechazado en Mercado Pago. Cuenta NO activada.', `${user.name} (${user.email})`, user.email, 'warning');
+        }
+
+        saveDatabase(db);
+
+        return sendJson(res, 200, {
+          success: isApproved,
+          active: isApproved,
           token,
           user,
-          transaction,
-          message: 'Membresía activada con éxito en el Shala.'
+          message: isApproved
+            ? `¡Pago confirmado por Mercado Pago! Tu cuenta ha sido activada con éxito.`
+            : `El pago fue cancelado en Mercado Pago. Tu cuenta NO ha sido activada.`
         });
+      }
+
+      // 5.2 Webhook / IPN de Mercado Pago
+      if (pathname === '/api/webhooks/mercadopago' && req.method === 'POST') {
+        const body = await parseJsonBody(req);
+        const paymentData = body.data || body;
+        const status = (paymentData.status || body.action || '').toLowerCase();
+        const externalReference = paymentData.external_reference || body.external_reference;
+        const payerEmail = paymentData.payer?.email || body.payer_email;
+
+        let user = null;
+        if (externalReference) {
+          user = db.users[externalReference] || Object.values(db.users).find(u => (u.email || '').toLowerCase() === externalReference.toLowerCase());
+        }
+        if (!user && payerEmail) {
+          user = Object.values(db.users).find(u => (u.email || '').toLowerCase() === payerEmail.toLowerCase());
+        }
+
+        if (user) {
+          const isApproved = (status === 'approved' || status === 'payment.created');
+          user.active = isApproved;
+          user.paymentStatus = isApproved ? 'approved' : 'cancelled';
+          const lastTx = [...db.transactions].reverse().find(t => t.email === user.email || t.userId === user.id);
+          if (lastTx) {
+            lastTx.status = isApproved ? 'succeeded' : 'cancelled';
+          }
+          recordAuditLog(db, 'WEBHOOK_MERCADOPAGO', `Webhook Mercado Pago: estado ${status}`, `${user.name} (${user.email})`, user.email, isApproved ? 'success' : 'warning');
+          saveDatabase(db);
+        }
+
+        return sendJson(res, 200, { received: true });
       }
 
       // 6. User Progress: Get
@@ -779,7 +887,9 @@ const server = http.createServer(async (req, res) => {
           }
         });
 
-        const totalRevenue = (db.transactions || []).reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+        const totalRevenue = (db.transactions || [])
+          .filter(tx => tx.status === 'succeeded')
+          .reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
 
         return sendJson(res, 200, {
           success: true,

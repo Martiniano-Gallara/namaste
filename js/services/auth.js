@@ -187,7 +187,9 @@ const AuthService = (() => {
     if (!user.active) {
       return {
         success: false,
-        message: 'Esta membresía se encuentra pausada o inactiva.'
+        isPendingPayment: true,
+        userEmail: user.email,
+        message: 'Tu cuenta no está activa porque el pago está pendiente o fue cancelado. Completa tu abono en Mercado Pago para habilitar tu acceso.'
       };
     }
 
@@ -240,7 +242,10 @@ const AuthService = (() => {
     const cleanName = (name || 'Practicante de Namasté').trim();
     const isAnnual = !!options.isAnnual;
     const amount = options.amount || 29;
-    const paymentMethod = options.paymentMethod || 'Tarjeta Cifrada •••• 4242';
+    const paymentMethod = options.paymentMethod || 'MercadoPago';
+    const password = options.password || '';
+    const active = options.active !== undefined ? Boolean(options.active) : false; // Inactivo hasta pagar
+    const paymentStatus = options.paymentStatus || (active ? 'approved' : 'pending');
 
     const now = new Date();
     const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -261,11 +266,13 @@ const AuthService = (() => {
       existingUser.name = cleanName || existingUser.name;
       existingUser.planId = planId;
       existingUser.planName = planName;
-      existingUser.active = true;
+      existingUser.active = active;
+      existingUser.paymentStatus = paymentStatus;
       existingUser.isAnnual = isAnnual;
       existingUser.billedAmount = amount;
       existingUser.paymentMethod = paymentMethod;
       existingUser.nextBillingDate = nextBillingDate;
+      if (password) existingUser.password = password;
       saveUserRecord(existingUser);
       return existingUser;
     }
@@ -278,6 +285,7 @@ const AuthService = (() => {
       id: 'usr-' + Date.now(),
       name: cleanName,
       email: cleanEmail,
+      password: password,
       accessCode: newCode,
       planId: planId,
       planName: planName,
@@ -286,7 +294,8 @@ const AuthService = (() => {
       paymentMethod: paymentMethod,
       memberSince: memberSince,
       nextBillingDate: nextBillingDate,
-      active: true,
+      active: active, // Inactivo hasta que se complete el pago
+      paymentStatus: paymentStatus,
       streakDays: 1,
       totalMinutesPracticed: 0,
       completedClassesCount: 0,
@@ -295,6 +304,27 @@ const AuthService = (() => {
 
     saveUserRecord(newUser);
     return newUser;
+  };
+
+  /**
+   * Activa o desactiva la cuenta según el resultado del pago en Mercado Pago
+   */
+  const activateMemberPayment = (email, isApproved = true) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const allUsers = getStoredUsers();
+    const user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === cleanEmail);
+    if (!user) return null;
+
+    user.active = Boolean(isApproved);
+    user.paymentStatus = isApproved ? 'approved' : 'cancelled';
+    saveUserRecord(user);
+
+    if (isApproved) {
+      loginUser(user);
+    } else {
+      logout();
+    }
+    return user;
   };
 
   const updateUserProfile = async (updatedData) => {
@@ -372,6 +402,7 @@ const AuthService = (() => {
     loginUser,
     logout,
     registerNewMember,
+    activateMemberPayment,
     updateUserProfile,
     getStoredUsers,
     syncWithServer

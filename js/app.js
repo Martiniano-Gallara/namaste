@@ -182,11 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
     handleHashRouting();
     window.addEventListener('hashchange', handleHashRouting);
 
-    // Si ya existe sesión activa previa, podemos ofrecer ingresar directo o inicializar estado
+    // Si ya existe sesión previa, asegurar que no sea una cuenta inactiva / pendiente
     const currentUser = AuthService.getCurrentUser();
     if (currentUser) {
-      updateNavForLoggedInUser(currentUser);
+      if (currentUser.active === false) {
+        AuthService.logout();
+      } else {
+        updateNavForLoggedInUser(currentUser);
+      }
     }
+
+    // Verificar si el usuario retorna desde Mercado Pago con estado de pago
+    checkMercadoPagoPaymentReturn();
   }
 
   function handleHashRouting() {
@@ -802,36 +809,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Formato dinámico para campos de tarjeta
-    const cardInput = document.getElementById('checkout-card-number');
-    if (cardInput) {
-      cardInput.addEventListener('input', (e) => {
-        let val = e.target.value.replace(/\D/g, '').substring(0, 16);
-        e.target.value = val.match(/.{1,4}/g)?.join(' ') || val;
-      });
-    }
-
-    const expiryInput = document.getElementById('checkout-card-expiry');
-    if (expiryInput) {
-      expiryInput.addEventListener('input', (e) => {
-        let val = e.target.value.replace(/\D/g, '').substring(0, 4);
-        if (val.length >= 3) {
-          e.target.value = val.substring(0, 2) + '/' + val.substring(2);
-        } else {
-          e.target.value = val;
+    // Toggle para visualizar/ocultar la contraseña en el checkout
+    const togglePwdBtn = document.getElementById('btn-toggle-checkout-pwd');
+    const pwdInput = document.getElementById('checkout-password');
+    if (togglePwdBtn && pwdInput) {
+      togglePwdBtn.addEventListener('click', () => {
+        const isPassword = pwdInput.type === 'password';
+        pwdInput.type = isPassword ? 'text' : 'password';
+        const iconShow = document.getElementById('pwd-icon-show');
+        const iconHide = document.getElementById('pwd-icon-hide');
+        if (iconShow && iconHide) {
+          iconShow.style.display = isPassword ? 'none' : 'block';
+          iconHide.style.display = isPassword ? 'block' : 'none';
         }
       });
     }
-
-    // Alternar campos según método de pago
-    const cardFieldsGroup = document.getElementById('card-fields-group');
-    document.querySelectorAll('input[name="payment-method"]').forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (cardFieldsGroup) {
-          cardFieldsGroup.style.display = e.target.value === 'mercadopago' ? 'none' : 'block';
-        }
-      });
-    });
 
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
@@ -842,44 +834,199 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = `
-          <svg class="spin-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="spin-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="2" x2="12" y2="6"></line>
             <line x1="12" y1="18" x2="12" y2="22"></line>
             <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
             <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
           </svg>
-          Procesando con pasarela segura...
+          <span>Conectando con Mercado Pago...</span>
         `;
 
-        const name = document.getElementById('checkout-name').value;
-        const email = document.getElementById('checkout-email').value;
+        const name = (document.getElementById('checkout-name')?.value || '').trim();
+        const email = (document.getElementById('checkout-email')?.value || '').trim();
+        const password = (document.getElementById('checkout-password')?.value || '').trim();
         const planId = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.id : 'plan-refugio';
         const isAnnual = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
         const amount = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.billedAmount : 29;
-        const paymentRadio = checkoutForm.querySelector('input[name="payment-method"]:checked');
-        const methodType = paymentRadio ? paymentRadio.value : 'card';
-        const cardNum = cardInput ? cardInput.value.replace(/\s/g, '') : '';
-        const last4 = cardNum.length >= 4 ? cardNum.slice(-4) : '4242';
-        const paymentMethod = methodType === 'mercadopago' ? 'MercadoPago' : `Tarjeta •••• ${last4}`;
 
         const result = await MembershipService.processCheckout({
           name,
           email,
+          password,
           planId,
           isAnnual,
           amount,
-          paymentMethod
+          paymentMethod: 'MercadoPago'
         });
 
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
 
-        if (result.success) {
-          AuthService.loginUser(result.member);
-          showCheckoutSuccessScreen(result.member, result.plan);
+        if (result && result.success) {
+          closeModal(modals.checkout);
+
+          showToast(`Suscripción registrada para ${name}. Tu cuenta se activará automáticamente al abonar en Mercado Pago.`, 'info', 6000);
+
+          // URL o deep-link para abonar en Mercado Pago
+          const planData = PLANS_DATA.find(p => p.id === planId);
+          const mpUrl = (planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar';
+
+          // Mostrar tarjeta flotante de simulación para desarrollo/pruebas locales
+          renderPendingPaymentSimulator();
+
+          setTimeout(() => {
+            window.location.href = mpUrl;
+          }, 850);
+        } else {
+          showToast((result && result.message) || 'Hubo un error al procesar tu suscripción.', 'error');
         }
       });
     }
+
+  /**
+   * Verifica los parámetros de retorno de Mercado Pago al volver al sitio
+   * Activa automáticamente la cuenta solo si el pago se completó con éxito.
+   */
+  async function checkMercadoPagoPaymentReturn() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const payment = urlParams.get('payment') || urlParams.get('status') || urlParams.get('collection_status') || urlParams.get('payment_status');
+
+    let pendingData = null;
+    try {
+      const raw = localStorage.getItem('namaste_pending_payment');
+      if (raw) pendingData = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!payment && !urlParams.has('collection_status') && !urlParams.has('payment_status')) {
+      if (pendingData) renderPendingPaymentSimulator();
+      return;
+    }
+
+    const email = urlParams.get('email') || urlParams.get('external_reference') || (pendingData ? pendingData.email : null);
+
+    const isApproved = (
+      payment === 'success' ||
+      payment === 'approved' ||
+      urlParams.get('collection_status') === 'approved' ||
+      urlParams.get('status') === 'approved' ||
+      urlParams.get('payment_status') === 'approved'
+    );
+
+    const isCancelled = (
+      payment === 'cancelled' ||
+      payment === 'failure' ||
+      payment === 'rejected' ||
+      payment === 'null' ||
+      urlParams.get('collection_status') === 'null' ||
+      urlParams.get('status') === 'cancelled' ||
+      urlParams.get('status') === 'rejected'
+    );
+
+    if (isApproved && email) {
+      // 1. ACTIVACIÓN AUTOMÁTICA: SOLO SI EL PAGO SE EJECUTA CORRECTAMENTE
+      const result = await MembershipService.confirmPayment(email, 'approved', {
+        paymentId: urlParams.get('payment_id') || urlParams.get('collection_id')
+      });
+
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+      } catch (e) {}
+
+      removePendingPaymentSimulator();
+
+      if (result && result.active) {
+        showToast('¡Pago confirmado en Mercado Pago! Tu cuenta ha sido activada automáticamente. ¡Bienvenida a tu Refugio!', 'success', 7000);
+        switchView('platform');
+      }
+    } else if (isCancelled) {
+      // 2. PAGO CANCELADO / RECHAZADO: NO SE DEBE ACTIVAR LA CUENTA
+      if (email) {
+        await MembershipService.confirmPayment(email, 'cancelled');
+      }
+      AuthService.logout();
+
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+      } catch (e) {}
+
+      removePendingPaymentSimulator();
+
+      showToast('El pago fue cancelado o no se completó en Mercado Pago. Tu cuenta NO ha sido activada.', 'error', 7000);
+      switchView('landing');
+    }
+  }
+
+  /**
+   * Widget interactivo para facilitar pruebas de desarrollo y validación de cobro en Mercado Pago
+   */
+  function renderPendingPaymentSimulator() {
+    let pending = null;
+    try {
+      const raw = localStorage.getItem('namaste_pending_payment');
+      if (raw) pending = JSON.parse(raw);
+    } catch (e) {}
+
+    const existing = document.getElementById('mp-simulation-widget');
+    if (!pending) {
+      if (existing) existing.remove();
+      return;
+    }
+
+    if (existing) return;
+
+    const widget = document.createElement('div');
+    widget.id = 'mp-simulation-widget';
+    widget.className = 'mp-simulation-widget';
+    widget.innerHTML = `
+      <div class="mp-simulation-header">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#009EE3" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+          <strong style="font-size:0.84rem; color:var(--text-primary);">Mercado Pago • Verificación</strong>
+        </div>
+        <button type="button" class="mp-simulation-close" aria-label="Cerrar">&times;</button>
+      </div>
+      <p style="font-size:0.8rem; margin:0 0 0.65rem 0; color:var(--text-secondary); line-height: 1.35;">
+        Suscripción para <strong>${pending.name || 'Alumna'}</strong> (${pending.email}) está <strong>inactiva</strong> hasta confirmar el cobro.
+      </p>
+      <div style="display:flex; gap:0.45rem;">
+        <button type="button" class="btn btn-primary" id="btn-mp-sim-approve" style="padding:0.42rem 0.65rem; font-size:0.77rem; flex:1; background-color:#2E7D32; border-color:#2E7D32;">
+          ✓ Abonar (Activar)
+        </button>
+        <button type="button" class="btn btn-secondary" id="btn-mp-sim-cancel" style="padding:0.42rem 0.65rem; font-size:0.77rem; flex:1; color:#C62828; border-color:rgba(198,40,40,0.35);">
+          ✕ Cancelar Pago
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(widget);
+
+    widget.querySelector('.mp-simulation-close')?.addEventListener('click', () => {
+      widget.remove();
+    });
+
+    widget.querySelector('#btn-mp-sim-approve')?.addEventListener('click', async () => {
+      const res = await MembershipService.confirmPayment(pending.email, 'approved');
+      widget.remove();
+      if (res && res.active) {
+        showToast('¡Pago verificado con éxito! Cuenta activada automáticamente.', 'success', 6000);
+        switchView('platform');
+      }
+    });
+
+    widget.querySelector('#btn-mp-sim-cancel')?.addEventListener('click', async () => {
+      await MembershipService.confirmPayment(pending.email, 'cancelled');
+      widget.remove();
+      AuthService.logout();
+      showToast('Pago cancelado en Mercado Pago. La cuenta NO fue activada.', 'error', 6000);
+      switchView('landing');
+    });
+  }
+
+  function removePendingPaymentSimulator() {
+    const existing = document.getElementById('mp-simulation-widget');
+    if (existing) existing.remove();
+  }
 
     // Botón de acceso inmediato desde la pantalla de éxito
     const btnEnterPlatformDirect = document.getElementById('btn-enter-platform-direct');
@@ -960,10 +1107,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     state.selectedPlanForCheckout = planToCheckout;
-    document.getElementById('checkout-plan-name').textContent = `${plan.name} (${isAnnual ? 'Anual • 2 meses de regalo' : 'Mensual'})`;
+    document.getElementById('checkout-plan-name').textContent = `${plan.name} (${isAnnual ? 'Anual' : 'Mensual'})`;
     document.getElementById('checkout-plan-price').textContent = isAnnual
-      ? `${plan.currencySymbol}${plan.priceAnnualTotal}/año (${plan.currencySymbol}${plan.priceAnnualMonthly}/mes)`
+      ? `${plan.currencySymbol}${plan.priceAnnualTotal}/año`
       : `${plan.currencySymbol}${plan.priceMonthly}/${plan.pricePeriod}`;
+    
+    const subnoteEl = document.getElementById('checkout-plan-subnote');
+    if (subnoteEl) {
+      subnoteEl.textContent = isAnnual ? 'Facturación anual (2 meses bonificados)' : 'Renovación mensual flexible';
+    }
     
     // Restaurar vista de formulario
     document.getElementById('checkout-form-container').style.display = 'block';
