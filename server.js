@@ -17,6 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { loadFromSupabase, syncToSupabase } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -264,8 +265,12 @@ function saveDatabase(data) {
     fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
     fs.renameSync(tempFile, DB_FILE);
   } catch (err) {
-    console.error('[DB] Error saving database:', err);
+    // Si estamos en entorno serverless (Vercel), el disco local es efímero/solo lectura
   }
+  // Sincronizar automáticamente en la nube con Supabase
+  syncToSupabase(data).catch(err => {
+    console.error('[DB] Error sincronizando a Supabase:', err.message);
+  });
 }
 
 function recordAuditLog(database, action, title, details, userEmail = '', status = 'info') {
@@ -289,6 +294,21 @@ function recordAuditLog(database, action, title, details, userEmail = '', status
 }
 
 let db = loadDatabase();
+
+// Sincronización en vivo desde Supabase PostgreSQL
+loadFromSupabase().then(remoteDb => {
+  if (remoteDb && remoteDb.users && Object.keys(remoteDb.users).length > 0) {
+    db.users = remoteDb.users;
+    if (remoteDb.plans) db.plans = remoteDb.plans;
+    if (remoteDb.transactions) db.transactions = remoteDb.transactions;
+    if (remoteDb.progress) db.progress = remoteDb.progress;
+    if (remoteDb.auditLogs) db.auditLogs = remoteDb.auditLogs;
+    syncCatalogWithDb(db);
+    console.log('[DB] Sincronización en vivo con Supabase PostgreSQL completada.');
+  }
+}).catch(err => {
+  console.warn('[DB] Supabase no disponible en inicio, usando base de datos local:', err.message);
+});
 
 // MIME Types Map
 const MIME_TYPES = {
@@ -361,8 +381,8 @@ function getAuthenticatedUser(req) {
   return { user, token, session };
 }
 
-// HTTP Server
-const server = http.createServer(async (req, res) => {
+// HTTP Request Handler (compatible con servidor local y Vercel Serverless)
+export async function handleRequest(req, res) {
   // CORS Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -1445,13 +1465,20 @@ const server = http.createServer(async (req, res) => {
 
     fs.createReadStream(filePath).pipe(res);
   });
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`[NAMASTÉ] Servidor de Producción y API REST Activo`);
-  console.log(`[URL] http://localhost:${PORT}`);
-  console.log(`[API] http://localhost:${PORT}/api/health`);
-  console.log(`[DB]  ${DB_FILE}`);
-  console.log(`======================================================\n`);
-});
+const server = http.createServer(handleRequest);
+
+// En Vercel Serverless las funciones se invocan bajo demanda; en local se abre el puerto
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`\n======================================================`);
+    console.log(`[NAMASTÉ] Servidor de Producción y API REST Activo`);
+    console.log(`[URL] http://localhost:${PORT}`);
+    console.log(`[API] http://localhost:${PORT}/api/health`);
+    console.log(`[DB]  ${DB_FILE} + Supabase Cloud PostgreSQL`);
+    console.log(`======================================================\n`);
+  });
+}
+
+export default server;
