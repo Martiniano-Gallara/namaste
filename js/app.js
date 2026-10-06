@@ -4896,17 +4896,12 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="quick-details-grid">
                 <div class="quick-detail-item">
                   <span class="qd-label">Duración:</span>
-                  <span class="qd-val">${c.duration} min • ${escapeHtml(c.categoryLabel || c.category)}</span>
+                  <span class="qd-val">${c.duration || 0} min • ${escapeHtml(c.categoryLabel || c.category || 'Yoga')}</span>
                 </div>
-                <div class="quick-detail-item">
-                  <span class="qd-label">Portada:</span>
-                  <span class="qd-val" title="${escapeHtml(c.thumbnail || '')}">${escapeHtml((c.thumbnail || '').split('/').pop())}</span>
+                <div class="quick-detail-item" style="grid-column: 1 / -1; align-items: flex-start;">
+                  <span class="qd-label">Descripción:</span>
+                  <span class="qd-val" style="white-space: normal; line-height: 1.4; color: #4A3E3D;">${escapeHtml(c.description || 'Práctica guiada por Vale Manassero')}</span>
                 </div>
-                ${c.description ? `
-                <div class="quick-detail-item" style="grid-column: 1 / -1;">
-                  <span class="qd-label">Detalle:</span>
-                  <span class="qd-val" style="white-space: normal;">${escapeHtml(c.description)}</span>
-                </div>` : ''}
               </div>
               <div class="quick-actions-row">
                 <button type="button" class="mini-btn btn-preview-class" data-class-id="${c.id}" title="Reproducir como alumna">
