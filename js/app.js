@@ -3389,26 +3389,26 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Pills de selección única con toggle (clic de nuevo = quitar)
-    const bindTogglePills = (selector, attr, stateKey) => {
-      const pills = document.querySelectorAll(selector);
-      pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-          const value = pill.getAttribute(attr);
-          const wasActive = pill.classList.contains('active');
-          pills.forEach(p => p.classList.remove('active'));
-          if (wasActive) {
-            state[stateKey] = '';
-          } else {
-            pill.classList.add('active');
-            state[stateKey] = value;
-          }
-          renderAdminClassesTable();
-        });
-      });
-    };
-    bindTogglePills('[data-filter-plan]', 'data-filter-plan', 'adminClassFilterPlan');
-    bindTogglePills('[data-sort-format]', 'data-sort-format', 'adminClassSortFormat');
+    // Pills de selección única con toggle (clic de nuevo = quitar) - delegación de eventos
+    const toolbarPillGroups = [
+      { attr: 'data-filter-plan', stateKey: 'adminClassFilterPlan' },
+      { attr: 'data-sort-format', stateKey: 'adminClassSortFormat' }
+    ];
+    document.addEventListener('click', (e) => {
+      const pill = e.target.closest && e.target.closest('[data-filter-plan], [data-sort-format]');
+      if (!pill) return;
+      const group = toolbarPillGroups.find(g => pill.hasAttribute(g.attr));
+      if (!group) return;
+      const wasActive = pill.classList.contains('active');
+      document.querySelectorAll(`[${group.attr}]`).forEach(p => p.classList.remove('active'));
+      if (wasActive) {
+        state[group.stateKey] = '';
+      } else {
+        pill.classList.add('active');
+        state[group.stateKey] = pill.getAttribute(group.attr);
+      }
+      renderAdminClassesTable();
+    });
 
     // 11. Modal de Subir / Editar Clase con Editor Mobile-First Integrado
     let _classMediaBlob = null;
@@ -4571,10 +4571,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
           <td class="col-user-status">
-            <span class="status-badge ${user.active ? 'active' : 'paused'}">
-              <span class="status-dot"></span>
-              ${user.active ? 'Activa' : 'Pausada'}
-            </span>
+            ${(() => {
+              if (user.active) {
+                return '<span class="status-badge active"><span class="status-dot"></span>Activa</span>';
+              }
+              if (user.paymentStatus === 'pending' || user.status === 'pending_payment') {
+                return '<span class="status-badge pending"><span class="status-dot"></span>Pago Pendiente</span>';
+              }
+              return '<span class="status-badge paused"><span class="status-dot"></span>Pausada</span>';
+            })()}
           </td>
           <td class="col-user-action" style="text-align: center;">
             <button type="button" class="btn-toggle-user-details btn-arrow-only" data-user-id="${user.id}" aria-label="Ver detalles" title="Detalles">
@@ -4819,6 +4824,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (w) { w.document.write(html); w.document.close(); }
   }
 
+  function resolveClassPlan(c) {
+    if (!c) return 'plan-esencia';
+    if (c.planRequired) return c.planRequired;
+    if (c.category === 'dinamico' || c.category === 'ashtanga') return 'plan-sadhana';
+    if (c.category === 'suave' || c.category === 'clasico') return 'plan-esencia';
+    return 'plan-refugio';
+  }
+
+  function isAudioClassItem(c) {
+    if (!c) return false;
+    return c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
+  }
+
   /**
    * Renderiza la tabla de clases con diseño ultra-compacto y mobile first.
    * 4 Columnas sin scroll horizontal: Clase (44%), Formato (24%), Plan (22%), Flecha (10%).
@@ -4832,18 +4850,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filtro por Plan (Esencia / Refugio / Sadhana)
     if (state.adminClassFilterPlan) {
-      classes = classes.filter(c => (c.planRequired || 'plan-esencia') === state.adminClassFilterPlan);
+      classes = classes.filter(c => resolveClassPlan(c) === state.adminClassFilterPlan);
     }
 
     // Orden por Formato (Video / Audio primero)
     if (state.adminClassSortFormat) {
-      const isAudioClass = c => c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
       const firstIsAudio = state.adminClassSortFormat === 'audio';
-      classes.sort((a, b) => {
-        const aFirst = isAudioClass(a) === firstIsAudio ? 0 : 1;
-        const bFirst = isAudioClass(b) === firstIsAudio ? 0 : 1;
-        return aFirst - bFirst;
-      });
+      classes = classes
+        .map((c, i) => ({ c, i }))
+        .sort((a, b) => {
+          const aFirst = isAudioClassItem(a.c) === firstIsAudio ? 0 : 1;
+          const bFirst = isAudioClassItem(b.c) === firstIsAudio ? 0 : 1;
+          return (aFirst - bFirst) || (a.i - b.i);
+        })
+        .map(x => x.c);
     }
 
     // Filtro por Búsqueda (Título, Categoría)
@@ -4868,8 +4888,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     tableBody.innerHTML = classes.map(c => {
-      const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
-      const planReq = c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio'));
+      const isAudio = isAudioClassItem(c);
+      const planReq = resolveClassPlan(c);
       const planLabel = planReq === 'plan-sadhana' ? 'SADHANA' : (planReq === 'plan-esencia' ? 'ESENCIA' : 'REFUGIO');
       const planClass = planReq;
 

@@ -542,6 +542,16 @@
   background-color: #C87A1E;
 }
 
+.status-badge.pending {
+  background-color: #FFF3E0;
+  color: #B25E00;
+  border: none;
+}
+
+.status-badge.pending .status-dot {
+  background-color: #E65100;
+}
+
 .status-dot {
   width: 6px;
   height: 6px;

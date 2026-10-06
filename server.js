@@ -496,7 +496,7 @@ function sendJson(res, statusCode, data, req = null) {
 // AUTENTICACIÓN ASÍNCRONA MULTI-INSTANCIA (NAM-004)
 // -------------------------------------------------------------
 async function getAuthenticatedUser(req) {
-  const authHeader = req.headers['authorization'] || '';
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'] || '';
   if (!authHeader.startsWith('Bearer ')) return null;
   const token = authHeader.substring(7).trim();
   if (!token) return null;
@@ -1080,10 +1080,14 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, { success: true, progress: currentProg }, req);
       }
 
-      // 1.10 Catálogo de Clases
+      // 1.10 Catálogo de Clases (Combina clases creadas en Shala con el catálogo oficial)
       if (pathname === '/api/classes' && req.method === 'GET') {
         const customClasses = await getClasses();
-        const allClasses = customClasses.length > 0 ? customClasses : CLASSES_CATALOG;
+        const customIds = new Set(customClasses.map(c => c.id));
+        const allClasses = [
+          ...customClasses,
+          ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
+        ];
         return sendJson(res, 200, { success: true, classes: allClasses }, req);
       }
 
@@ -1456,8 +1460,13 @@ export async function handleRequest(req, res) {
 
         // 2.6 Gestión de Clases en BD (NAM-016)
         if (pathname === '/api/admin/classes' && req.method === 'GET') {
-          const classes = await getClasses();
-          return sendJson(res, 200, { success: true, classes }, req);
+          const customClasses = await getClasses();
+          const customIds = new Set(customClasses.map(c => c.id));
+          const allClasses = [
+            ...customClasses,
+            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
+          ];
+          return sendJson(res, 200, { success: true, classes: allClasses }, req);
         }
 
         if (pathname === '/api/admin/classes' && req.method === 'POST') {
