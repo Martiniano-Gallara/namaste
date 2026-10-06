@@ -322,16 +322,7 @@ const AuthService = (() => {
             headers: { 'Authorization': `Bearer ${token}` }
           });
         }
-        if (updatedData.planId) {
-          await fetch('/api/membership/change-plan', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ planId: updatedData.planId })
-          });
-        }
+        // Los cambios de plan se procesan únicamente vía /api/checkout (pago verificado).
       } catch (e) {
         // Fallback local silencioso
       }
@@ -350,6 +341,13 @@ const AuthService = (() => {
       const response = await fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (response.status === 401) {
+        // Sesión expirada o token inválido: limpiar estado local sin ruido
+        setToken(null);
+        localStorage.removeItem(SESSION_KEY);
+        window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: null }));
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         if (data.user) {

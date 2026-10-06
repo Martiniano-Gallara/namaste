@@ -3657,7 +3657,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const vid = document.getElementById('editor-video-preview');
       if (vid) {
         vid.pause();
-        vid.src = '';
+        vid.removeAttribute('src');
+        vid.load();
         vid.style.filter = '';
       }
 
@@ -3665,7 +3666,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const aud = document.getElementById('editor-audio-element');
       if (aud) {
         aud.pause();
-        aud.src = '';
+        aud.removeAttribute('src');
+        aud.load();
       }
       _stopAmbientSound();
       _audioIsPlaying = false;
@@ -3692,7 +3694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         thumbZone.classList.remove('has-file');
       }
       if (thumbCard) thumbCard.style.display = 'none';
-      if (thumbImg) thumbImg.src = '';
+      if (thumbImg) thumbImg.removeAttribute('src');
 
       // Reset Pills & Sliders
       document.querySelectorAll('[data-vpreset]').forEach(b => b.classList.toggle('active', b.getAttribute('data-vpreset') === 'normal'));
