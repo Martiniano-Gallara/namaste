@@ -335,12 +335,21 @@
 .admin-filter-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+
+.admin-filter-group::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-filter-pill {
-  padding: 0.35rem 0.95rem;
+  flex-shrink: 0;
+  padding: 0.32rem 0.75rem;
   border-radius: var(--radius-pill, 9999px);
   border: 1px solid #EAE3D9;
   background-color: #FFFFFF;
