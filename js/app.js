@@ -4667,24 +4667,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return `
         <tr id="tx-main-row-${txId}" class="admin-user-row" data-tx-id="${txId}">
-          <td class="col-user-name" style="width: 36%;">
+          <td class="col-user-name" style="width: 34%;">
             <span class="user-clean-name" title="${displayName} (${displayEmail})">${displayName}</span>
           </td>
-          <td class="col-user-plan" style="width: 22%; text-align: center;">
+          <td class="col-user-plan" style="width: 20%; text-align: center;">
             <span class="plan-badge ${planClass}">${planLabel}</span>
           </td>
-          <td class="col-tx-amount" style="width: 18%; text-align: center; white-space: nowrap;">
+          <td class="col-tx-amount" style="width: 30%; text-align: center; white-space: nowrap;">
             <strong class="tx-amount-number">$ ${Number(tx.amount || 0).toLocaleString('es-AR')}</strong>
             <span class="tx-amount-freq">${tx.isAnnual ? '/año' : '/mes'}</span>
           </td>
-          <td class="col-user-action" style="width: 24%; text-align: center;">
+          <td class="col-user-action" style="width: 16%; text-align: center;">
             ${tx.status === 'succeeded' ? `
-            <button type="button" class="btn-print-tx-receipt" data-tx-id="${txId}" title="Imprimir comprobante">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              <span>Recibo</span>
+            <button type="button" class="btn-print-tx-receipt btn-receipt-icon-only" data-tx-id="${txId}" title="Imprimir recibo oficial" aria-label="Imprimir recibo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             </button>
             ` : `
-            <span class="plan-badge" style="background: rgba(180, 80, 70, 0.12); color: #b45046; font-size: 0.72rem; padding: 2px 7px; border-radius: 99px;">${tx.status === 'pending' ? 'Pendiente' : 'No cobrado'}</span>
+            <span class="badge-pending-compact">${tx.status === 'pending' ? 'Pendiente' : 'Impago'}</span>
             `}
           </td>
         </tr>
