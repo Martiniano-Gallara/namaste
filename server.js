@@ -17,7 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { loadFromSupabase, syncToSupabase } from './db.js';
+import { loadFromSupabase, syncToSupabase, deleteUserFromSupabase } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -170,6 +170,34 @@ function registerFailedLogin(ip) {
 }
 function clearLoginAttempts(ip) {
   loginAttempts.delete(ip);
+}
+
+// Rate Limiter general para checkout, reviews y acciones críticas (A-15)
+const generalActionAttempts = new Map();
+function isActionRateLimited(key, maxAttempts = 10, windowMs = 60000) {
+  const now = Date.now();
+  const record = generalActionAttempts.get(key) || { count: 0, firstAttempt: now };
+  if (now - record.firstAttempt > windowMs) {
+    generalActionAttempts.set(key, { count: 1, firstAttempt: now });
+    return false;
+  }
+  record.count++;
+  generalActionAttempts.set(key, record);
+  return record.count > maxAttempts;
+}
+
+// Fecha local de Argentina (America/Argentina/Buenos_Aires) para cálculo exacto de rachas (M-07)
+function getArgentinaTodayStr() {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+  } catch (e) {
+    return new Date().toISOString().split('T')[0];
+  }
 }
 
 // Default database seed
@@ -465,35 +493,61 @@ const MIME_TYPES = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
-// Helper: Parse JSON body
+// Helper: Determina el origen CORS seguro permitido (A-07)
+function getCorsOrigin(req) {
+  if (!req) return '*';
+  const origin = req.headers['origin'];
+  if (!origin) return '*';
+  try {
+    const parsed = new URL(origin);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app') || host.includes('namaste')) {
+      return origin;
+    }
+  } catch (e) {}
+  return 'null';
+}
+
+// Helper: Parse JSON body con validación de tamaño y errores amigables (M-12)
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', chunk => {
       body += chunk;
       if (body.length > 1e6) { // 1MB limit
-        req.destroy();
-        reject(new Error('Request payload too large'));
+        const err = new Error('Cuerpo de la solicitud excede el límite permitido (1MB).');
+        err.statusCode = 413;
+        reject(err);
       }
     });
     req.on('end', () => {
       try {
         resolve(body ? JSON.parse(body) : {});
       } catch (err) {
-        reject(new Error('Invalid JSON'));
+        const jsonErr = new Error('Formato JSON inválido.');
+        jsonErr.statusCode = 400;
+        reject(jsonErr);
       }
     });
-    req.on('error', reject);
+    req.on('error', (err) => {
+      err.statusCode = 400;
+      reject(err);
+    });
   });
 }
 
-// Helper: Send JSON response
-function sendJson(res, statusCode, data) {
+// Helper: Send JSON response con cabeceras de seguridad y CORS restringido (A-07, M-13)
+function sendJson(res, statusCode, data, req = null) {
+  const allowOrigin = req ? getCorsOrigin(req) : '*';
   res.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
   });
   res.end(JSON.stringify(data));
 }
@@ -522,12 +576,15 @@ function getAuthenticatedUser(req) {
 
 // HTTP Request Handler (compatible con servidor local y Vercel Serverless)
 export async function handleRequest(req, res) {
-  // CORS Preflight
+  // CORS Preflight (A-07)
   if (req.method === 'OPTIONS') {
+    const origin = getCorsOrigin(req);
     res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY'
     });
     res.end();
     return;
@@ -541,14 +598,13 @@ export async function handleRequest(req, res) {
   // --------------------------------------------------------------------------
   if (pathname.startsWith('/api/')) {
     try {
-      // 1. Health check
+      // 1. Health check (B-05: Sin datos internos de negocio)
       if (pathname === '/api/health') {
         return sendJson(res, 200, {
           status: 'online',
           service: 'Namasté Yoga API',
-          timestamp: new Date().toISOString(),
-          usersCount: Object.keys(db.users).length
-        });
+          timestamp: new Date().toISOString()
+        }, req);
       }
 
       // 2. Auth: Login (Verificación criptográfica estricta con protección contra fuerza bruta)
@@ -656,18 +712,23 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, { success: true, message: 'Sesión cerrada correctamente.' });
       }
 
-      // 5. Checkout / New Subscription
+      // 5. Checkout / New Subscription (A-04, A-15)
       if (pathname === '/api/checkout' && req.method === 'POST') {
+        const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+        if (isActionRateLimited(`checkout_${clientIp}`, 10, 60000)) {
+          return sendJson(res, 429, { success: false, message: 'Demasiadas solicitudes de suscripción. Por favor espera un momento.' }, req);
+        }
+
         const body = await parseJsonBody(req);
-        const email = (body.email || '').trim().toLowerCase();
-        const name = (body.name || 'Practicante').trim();
-        const password = (body.password || '').trim();
+        const email = (typeof body.email === 'string' ? body.email : '').trim().toLowerCase();
+        const name = (typeof body.name === 'string' ? body.name : 'Practicante').trim();
+        const password = (typeof body.password === 'string' ? body.password : '').trim();
         const planId = body.planId || 'plan-refugio';
         const isAnnual = Boolean(body.isAnnual);
         const paymentMethod = body.paymentMethod || 'MercadoPago';
 
         if (!email || !email.includes('@')) {
-          return sendJson(res, 400, { success: false, message: 'Por favor, proporciona un correo electrónico válido.' });
+          return sendJson(res, 400, { success: false, message: 'Por favor, proporciona un correo electrónico válido.' }, req);
         }
 
         const plan = PLANS_CATALOG[planId] || PLANS_CATALOG['plan-refugio'];
@@ -685,6 +746,15 @@ export async function handleRequest(req, res) {
         let user = Object.values(db.users).find(u => (u.email || '').toLowerCase() === email);
 
         if (user) {
+          const auth = getAuthenticatedUser(req);
+          // Si el usuario ya existe y está activo, no permitir sobreescritura ni degradación anónima (A-04)
+          if (user.active && (!auth || (auth.user.email || '').toLowerCase() !== email)) {
+            return sendJson(res, 409, {
+              success: false,
+              message: 'Ya existe una cuenta activa con este correo electrónico. Por favor inicia sesión para gestionar tu suscripción.'
+            }, req);
+          }
+
           user.name = name;
           if (password) user.passwordHash = hashPassword(password);
           delete user.password;
@@ -895,46 +965,73 @@ export async function handleRequest(req, res) {
         return sendJson(res, 200, { success: true, progress: userProgress });
       }
 
-      // 7. User Progress: Update
+      // 7. User Progress: Update (M-07, M-08)
       if (pathname === '/api/progress' && req.method === 'POST') {
         const auth = getAuthenticatedUser(req);
         if (!auth) {
-          return sendJson(res, 401, { success: false, message: 'No autenticado.' });
+          return sendJson(res, 401, { success: false, message: 'No autenticado.' }, req);
         }
         const body = await parseJsonBody(req);
         const current = db.progress[auth.user.id] || {
           streakDays: 1,
-          lastStreakDate: new Date().toISOString().split('T')[0],
+          lastStreakDate: getArgentinaTodayStr(),
           totalMinutes: 0,
           favorites: [],
           completed: [],
           lastPlayed: null
         };
 
-        if (Array.isArray(body.favorites)) current.favorites = body.favorites;
-        if (Array.isArray(body.completed)) current.completed = body.completed;
-        if (body.lastPlayed) current.lastPlayed = body.lastPlayed;
-        if (typeof body.totalMinutes === 'number') current.totalMinutes = body.totalMinutes;
-        if (typeof body.streakDays === 'number') current.streakDays = body.streakDays;
-        if (body.lastStreakDate) current.lastStreakDate = body.lastStreakDate;
-
-        if (body.completedClassId) {
-          if (!current.completed.includes(body.completedClassId)) {
-            current.completed.push(body.completedClassId);
+        // Validación rigurosa de límites numéricos (M-08)
+        if (typeof body.streakDays === 'number' && !isNaN(body.streakDays)) {
+          if (body.streakDays >= 0 && body.streakDays <= 365) {
+            current.streakDays = Math.floor(body.streakDays);
           }
-          if (typeof body.durationMinutes === 'number') {
-            current.totalMinutes = (current.totalMinutes || 0) + body.durationMinutes;
+        }
+        if (typeof body.totalMinutes === 'number' && !isNaN(body.totalMinutes)) {
+          if (body.totalMinutes >= 0 && body.totalMinutes <= 50000) {
+            current.totalMinutes = Math.floor(body.totalMinutes);
+          }
+        }
+        if (Array.isArray(body.favorites)) {
+          current.favorites = body.favorites.filter(id => typeof id === 'string' && /^[a-zA-Z0-9_-]{1,60}$/.test(id)).slice(0, 50);
+        }
+        if (Array.isArray(body.completed)) {
+          current.completed = body.completed.filter(id => typeof id === 'string' && /^[a-zA-Z0-9_-]{1,60}$/.test(id)).slice(0, 200);
+        }
+        if (body.lastPlayed && typeof body.lastPlayed === 'object') {
+          current.lastPlayed = {
+            classId: String(body.lastPlayed.classId || '').slice(0, 60),
+            title: String(body.lastPlayed.title || '').slice(0, 100),
+            timestamp: new Date().toISOString()
+          };
+        }
+
+        if (body.completedClassId && typeof body.completedClassId === 'string') {
+          const safeId = body.completedClassId.trim();
+          if (/^[a-zA-Z0-9_-]{1,60}$/.test(safeId)) {
+            if (!current.completed.includes(safeId)) {
+              current.completed.push(safeId);
+            }
+          }
+          if (typeof body.durationMinutes === 'number' && body.durationMinutes > 0 && body.durationMinutes <= 180) {
+            current.totalMinutes = Math.min(50000, (current.totalMinutes || 0) + Math.floor(body.durationMinutes));
           }
         }
 
-        // Calendar-based streak calculation
+        // Calendar-based streak calculation con hora oficial de Argentina (M-07)
         if (body.recordPractice) {
-          const todayStr = new Date().toISOString().split('T')[0];
+          const todayStr = getArgentinaTodayStr();
           const lastDate = current.lastStreakDate;
           if (lastDate !== todayStr) {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterdayStr = new Intl.DateTimeFormat('en-CA', {
+              timeZone: 'America/Argentina/Buenos_Aires',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }).format(yesterdayDate);
+
             if (lastDate === yesterdayStr) {
               current.streakDays = (current.streakDays || 0) + 1;
             } else {
@@ -947,7 +1044,7 @@ export async function handleRequest(req, res) {
         db.progress[auth.user.id] = current;
         saveDatabase(db);
 
-        return sendJson(res, 200, { success: true, progress: current });
+        return sendJson(res, 200, { success: true, progress: current }, req);
       }
 
       // 7.8 Catálogo Oficial de Clases (Metadatos seguros sin URLs crudas de video)
@@ -1000,76 +1097,138 @@ export async function handleRequest(req, res) {
         });
       }
 
-      // 8.5 Reviews del Shala (Públicas & Alumnas)
+      // 8.5 Reviews del Shala (A-08: Autenticación, validación estricta y protección PII)
       if (pathname === '/api/reviews' && req.method === 'GET') {
-        const reviews = (db.reviews || []).slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        return sendJson(res, 200, { success: true, reviews });
+        const reviews = (db.reviews || []).slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map(r => ({
+          id: r.id,
+          name: r.name,
+          planName: r.planName,
+          memberSince: r.memberSince || 'Miembro verificada',
+          quote: r.quote,
+          rating: Math.max(1, Math.min(5, Number(r.rating) || 5)),
+          timestamp: r.timestamp
+        }));
+        return sendJson(res, 200, { success: true, reviews }, req);
       }
 
       if (pathname === '/api/reviews' && req.method === 'POST') {
-        const body = await parseJsonBody(req);
-        const quote = (body.quote || '').trim();
-        const rating = Number(body.rating) || 5;
-        const name = (body.name || 'Alumna de Namasté').trim();
-        const planName = (body.planName || 'Plan Refugio').trim();
-        const userEmail = (body.userEmail || '').trim().toLowerCase();
+        const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+        if (isActionRateLimited(`review_${clientIp}`, 5, 60000)) {
+          return sendJson(res, 429, { success: false, message: 'Demasiadas solicitudes. Por favor espera un momento.' }, req);
+        }
 
-        if (!quote || quote.length < 10) {
-          return sendJson(res, 400, { success: false, message: 'La reseña debe tener al menos 10 caracteres.' });
+        const auth = getAuthenticatedUser(req);
+        if (!auth) {
+          return sendJson(res, 401, { success: false, message: 'Debes iniciar sesión con tu cuenta de alumna activa para publicar una reseña.' }, req);
+        }
+        if (!auth.user.active) {
+          return sendJson(res, 403, { success: false, message: 'Tu membresía debe estar activa para publicar una reseña.' }, req);
+        }
+
+        const body = await parseJsonBody(req);
+        const quote = typeof body.quote === 'string' ? body.quote.trim() : '';
+        const rawRating = Number(body.rating);
+
+        if (isNaN(rawRating) || rawRating < 1 || rawRating > 5 || !Number.isInteger(rawRating)) {
+          return sendJson(res, 400, { success: false, message: 'La calificación debe ser un número entero entre 1 y 5 estrellas.' }, req);
+        }
+
+        if (!quote || quote.length < 10 || quote.length > 500) {
+          return sendJson(res, 400, { success: false, message: 'La reseña debe tener entre 10 y 500 caracteres.' }, req);
         }
 
         if (!db.reviews) db.reviews = [];
+        const existingIdx = db.reviews.findIndex(r => r.userId === auth.user.id || (r.userEmail && r.userEmail === auth.user.email));
+
         const newReview = {
           id: 'rev_' + crypto.randomBytes(6).toString('hex'),
-          name,
-          planName,
-          memberSince: 'Miembro verificada',
-          quote,
-          rating,
-          userEmail,
+          userId: auth.user.id,
+          name: auth.user.name,
+          planName: auth.user.planName || 'Plan Refugio',
+          memberSince: auth.user.memberSince || 'Miembro verificada',
+          quote: quote.replace(/[<>]/g, ''),
+          rating: rawRating,
+          userEmail: auth.user.email,
           timestamp: new Date().toISOString()
         };
 
-        db.reviews.push(newReview);
-        recordAuditLog(db, 'REVIEW_POSTED', 'Nueva reseña publicada', `${name} publicó una reseña de ${rating} estrellas`, userEmail, 'info');
+        if (existingIdx >= 0) {
+          db.reviews[existingIdx] = newReview;
+        } else {
+          db.reviews.push(newReview);
+        }
+
+        recordAuditLog(db, 'REVIEW_POSTED', 'Nueva reseña verificada', `${auth.user.name} publicó una reseña de ${rawRating} estrellas`, auth.user.email, 'info');
         saveDatabase(db);
 
+        const { userEmail: _, ...safeReview } = newReview;
         return sendJson(res, 201, {
           success: true,
-          review: newReview,
-          message: 'Tu reseña ha sido publicada con éxito en el inicio.'
-        });
+          review: safeReview,
+          message: 'Tu reseña ha sido verificada y publicada con éxito.'
+        }, req);
       }
 
-      // 9. Membership Management: Toggle Status (Pause / Reactivate)
+      // 9. Membership Management: Toggle Status (Pause / Reactivate) (A-03)
       if (pathname === '/api/membership/toggle-status' && req.method === 'POST') {
         const auth = getAuthenticatedUser(req);
         if (!auth) {
-          return sendJson(res, 401, { success: false, message: 'No autenticado.' });
+          return sendJson(res, 401, { success: false, message: 'No autenticado.' }, req);
         }
         const user = db.users[auth.user.id];
+
+        // Cuentas canceladas, pendientes o suspendidas no pueden autorreactivarse (A-03)
+        if (user.paymentStatus === 'cancelled' || user.paymentStatus === 'pending' || user.status === 'suspended') {
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Tu membresía se encuentra suspendida o con pago pendiente. Por favor abona tu suscripción o contacta a soporte.'
+          }, req);
+        }
+
         user.active = !user.active;
+        user.status = user.active ? 'active' : 'paused_by_user';
+
+        if (!user.active) {
+          Object.keys(db.sessions).forEach(tok => {
+            if (db.sessions[tok]?.userId === user.id && tok !== auth.token) {
+              delete db.sessions[tok];
+            }
+          });
+        }
+
         recordAuditLog(db, 'MEMBERSHIP_TOGGLE', user.active ? 'Membresía reactivada por alumna' : 'Membresía pausada por alumna', `${user.name} (${user.email})`, user.email, user.active ? 'success' : 'warning');
         saveDatabase(db);
         return sendJson(res, 200, {
           success: true,
           active: user.active,
+          status: user.status,
           message: user.active ? 'Membresía reactivada con éxito.' : 'Membresía pausada. No se generarán cobros.'
-        });
+        }, req);
       }
 
-      // 10. Membership Management: Change Plan
+      // 10. Membership Management: Change Plan (A-02: Requiere pago para upgrade)
       if (pathname === '/api/membership/change-plan' && req.method === 'POST') {
         const auth = getAuthenticatedUser(req);
         if (!auth) {
-          return sendJson(res, 401, { success: false, message: 'No autenticado.' });
+          return sendJson(res, 401, { success: false, message: 'No autenticado.' }, req);
         }
         const body = await parseJsonBody(req);
         const newPlan = PLANS_CATALOG[body.planId];
         if (!newPlan) {
-          return sendJson(res, 400, { success: false, message: 'Plan no reconocido.' });
+          return sendJson(res, 400, { success: false, message: 'Plan no reconocido.' }, req);
         }
         const user = db.users[auth.user.id];
+
+        // Alumnas no pueden cambiarse de plan gratis sin pago (A-02)
+        if (!user.isAdmin && user.role !== 'admin' && newPlan.id !== user.planId) {
+          return sendJson(res, 402, {
+            success: false,
+            requiresPayment: true,
+            checkoutUrl: newPlan.mercadopagoUrl || 'https://www.mercadopago.com.ar',
+            message: `Para cambiar al ${newPlan.name}, es necesario completar la suscripción correspondiente en Mercado Pago.`
+          }, req);
+        }
+
         user.planId = newPlan.id;
         user.planName = newPlan.name;
         user.billedAmount = user.isAnnual ? newPlan.annualPrice : newPlan.monthlyPrice;
@@ -1077,9 +1236,9 @@ export async function handleRequest(req, res) {
         saveDatabase(db);
         return sendJson(res, 200, {
           success: true,
-          user,
+          user: sanitizeUser(user),
           message: `Plan actualizado a ${newPlan.name}.`
-        });
+        }, req);
       }
 
       // ======================================================================
@@ -1149,8 +1308,8 @@ export async function handleRequest(req, res) {
             totalCompletedClasses,
             planCounts
           },
-          recentLogs: (db.auditLogs || []).slice(0, 10),
-          recentTransactions: (db.transactions || []).map(tx => {
+          recentLogs: (db.auditLogs || []).slice(-15).reverse(),
+          recentTransactions: (db.transactions || []).slice(-20).reverse().map(tx => {
             const user = (tx.userId && db.users[tx.userId]) || Object.values(db.users || {}).find(u => (u.email || '').toLowerCase() === (tx.email || '').toLowerCase());
             return {
               ...tx,
@@ -1331,6 +1490,7 @@ export async function handleRequest(req, res) {
 
         recordAuditLog(db, 'USER_DELETED', 'Baja definitiva de cuenta', `Cuenta de ${userName} (${userEmail}) eliminada del sistema`, userEmail, 'warning');
         saveDatabase(db);
+        deleteUserFromSupabase(userId).catch(e => console.error('[DB] Error eliminando usuario de Supabase:', e.message));
         return sendJson(res, 200, { success: true, message: `Cuenta de ${userName} eliminada correctamente.` });
       }
 
@@ -1408,21 +1568,35 @@ export async function handleRequest(req, res) {
           db.plans = JSON.parse(JSON.stringify(DEFAULT_DATABASE.plans));
         }
 
-        // Helper de saneamiento riguroso de URLs
+        const allowedMpDomains = [
+          'mercadopago.com',
+          'mercadopago.com.ar',
+          'mpago.la',
+          'mpago.li',
+          'link.mercadopago.com.ar'
+        ];
+
+        // Helper de saneamiento riguroso de URLs con lista blanca de dominios oficiales de pago (A-18)
         const sanitizeSafeUrl = (raw) => {
-          if (!raw || typeof raw !== 'string') return '';
+          if (!raw || typeof raw !== 'string') return 'https://www.mercadopago.com.ar';
           const trimmed = raw.trim();
-          if (!trimmed) return '';
-          // Prohibir esquemas peligrosos de inyección de script
+          if (!trimmed) return 'https://www.mercadopago.com.ar';
           if (/^(javascript|vbscript|data):/i.test(trimmed)) {
             throw new Error('Esquema de URL no permitido por motivos de seguridad.');
           }
-          // Sanitizar caracteres HTML peligrosos
-          const clean = trimmed.replace(/[<>"'`]/g, '');
-          if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-            return `https://${clean}`;
+          let urlObj;
+          try {
+            const urlWithProto = (trimmed.startsWith('http://') || trimmed.startsWith('https://')) ? trimmed : `https://${trimmed}`;
+            urlObj = new URL(urlWithProto);
+          } catch (e) {
+            throw new Error('URL de Mercado Pago inválida.');
           }
-          return clean;
+          const host = urlObj.hostname.toLowerCase();
+          const isAllowedDomain = allowedMpDomains.some(d => host === d || host.endsWith('.' + d));
+          if (!isAllowedDomain) {
+            throw new Error(`Dominio no permitido: "${host}". Por protección contra phishing, los enlaces deben pertenecer a Mercado Pago (mercadopago.com.ar, mpago.la).`);
+          }
+          return urlObj.toString();
         };
 
         const allowedPlanIds = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
@@ -1439,21 +1613,21 @@ export async function handleRequest(req, res) {
 
             const existing = db.plans[planId] || (DEFAULT_DATABASE.plans && DEFAULT_DATABASE.plans[planId]) || {};
 
-            // Validación estricta de precios
+            // Validación estricta de precios razonables en ARS (A-18)
             const priceMonthly = Number(planData.priceMonthly !== undefined ? planData.priceMonthly : existing.priceMonthly);
-            if (isNaN(priceMonthly) || priceMonthly <= 0) {
+            if (isNaN(priceMonthly) || priceMonthly < 1000 || priceMonthly > 1000000) {
               return sendJson(res, 400, {
                 success: false,
-                message: `El precio mensual para ${planData.name || planId} debe ser un número mayor a 0.`
-              });
+                message: `El precio mensual para ${planData.name || planId} debe estar entre $1.000 y $1.000.000 ARS.`
+              }, req);
             }
 
             const priceAnnualTotal = Number(planData.priceAnnualTotal !== undefined ? planData.priceAnnualTotal : existing.priceAnnualTotal);
-            if (isNaN(priceAnnualTotal) || priceAnnualTotal <= 0) {
+            if (isNaN(priceAnnualTotal) || priceAnnualTotal < 10000 || priceAnnualTotal > 10000000) {
               return sendJson(res, 400, {
                 success: false,
-                message: `El precio anual para ${planData.name || planId} debe ser un número mayor a 0.`
-              });
+                message: `El precio anual para ${planData.name || planId} debe estar entre $10.000 y $10.000.000 ARS.`
+              }, req);
             }
 
             const mercadopagoUrl = sanitizeSafeUrl(planData.mercadopagoUrl || existing.mercadopagoUrl || 'https://www.mercadopago.com.ar');
@@ -1522,8 +1696,11 @@ export async function handleRequest(req, res) {
       return sendJson(res, 404, { success: false, message: 'Endpoint no encontrado' });
 
     } catch (err) {
+      if (err.statusCode) {
+        return sendJson(res, err.statusCode, { success: false, message: err.message }, req);
+      }
       console.error('[API Error]', err);
-      return sendJson(res, 500, { success: false, message: 'Error interno en el servidor de Namasté.' });
+      return sendJson(res, 500, { success: false, message: 'Error interno en el servidor de Namasté.' }, req);
     }
   }
 
@@ -1580,6 +1757,14 @@ export async function handleRequest(req, res) {
   // Verificar existencia y servir archivo
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
+      const extReq = path.extname(cleanPath).toLowerCase();
+      // Si la URL pedía un asset específico con extensión que no existe, responder 404 estricto (M-09)
+      if (extReq && extReq !== '.html') {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
+        return;
+      }
+
       // Fallback a index.html para soportar navegación SPA
       const indexFallback = path.join(__dirname, 'index.html');
       fs.readFile(indexFallback, (fbErr, content) => {

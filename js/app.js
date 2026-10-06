@@ -1738,18 +1738,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Control de acceso según membresía (Plan Esencia, Plan Refugio, Plan Sadhana)
     if (user) {
-      const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
-      const userLevel = planHierarchy[user.planId] || 1;
-      const requiredPlan = classObj.planRequired || (
-        classObj.category === 'dinamico' || classObj.category === 'ashtanga' ? 'plan-sadhana' :
-        (classObj.category === 'suave' ? 'plan-esencia' : 'plan-refugio')
-      );
-      const requiredLevel = planHierarchy[requiredPlan] || 1;
+      if (user.isAdmin || user.role === 'admin') {
+        // Directora / Administradora tiene acceso irrestricto a todas las prácticas
+      } else {
+        const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
+        const userLevel = planHierarchy[user.planId] || 1;
+        const requiredPlan = classObj.planRequired || (
+          classObj.category === 'ashtanga' ? 'plan-sadhana' :
+          (classObj.category === 'suave' || classObj.category === 'clasico' ? 'plan-esencia' : 'plan-refugio')
+        );
+        const requiredLevel = planHierarchy[requiredPlan] || 1;
 
-      if (userLevel < requiredLevel) {
-        const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio';
-        showToast(`La práctica "${classObj.title}" requiere ${planName}. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
-        return;
+        if (userLevel < requiredLevel) {
+          const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio';
+          showToast(`La práctica "${classObj.title}" requiere ${planName}. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
+          return;
+        }
       }
     }
 
@@ -4685,10 +4689,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="tx-amount-freq">${tx.isAnnual ? '/año' : '/mes'}</span>
           </td>
           <td class="col-user-action" style="width: 24%; text-align: center;">
+            ${tx.status === 'succeeded' ? `
             <button type="button" class="btn-print-tx-receipt" data-tx-id="${txId}" title="Imprimir comprobante">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
               <span>Recibo</span>
             </button>
+            ` : `
+            <span class="plan-badge" style="background: rgba(180, 80, 70, 0.12); color: #b45046; font-size: 0.72rem; padding: 2px 7px; border-radius: 99px;">${tx.status === 'pending' ? 'Pendiente' : 'No cobrado'}</span>
+            `}
           </td>
         </tr>
         <tr id="tx-details-row-${txId}" class="admin-user-details-row" style="display: none;">
@@ -4751,7 +4759,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /** Abre una ventana de impresión con el recibo de un cobro específico */
   function printTxReceipt(tx) {
-    if (!tx) return;
+    if (!tx || tx.status !== 'succeeded') {
+      showToast('Solo se pueden emitir recibos de cobros abonados y confirmados.', 'warning');
+      return;
+    }
     const planLabel = (tx.planName || (tx.planId === 'plan-esencia' ? 'Plan Esencia' : tx.planId === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio'));
     const amount = `$ ${Number(tx.amount || 0).toLocaleString('es-AR')} ARS`;
     const period = tx.isAnnual ? 'Anual' : 'Mensual';

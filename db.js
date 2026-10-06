@@ -260,74 +260,90 @@ export async function syncToSupabase(database) {
         }
       }
 
-      // 3. Sincronizar Transacciones recientes
+      // 3. Sincronizar Transacciones recientes (A-09, A-10)
       if (Array.isArray(database.transactions) && database.transactions.length > 0) {
-        for (const tx of database.transactions.slice(0, 20)) {
-          await client.query(`
-            INSERT INTO transactions (id, receipt_number, user_id, name, email, plan_id, plan_name, amount, currency, status, is_annual, payment_method, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            ON CONFLICT (id) DO NOTHING;
-          `, [
-            tx.id,
-            tx.receiptNumber,
-            tx.userId,
-            tx.name,
-            tx.email,
-            tx.planId,
-            tx.planName,
-            tx.amount,
-            tx.currency || 'ARS',
-            tx.status || 'succeeded',
-            Boolean(tx.isAnnual),
-            tx.paymentMethod,
-            tx.timestamp || new Date().toISOString()
-          ]);
+        for (const tx of database.transactions.slice(-100)) {
+          try {
+            await client.query(`
+              INSERT INTO transactions (id, receipt_number, user_id, name, email, plan_id, plan_name, amount, currency, status, is_annual, payment_method, timestamp)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+              ON CONFLICT (id) DO UPDATE SET
+                status = EXCLUDED.status,
+                timestamp = EXCLUDED.timestamp,
+                amount = EXCLUDED.amount,
+                is_annual = EXCLUDED.is_annual;
+            `, [
+              tx.id,
+              tx.receiptNumber,
+              tx.userId,
+              tx.name,
+              tx.email,
+              tx.planId,
+              tx.planName,
+              tx.amount,
+              tx.currency || 'ARS',
+              tx.status || 'succeeded',
+              Boolean(tx.isAnnual),
+              tx.paymentMethod,
+              tx.timestamp || new Date().toISOString()
+            ]);
+          } catch (txErr) {
+            console.error(`[DB] Error sincronizando transacción ${tx.id}:`, txErr.message);
+          }
         }
       }
 
       // 4. Sincronizar Progreso
       if (database.progress) {
         for (const [userId, pr] of Object.entries(database.progress)) {
-          await client.query(`
-            INSERT INTO progress (user_id, streak_days, last_streak_date, total_minutes, favorites, completed, last_played, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ON CONFLICT (user_id) DO UPDATE SET
-              streak_days = EXCLUDED.streak_days,
-              last_streak_date = EXCLUDED.last_streak_date,
-              total_minutes = EXCLUDED.total_minutes,
-              favorites = EXCLUDED.favorites,
-              completed = EXCLUDED.completed,
-              last_played = EXCLUDED.last_played,
-              updated_at = NOW();
-          `, [
-            userId,
-            pr.streakDays || 0,
-            pr.lastStreakDate || '',
-            pr.totalMinutes || 0,
-            JSON.stringify(pr.favorites || []),
-            JSON.stringify(pr.completed || []),
-            JSON.stringify(pr.lastPlayed || {}),
-            new Date().toISOString()
-          ]);
+          try {
+            await client.query(`
+              INSERT INTO progress (user_id, streak_days, last_streak_date, total_minutes, favorites, completed, last_played, updated_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              ON CONFLICT (user_id) DO UPDATE SET
+                streak_days = EXCLUDED.streak_days,
+                last_streak_date = EXCLUDED.last_streak_date,
+                total_minutes = EXCLUDED.total_minutes,
+                favorites = EXCLUDED.favorites,
+                completed = EXCLUDED.completed,
+                last_played = EXCLUDED.last_played,
+                updated_at = NOW();
+            `, [
+              userId,
+              pr.streakDays || 0,
+              pr.lastStreakDate || '',
+              pr.totalMinutes || 0,
+              JSON.stringify(pr.favorites || []),
+              JSON.stringify(pr.completed || []),
+              JSON.stringify(pr.lastPlayed || {}),
+              new Date().toISOString()
+            ]);
+          } catch (progErr) {
+            console.error(`[DB] Error sincronizando progreso ${userId}:`, progErr.message);
+          }
         }
       }
 
-      // 5. Sincronizar Logs
+      // 5. Sincronizar Logs (A-10)
       if (Array.isArray(database.auditLogs) && database.auditLogs.length > 0) {
-        for (const l of database.auditLogs.slice(0, 10)) {
-          await client.query(`
-            INSERT INTO audit_logs (id, timestamp, action, title, details, user_email, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (id) DO NOTHING;
-          `, [
-            l.id,
-            l.timestamp || new Date().toISOString(),
-            l.action,
-            l.title,
-            l.details,
-            l.userEmail || '',
-            l.status || 'info'
-          ]);
+        for (const l of database.auditLogs.slice(-100)) {
+          try {
+            await client.query(`
+              INSERT INTO audit_logs (id, timestamp, action, title, details, user_email, status)
+              VALUES ($1, $2, $3, $4, $5, $6, $7)
+              ON CONFLICT (id) DO NOTHING;
+            `, [
+              l.id,
+              l.timestamp || new Date().toISOString(),
+              l.action,
+              l.title,
+              l.details,
+              l.userEmail || '',
+              l.status || 'info'
+            ]);
+          } catch (logErr) {
+            console.error(`[DB] Error sincronizando log ${l.id}:`, logErr.message);
+          }
         }
       }
     } finally {
@@ -335,5 +351,26 @@ export async function syncToSupabase(database) {
     }
   } catch (err) {
     console.error('[DB] Error writing to Supabase:', err.message);
+  }
+}
+
+/**
+ * Elimina definitivamente un usuario y sus registros relacionados en Supabase PostgreSQL (M-01)
+ */
+export async function deleteUserFromSupabase(userId) {
+  const pool = initDbPool();
+  if (!pool || !userId) return;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('DELETE FROM progress WHERE user_id = $1;', [userId]);
+      await client.query('DELETE FROM users WHERE id = $1;', [userId]);
+      console.log(`[DB] Usuario ${userId} eliminado de Supabase PostgreSQL.`);
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error(`[DB] Error eliminando usuario ${userId} de Supabase:`, err.message);
   }
 }
