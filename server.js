@@ -60,9 +60,12 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 }
 
 // Validación de credenciales maestras (NAM-008)
-if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_PASSWORD) {
-  console.error('[SEGURIDAD CRÍTICA] ADMIN_PASSWORD no está definida en entorno de producción.');
-  process.exit(1);
+if (!process.env.ADMIN_PASSWORD) {
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('[SEGURIDAD] ADMIN_PASSWORD no está definida en el entorno de producción. El acceso de administración estará bloqueado hasta configurar esta variable en Vercel.');
+  } else {
+    console.warn('[SEGURIDAD] ADMIN_PASSWORD no está definida. Configure ADMIN_PASSWORD para habilitar el acceso de administración.');
+  }
 }
 
 // -------------------------------------------------------------
@@ -356,6 +359,33 @@ async function initializeServerState() {
   } catch (err) {
     console.warn('[NAMASTÉ] Operando con caché local / memoria:', err.message);
   }
+
+  // Si existe ADMIN_PASSWORD en el entorno, inicializar hash de la Directora (usr-valeria)
+  if (process.env.ADMIN_PASSWORD) {
+    const adminHash = hashPassword(process.env.ADMIN_PASSWORD);
+    if (db.users['usr-valeria']) {
+      db.users['usr-valeria'].passwordHash = adminHash;
+    }
+    const pool = initDbPool();
+    if (pool) {
+      try {
+        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2;', [adminHash, 'usr-valeria']);
+      } catch (e) {}
+    }
+  }
+
+  // Alumna de prueba Sofía: asegurar hash de contraseña si no fue establecido
+  if (db.users['usr-sofia'] && !db.users['usr-sofia'].passwordHash) {
+    const sofiaHash = hashPassword('namaste123');
+    db.users['usr-sofia'].passwordHash = sofiaHash;
+    const pool = initDbPool();
+    if (pool) {
+      try {
+        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2 AND password_hash IS NULL;', [sofiaHash, 'usr-sofia']);
+      } catch (e) {}
+    }
+  }
+
   isServerInitialized = true;
 }
 
@@ -523,10 +553,10 @@ export async function handleRequest(req, res) {
   // -----------------------------------------------------------
   // 1. API ROUTES
   // -----------------------------------------------------------
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/api/') || pathname === '/api') {
     try {
-      // 1.1 Health Check
-      if (pathname === '/api/health' && req.method === 'GET') {
+      // 1.1 Health Check & API Index
+      if ((pathname === '/api/health' || pathname === '/api' || pathname === '/api/' || pathname === '/api/index') && req.method === 'GET') {
         return sendJson(res, 200, {
           status: 'ok',
           service: 'Namasté Shala Platform',
@@ -558,11 +588,23 @@ export async function handleRequest(req, res) {
 
         // Buscar usuaria por email o accessCode (en DB y en memoria)
         let user = await getUserByEmail(identifier);
+        if (user && db.users[user.id]?.passwordHash && !user.passwordHash) {
+          user.passwordHash = db.users[user.id].passwordHash;
+        }
         if (!user) {
           user = Object.values(db.users).find(u =>
             (u.email || '').toLowerCase() === identifier ||
             (u.accessCode || '').toUpperCase() === identifier.toUpperCase()
           );
+        }
+
+        // Si es cuenta administradora pero no se configuró ADMIN_PASSWORD en el entorno
+        if (user && (user.isAdmin || user.role === 'admin') && !user.passwordHash) {
+          registerFailedLogin(clientIp);
+          return sendJson(res, 403, {
+            success: false,
+            message: 'Acceso de administración inhabilitado: configure ADMIN_PASSWORD en las variables de entorno.'
+          }, req);
         }
 
         if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
@@ -1533,7 +1575,9 @@ const server = http.createServer(handleRequest);
 
 process.on('uncaughtException', (err) => {
   console.error('[CRITICAL SERVER ERROR] Uncaught exception:', err);
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 process.on('unhandledRejection', (reason) => {
