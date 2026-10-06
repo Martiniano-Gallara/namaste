@@ -4536,13 +4536,12 @@ document.addEventListener('DOMContentLoaded', () => {
       users = users.filter(u => !u.active && u.paymentStatus !== 'pending' && u.status !== 'pending_payment');
     }
 
-    // Filtro por Búsqueda (Nombre, Email, Código)
+    // Filtro por Búsqueda (Nombre, Email)
     if (state.adminUserSearchQuery) {
       const q = state.adminUserSearchQuery;
       users = users.filter(u =>
         (u.name && u.name.toLowerCase().includes(q)) ||
-        (u.email && u.email.toLowerCase().includes(q)) ||
-        (u.accessCode && u.accessCode.toLowerCase().includes(q))
+        (u.email && u.email.toLowerCase().includes(q))
       );
     }
 
@@ -4562,7 +4561,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const rawPlan = user.planName || (user.planId === 'plan-esencia' ? 'Esencia' : user.planId === 'plan-sadhana' ? 'Sadhana' : 'Refugio');
       const planLabel = escapeHtml(rawPlan.replace(/^plan\s+/i, '').toUpperCase());
       const billingType = user.isAnnual ? 'Anual' : 'Mensual';
-      const billingAmount = `$${user.billedAmount || 29}`;
 
       return `
         <tr id="main-row-${user.id}" class="admin-user-row">
@@ -4600,22 +4598,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="qd-val">${escapeHtml(user.email)}</span>
                 </div>
                 <div class="quick-detail-item">
-                  <span class="qd-label">Código:</span>
-                  <button type="button" class="code-copy-btn-mini" data-code="${escapeHtml(user.accessCode)}" title="Copiar código">
-                    <span>${escapeHtml(user.accessCode)}</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                  </button>
+                  <span class="qd-label">Plan:</span>
+                  <span class="qd-val">Plan ${planLabel} (${billingType})</span>
                 </div>
                 <div class="quick-detail-item">
                   <span class="qd-label">Práctica:</span>
-                  <span class="qd-val">${user.streakDays || 0}d racha • ${user.completedCount || 0} clases (${user.totalMinutes || 0}m)</span>
-                </div>
-                <div class="quick-detail-item">
-                  <span class="qd-label">Cobro:</span>
-                  <span class="qd-val">${billingAmount}/${user.isAnnual ? 'año' : 'mes'} • Próx: ${escapeHtml(user.nextBillingDate || '28 Oct')}</span>
+                  <span class="qd-val">${user.progress?.streakDays || user.streakDays || 0}d racha • ${user.progress?.totalMinutes || user.totalMinutes || 0} min</span>
                 </div>
               </div>
               <div class="quick-actions-row">
