@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     adminUserFilterStatus: 'all',
     adminUserSearchQuery: '',
     adminClassesCache: [],
-    adminClassFilterFormat: 'all',
+    adminClassFilterPlan: '',
+    adminClassSortFormat: '',
     adminClassSearchQuery: '',
     adminActiveTab: 'tab-classes',
     adminPlansCache: null
@@ -3388,15 +3389,26 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const classFilterPills = document.querySelectorAll('[data-filter-class]');
-    classFilterPills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        classFilterPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        state.adminClassFilterFormat = pill.getAttribute('data-filter-class') || 'all';
-        renderAdminClassesTable();
+    // Pills de selección única con toggle (clic de nuevo = quitar)
+    const bindTogglePills = (selector, attr, stateKey) => {
+      const pills = document.querySelectorAll(selector);
+      pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          const value = pill.getAttribute(attr);
+          const wasActive = pill.classList.contains('active');
+          pills.forEach(p => p.classList.remove('active'));
+          if (wasActive) {
+            state[stateKey] = '';
+          } else {
+            pill.classList.add('active');
+            state[stateKey] = value;
+          }
+          renderAdminClassesTable();
+        });
       });
-    });
+    };
+    bindTogglePills('[data-filter-plan]', 'data-filter-plan', 'adminClassFilterPlan');
+    bindTogglePills('[data-sort-format]', 'data-sort-format', 'adminClassSortFormat');
 
     // 11. Modal de Subir / Editar Clase con Editor Mobile-First Integrado
     let _classMediaBlob = null;
@@ -4818,11 +4830,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let classes = [...(state.adminClassesCache && state.adminClassesCache.length > 0 ? state.adminClassesCache : getActiveClasses())];
 
-    // Filtro por Formato (Todas / Video / Audio)
-    if (state.adminClassFilterFormat === 'video') {
-      classes = classes.filter(c => c.format === 'video' || (!c.format && c.category !== 'meditacion' && c.category !== 'relax'));
-    } else if (state.adminClassFilterFormat === 'audio') {
-      classes = classes.filter(c => c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax')));
+    // Filtro por Plan (Esencia / Refugio / Sadhana)
+    if (state.adminClassFilterPlan) {
+      classes = classes.filter(c => (c.planRequired || 'plan-esencia') === state.adminClassFilterPlan);
+    }
+
+    // Orden por Formato (Video / Audio primero)
+    if (state.adminClassSortFormat) {
+      const isAudioClass = c => c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
+      const firstIsAudio = state.adminClassSortFormat === 'audio';
+      classes.sort((a, b) => {
+        const aFirst = isAudioClass(a) === firstIsAudio ? 0 : 1;
+        const bFirst = isAudioClass(b) === firstIsAudio ? 0 : 1;
+        return aFirst - bFirst;
+      });
     }
 
     // Filtro por Búsqueda (Título, Categoría)

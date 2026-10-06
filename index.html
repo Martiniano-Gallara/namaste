@@ -1267,23 +1267,31 @@
         <!-- Pestaña 1: Gestión de Clases del Shala (Mobile First y Compacta) -->
         <div class="admin-tab-panel" id="panel-tab-classes">
           <div class="admin-table-card">
-            <!-- Toolbar con Buscador, Filtros y Botón + Subir Clase -->
+            <!-- Toolbar con Buscador + Botón + Subir Clase, Filtro por Plan y Orden por Formato -->
             <div class="admin-toolbar-card">
-              <div class="admin-search-wrap">
-                <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="admin-class-search-input" class="admin-search-input" placeholder="Buscar práctica..." />
-              </div>
-
-              <div class="admin-filter-group">
-                <button type="button" class="admin-filter-pill active" data-filter-class="all">Todas</button>
-                <button type="button" class="admin-filter-pill" data-filter-class="video">Video</button>
-                <button type="button" class="admin-filter-pill" data-filter-class="audio">Audio</button>
-                <button type="button" class="btn-admin-nav btn-primary-action" id="btn-admin-open-create-class" style="margin-left: 0.2rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="admin-search-wrap" style="flex: 1; min-width: 0;">
+                  <svg class="admin-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="admin-class-search-input" class="admin-search-input" placeholder="Buscar práctica..." />
+                </div>
+                <button type="button" class="btn-admin-nav btn-primary-action" id="btn-admin-open-create-class" style="flex-shrink: 0; white-space: nowrap;">
                   <span>+ Subir Clase</span>
                 </button>
+              </div>
+
+              <div class="admin-filter-group" aria-label="Filtrar por plan">
+                <button type="button" class="admin-filter-pill" data-filter-plan="plan-esencia">Esencia</button>
+                <button type="button" class="admin-filter-pill" data-filter-plan="plan-refugio">Refugio</button>
+                <button type="button" class="admin-filter-pill" data-filter-plan="plan-sadhana">Sadhana</button>
+              </div>
+
+              <div class="admin-filter-group" aria-label="Ordenar por formato">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Ordenar:</span>
+                <button type="button" class="admin-filter-pill" data-sort-format="video">Video</button>
+                <button type="button" class="admin-filter-pill" data-sort-format="audio">Audio</button>
               </div>
             </div>
 
