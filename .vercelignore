@@ -3,6 +3,5 @@ docs/
 scripts/
 scratch/
 
-# Datos locales y entornos
-data/database.json*
+# Entornos locales
 .env*

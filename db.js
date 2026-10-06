@@ -103,6 +103,33 @@ export async function getUserByEmail(identifier) {
   }
 }
 
+export async function getAdminUsers() {
+  const pool = initDbPool();
+  if (!pool) return null;
+  try {
+    const res = await pool.query(
+      'SELECT * FROM users WHERE (role IS NULL OR role != $1) AND (is_admin IS NULL OR is_admin = FALSE) ORDER BY created_at DESC;',
+      ['admin']
+    );
+    return res.rows.map(mapUserRow);
+  } catch (err) {
+    console.error('[DB] Error getAdminUsers:', err.message);
+    return null;
+  }
+}
+
+export async function getAllUsers() {
+  const pool = initDbPool();
+  if (!pool) return null;
+  try {
+    const res = await pool.query('SELECT * FROM users ORDER BY created_at DESC;');
+    return res.rows.map(mapUserRow);
+  } catch (err) {
+    console.error('[DB] Error getAllUsers:', err.message);
+    return null;
+  }
+}
+
 export async function upsertUser(user) {
   const pool = initDbPool();
   if (!pool || !user || !user.id || !user.email) return false;
@@ -196,7 +223,7 @@ export async function deleteUser(userId) {
   }
 }
 
-function mapUserRow(u) {
+export function mapUserRow(u) {
   if (!u) return null;
   return {
     id: u.id,

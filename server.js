@@ -14,6 +14,8 @@ import {
   initDbPool,
   getUserById,
   getUserByEmail,
+  getAdminUsers,
+  getAllUsers,
   upsertUser,
   deleteUser,
   saveSession,
@@ -373,14 +375,16 @@ async function initializeServerState() {
     } catch (e) {}
   }
 
-  // Alumna de prueba Sofía: asegurar hash de contraseña oficial 'namaste123'
-  const sofiaHash = hashPassword('namaste123');
-  if (db.users['usr-sofia']) {
-    db.users['usr-sofia'].passwordHash = sofiaHash;
-  }
+  // Alumnas oficiales: asegurar hash de contraseña oficial 'namaste123'
+  const studentHash = hashPassword('namaste123');
+  ['usr-sofia', 'usr-a80a8ab2', 'usr-mateo', 'usr-lucia', 'usr-invitado'].forEach(uid => {
+    if (db.users[uid] && !db.users[uid].passwordHash) {
+      db.users[uid].passwordHash = studentHash;
+    }
+  });
   if (pool) {
     try {
-      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2 AND (password_hash IS NULL OR password_hash = \'\');', [sofiaHash, 'usr-sofia']);
+      await pool.query('UPDATE users SET password_hash = $1 WHERE (password_hash IS NULL OR password_hash = \'\') AND (role IS NULL OR role != \'admin\');', [studentHash]);
     } catch (e) {}
   }
 
@@ -615,12 +619,12 @@ export async function handleRequest(req, res) {
 
         clearLoginAttempts(clientIp);
 
-        if (user.active === false) {
+        if (!user.active || user.paymentStatus === 'pending' || user.status === 'pending_payment' || user.suspendedByAdmin) {
           return sendJson(res, 403, {
             success: false,
             isPendingPayment: true,
             userEmail: user.email,
-            message: 'Tu cuenta no está activa porque el pago está pendiente o fue pausado. Completa tu abono para habilitarla.'
+            message: 'Tu cuenta no está activa porque la suscripción no fue abonada o el pago está pendiente. Completa tu abono para habilitar el acceso al Shala.'
           }, req);
         }
 
@@ -1101,10 +1105,10 @@ export async function handleRequest(req, res) {
           return sendJson(res, 401, { success: false, message: 'Debes iniciar sesión para acceder al contenido protegido.' }, req);
         }
 
-        if (!auth.user.active || auth.user.suspendedByAdmin) {
+        if (!auth.user.active || auth.user.suspendedByAdmin || auth.user.paymentStatus === 'pending' || auth.user.status === 'pending_payment') {
           return sendJson(res, 403, {
             success: false,
-            message: 'Tu membresía se encuentra pausada o pendiente de cobro. Reactívala para continuar tu práctica.'
+            message: 'Tu suscripción no está activa o el abono está pendiente. Debes contar con una suscripción abonada para reproducir clases.'
           }, req);
         }
 
@@ -1246,7 +1250,13 @@ export async function handleRequest(req, res) {
 
         // 2.1 Overview & Métricas Corregidas (NAM-025)
         if (pathname === '/api/admin/overview' && req.method === 'GET') {
-          const userList = Object.values(db.users || {}).filter(u => !u.isAdmin && u.role !== 'admin');
+          let userList = await getAdminUsers();
+          if (!userList || userList.length === 0) {
+            userList = Object.values(db.users || {}).filter(u => !u.isAdmin && u.role !== 'admin');
+          }
+          userList.forEach(u => {
+            db.users[u.id] = { ...(db.users[u.id] || {}), ...u };
+          });
           const totalUsers = userList.length;
           const activeUsers = userList.filter(u => u.active).length;
           const pausedUsers = userList.filter(u => !u.active).length;
@@ -1300,13 +1310,23 @@ export async function handleRequest(req, res) {
           }, req);
         }
 
-        // 2.2 Lista de Usuarias
+        // 2.2 Lista de Usuarias (Conexión Directa a PostgreSQL Persistente)
         if (pathname === '/api/admin/users' && req.method === 'GET') {
-          const usersList = Object.values(db.users || {}).filter(u => !u.isAdmin && u.role !== 'admin').map(u => ({
-            ...sanitizeUser(u),
-            progress: db.progress[u.id] || { streakDays: 0, totalMinutes: 0 }
+          let usersList = await getAdminUsers();
+          if (!usersList || usersList.length === 0) {
+            usersList = Object.values(db.users || {}).filter(u => !u.isAdmin && u.role !== 'admin');
+          }
+          usersList.forEach(u => {
+            db.users[u.id] = { ...(db.users[u.id] || {}), ...u };
+          });
+          const mapped = await Promise.all(usersList.map(async u => {
+            const prog = await getProgress(u.id) || db.progress[u.id] || { streakDays: 0, totalMinutes: 0 };
+            return {
+              ...sanitizeUser(u),
+              progress: prog
+            };
           }));
-          return sendJson(res, 200, { success: true, users: usersList }, req);
+          return sendJson(res, 200, { success: true, users: mapped }, req);
         }
 
         // 2.3 Alta Manual de Alumna
@@ -1316,7 +1336,7 @@ export async function handleRequest(req, res) {
           const email = (body.email || '').trim().toLowerCase().slice(0, 254);
           const planId = body.planId || 'plan-refugio';
           const isAnnual = Boolean(body.isAnnual);
-          const active = body.active !== undefined ? Boolean(body.active) : true;
+          const active = body.active !== undefined ? Boolean(body.active) : false;
 
           if (!name || !email || !email.includes('@')) {
             return sendJson(res, 400, { success: false, message: 'Nombre y correo válido requeridos.' }, req);
@@ -1344,8 +1364,9 @@ export async function handleRequest(req, res) {
             planId: plan.id,
             planName: plan.name,
             active,
-            status: active ? 'active' : 'suspended_by_admin',
+            status: active ? 'active' : 'pending_payment',
             suspendedByAdmin: !active,
+            paymentStatus: active ? 'approved' : 'pending',
             isAnnual,
             memberSince: new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
             nextBillingDate: 'Gestión por Administración',
@@ -1409,7 +1430,10 @@ export async function handleRequest(req, res) {
             user.active = Boolean(body.active);
             user.suspendedByAdmin = !user.active;
             user.status = user.active ? 'active' : 'suspended_by_admin';
-            if (!user.active) {
+            if (user.active) {
+              user.paymentStatus = 'approved';
+            } else {
+              user.paymentStatus = 'pending';
               await deleteUserSessions(userId);
             }
           }

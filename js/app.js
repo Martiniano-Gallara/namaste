@@ -3100,10 +3100,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const filterPills = document.querySelectorAll('.admin-filter-pill');
-    filterPills.forEach(pill => {
+    const userFilterPills = document.querySelectorAll('#panel-tab-users [data-filter-status]');
+    userFilterPills.forEach(pill => {
       pill.addEventListener('click', () => {
-        filterPills.forEach(p => p.classList.remove('active'));
+        userFilterPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         state.adminUserFilterStatus = pill.getAttribute('data-filter-status') || 'all';
         renderAdminUsersTable();
@@ -4527,11 +4527,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let users = [...(state.adminUsersCache || [])];
 
-    // Filtro por Estado (Todas / Activas / Pausadas)
+    // Filtro por Estado (Todas / Activas / Pago Pendiente / Pausadas)
     if (state.adminUserFilterStatus === 'active') {
       users = users.filter(u => u.active);
+    } else if (state.adminUserFilterStatus === 'pending') {
+      users = users.filter(u => !u.active && (u.paymentStatus === 'pending' || u.status === 'pending_payment'));
     } else if (state.adminUserFilterStatus === 'paused') {
-      users = users.filter(u => !u.active);
+      users = users.filter(u => !u.active && u.paymentStatus !== 'pending' && u.status !== 'pending_payment');
     }
 
     // Filtro por Búsqueda (Nombre, Email, Código)
@@ -4622,9 +4624,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
                 <button type="button" class="mini-btn btn-edit-plan" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" data-plan-id="${user.planId}">
                   Plan
-                </button>
-                <button type="button" class="mini-btn btn-login-as" data-user-email="${escapeHtml(user.email)}" data-user-name="${escapeHtml(user.name)}" title="Ingresar como esta alumna">
-                  Entrar
                 </button>
                 <button type="button" class="mini-btn btn-delete-user danger" data-user-id="${user.id}" data-user-name="${escapeHtml(user.name)}" title="Eliminar alumna">
                   Eliminar
