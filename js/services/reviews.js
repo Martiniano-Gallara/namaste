@@ -208,13 +208,31 @@ const ReviewsService = (() => {
     // 2. Si no es entorno estático, sincronizar con backend REST
     if (!isStatic() && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
       try {
-        await fetch('/api/reviews', {
+        const token = typeof AuthService !== 'undefined' ? AuthService.getToken() : null;
+        const res = await fetch('/api/reviews', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(reviewObj)
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            quote: cleanQuote,
+            rating: Math.max(1, Math.min(5, Number(rating) || 5))
+          })
         });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          return {
+            success: false,
+            message: errData.message || 'No fue posible registrar tu reseña en el servidor.'
+          };
+        }
       } catch (e) {
-        // Silencioso
+        return {
+          success: false,
+          message: 'Error de conexión al enviar tu reseña.'
+        };
       }
     }
 

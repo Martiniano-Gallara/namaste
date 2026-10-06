@@ -961,9 +961,9 @@ document.addEventListener('DOMContentLoaded', () => {
           // URL o deep-link para abonar en Mercado Pago
           const planData = PLANS_DATA.find(p => p.id === planId);
           const isAnnualPlan = state.selectedPlanForCheckout ? state.selectedPlanForCheckout.isAnnual : false;
-          const mpUrl = (isAnnualPlan && planData && planData.mercadopagoUrlAnnual)
+          const mpUrl = result.checkoutUrl || ((isAnnualPlan && planData && planData.mercadopagoUrlAnnual)
             ? planData.mercadopagoUrlAnnual
-            : ((planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar');
+            : ((planData && planData.mercadopagoUrl) || (state.selectedPlanForCheckout && state.selectedPlanForCheckout.mercadopagoUrl) || 'https://www.mercadopago.com.ar'));
 
           // Redireccionar al link oficial de cobro de Mercado Pago
           setTimeout(() => {
@@ -1041,11 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
       }
 
-      showToast('Tu pago fue registrado. Mercado Pago está procesando la acreditación; en unos instantes tu cuenta quedará activa.', 'info', 7000);
     } else if (isCancelled) {
-      AuthService.logout();
-      showToast('El pago no fue completado en Mercado Pago. La membresía permanece inactiva.', 'error', 7000);
-      switchView('landing');
+      showToast('El pago no fue completado en Mercado Pago. Si deseas activar tu membresía, puedes reintentar el abono.', 'warning', 7000);
     }
   }
 

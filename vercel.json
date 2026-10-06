@@ -3,6 +3,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/(server\\.js|db\\.js|package.*|\\.env.*|docs/.*|scripts/.*|scratch/.*|data/.*)",
+      "destination": "/404.html"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/index"
     }

@@ -1,5 +1,6 @@
 /**
- * Script de migración automática de datos locales a Supabase PostgreSQL
+ * Script de migración y esquema robusto para Supabase PostgreSQL (Namasté)
+ * Incorpora fixes para: NAM-002, NAM-003, NAM-011, NAM-014, NAM-015, NAM-016, NAM-021, NAM-027.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,8 +32,20 @@ if (fs.existsSync(envPath)) {
 
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
+if (!connectionString) {
+  console.error('[ERROR] DATABASE_URL no está configurada.');
+  process.exit(1);
+}
+
 const localDbPath = path.resolve(__dirname, '../data/database.json');
-const localDb = JSON.parse(fs.readFileSync(localDbPath, 'utf8'));
+let localDb = { users: {}, plans: {}, transactions: [], progress: {}, auditLogs: [] };
+if (fs.existsSync(localDbPath)) {
+  try {
+    localDb = JSON.parse(fs.readFileSync(localDbPath, 'utf8'));
+  } catch (e) {
+    console.warn('[AVISO] No se pudo leer database.json local:', e.message);
+  }
+}
 
 async function migrate() {
   console.log('[SUPABASE] Conectando a PostgreSQL...');
@@ -44,7 +57,7 @@ async function migrate() {
   console.log('[SUPABASE] Conexión establecida con éxito.');
 
   try {
-    console.log('[SUPABASE] Creando tablas si no existen...');
+    console.log('[SUPABASE] Creando y actualizando tablas con esquema seguro...');
 
     // 1. Tabla de Planes
     await client.query(`
@@ -64,7 +77,7 @@ async function migrate() {
       );
     `);
 
-    // 2. Tabla de Usuarios / Alumnas
+    // 2. Tabla de Usuarios / Alumnas (Con password_hash, status y suspensiones)
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(100) PRIMARY KEY,
@@ -73,9 +86,15 @@ async function migrate() {
         role VARCHAR(50) DEFAULT 'member',
         is_admin BOOLEAN DEFAULT FALSE,
         access_code VARCHAR(100),
+        password_hash TEXT,
         plan_id VARCHAR(50),
         plan_name VARCHAR(100),
         active BOOLEAN DEFAULT TRUE,
+        status VARCHAR(50) DEFAULT 'active',
+        suspended_by_admin BOOLEAN DEFAULT FALSE,
+        payment_status VARCHAR(50) DEFAULT 'approved',
+        current_period_end TIMESTAMP WITH TIME ZONE,
+        email_verified BOOLEAN DEFAULT FALSE,
         is_annual BOOLEAN DEFAULT FALSE,
         member_since VARCHAR(50),
         next_billing_date VARCHAR(100),
@@ -85,9 +104,17 @@ async function migrate() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
     `);
-    // Asegurar que si la tabla ya existía, se desactive la FK estricta
+
+    // Migraciones idempotentes de columnas en users si la tabla ya existía
     await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended_by_admin BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_status VARCHAR(50) DEFAULT 'approved';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS current_period_end TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
       ALTER TABLE users DROP CONSTRAINT IF EXISTS users_plan_id_fkey;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_lower_email ON users (LOWER(email));
     `);
 
     // 3. Tabla de Transacciones
@@ -136,7 +163,7 @@ async function migrate() {
       );
     `);
 
-    // 6. Tabla de Sesiones Activas
+    // 6. Tabla de Sesiones Activas (con token_hash seguro)
     await client.query(`
       CREATE TABLE IF NOT EXISTS sessions (
         token_hash VARCHAR(100) PRIMARY KEY,
@@ -146,27 +173,82 @@ async function migrate() {
       );
     `);
 
-    console.log('[SUPABASE] Tablas verificadas/creadas con éxito.');
+    // 7. Tabla de Idempotencia de Pagos (Mercado Pago)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS processed_payments (
+        payment_id VARCHAR(100) PRIMARY KEY,
+        tx_id VARCHAR(100),
+        user_id VARCHAR(100),
+        amount NUMERIC(12, 2),
+        currency VARCHAR(10) DEFAULT 'ARS',
+        status VARCHAR(50),
+        processed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
 
-    // Sembrar Planes
-    console.log('[SUPABASE] Sincronizando catálogo de planes...');
+    // 8. Tabla de Reseñas Reales (Persistentes)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id VARCHAR(100) PRIMARY KEY,
+        user_id VARCHAR(100),
+        user_name VARCHAR(150) NOT NULL,
+        user_plan VARCHAR(100),
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT NOT NULL,
+        approved BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 9. Tabla de Clases del Shala (Persistentes)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS classes (
+        id VARCHAR(100) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        category_label VARCHAR(100),
+        duration INTEGER NOT NULL,
+        level VARCHAR(50) DEFAULT 'Todos los niveles',
+        instructor VARCHAR(100) DEFAULT 'Vale Manassero',
+        instructor_role VARCHAR(255) DEFAULT 'Fundadora de Namasté • +14 años de trayectoria',
+        thumbnail TEXT,
+        description TEXT,
+        props JSONB DEFAULT '[]',
+        intentions JSONB DEFAULT '[]',
+        plan_required VARCHAR(50) DEFAULT 'plan-esencia',
+        format VARCHAR(20) DEFAULT 'video',
+        video_url TEXT NOT NULL,
+        views_count INTEGER DEFAULT 0,
+        is_new BOOLEAN DEFAULT FALSE,
+        featured BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 10. Activar Row Level Security (RLS) y revocar privilegios anónimos (NAM-011)
+    console.log('[SUPABASE] Habilitando Row Level Security (RLS) en todas las tablas...');
+    const tables = [
+      'plans', 'users', 'transactions', 'progress',
+      'audit_logs', 'sessions', 'processed_payments', 'reviews', 'classes'
+    ];
+    for (const t of tables) {
+      await client.query(`ALTER TABLE ${t} ENABLE ROW LEVEL SECURITY;`);
+    }
+
+    await client.query(`
+      REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+    `);
+
+    console.log('[SUPABASE] Tablas verificadas, RLS activado y permisos anónimos restringidos.');
+
+    // Sembrar Planes (Solo si no existen, preservando personalizaciones de precios - NAM-003)
+    console.log('[SUPABASE] Verificando planes base...');
     if (localDb.plans) {
       for (const [key, p] of Object.entries(localDb.plans)) {
         await client.query(`
           INSERT INTO plans (id, name, tier, badge, price_monthly, price_annual_total, currency, description, features, mercadopago_url, mercadopago_url_annual, updated_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-          ON CONFLICT (id) DO UPDATE SET
-            name = EXCLUDED.name,
-            tier = EXCLUDED.tier,
-            badge = EXCLUDED.badge,
-            price_monthly = EXCLUDED.price_monthly,
-            price_annual_total = EXCLUDED.price_annual_total,
-            currency = EXCLUDED.currency,
-            description = EXCLUDED.description,
-            features = EXCLUDED.features,
-            mercadopago_url = EXCLUDED.mercadopago_url,
-            mercadopago_url_annual = EXCLUDED.mercadopago_url_annual,
-            updated_at = EXCLUDED.updated_at;
+          ON CONFLICT (id) DO NOTHING;
         `, [
           p.id || key,
           p.name,
@@ -184,26 +266,29 @@ async function migrate() {
       }
     }
 
-    // Sembrar Usuarios
-    console.log('[SUPABASE] Sincronizando usuarios...');
+    // Migrar Usuarios locales persistiendo contraseña (NAM-002)
     if (localDb.users) {
+      console.log('[SUPABASE] Sincronizando usuarios preservando hashes de contraseña...');
       for (const [key, u] of Object.entries(localDb.users)) {
+        // En producción no crear cuentas demo de relleno si no existen
         await client.query(`
-          INSERT INTO users (id, email, name, role, is_admin, access_code, plan_id, plan_name, active, is_annual, member_since, next_billing_date, payment_method, billed_amount, created_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+          INSERT INTO users (
+            id, email, name, role, is_admin, access_code, password_hash,
+            plan_id, plan_name, active, status, suspended_by_admin, payment_status,
+            is_annual, member_since, next_billing_date, payment_method, billed_amount, created_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
           ON CONFLICT (id) DO UPDATE SET
+            password_hash = COALESCE(EXCLUDED.password_hash, users.password_hash),
             email = EXCLUDED.email,
             name = EXCLUDED.name,
             role = EXCLUDED.role,
             is_admin = EXCLUDED.is_admin,
-            access_code = EXCLUDED.access_code,
             plan_id = EXCLUDED.plan_id,
             plan_name = EXCLUDED.plan_name,
             active = EXCLUDED.active,
-            is_annual = EXCLUDED.is_annual,
-            member_since = EXCLUDED.member_since,
-            next_billing_date = EXCLUDED.next_billing_date,
-            payment_method = EXCLUDED.payment_method,
+            status = EXCLUDED.status,
+            payment_status = EXCLUDED.payment_status,
             billed_amount = EXCLUDED.billed_amount;
         `, [
           u.id || key,
@@ -212,89 +297,19 @@ async function migrate() {
           u.role || (u.isAdmin ? 'admin' : 'member'),
           Boolean(u.isAdmin || u.role === 'admin'),
           u.accessCode || '',
+          u.passwordHash || null,
           u.planId || 'plan-refugio',
           u.planName || 'Plan Refugio',
           u.active !== false,
+          u.status || 'active',
+          Boolean(u.suspendedByAdmin),
+          u.paymentStatus || 'approved',
           Boolean(u.isAnnual),
           u.memberSince || 'Marzo 2026',
           u.nextBillingDate || '28 Octubre 2026',
-          u.paymentMethod || 'Visa •••• 4242',
+          u.paymentMethod || 'Mercado Pago',
           u.billedAmount || 0,
           u.createdAt || new Date().toISOString()
-        ]);
-      }
-    }
-
-    // Sembrar Transacciones
-    console.log('[SUPABASE] Sincronizando transacciones...');
-    if (Array.isArray(localDb.transactions)) {
-      for (const tx of localDb.transactions) {
-        await client.query(`
-          INSERT INTO transactions (id, receipt_number, user_id, name, email, plan_id, plan_name, amount, currency, status, is_annual, payment_method, timestamp)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (id) DO NOTHING;
-        `, [
-          tx.id,
-          tx.receiptNumber,
-          tx.userId,
-          tx.name,
-          tx.email,
-          tx.planId,
-          tx.planName,
-          tx.amount,
-          tx.currency || 'ARS',
-          tx.status || 'succeeded',
-          Boolean(tx.isAnnual),
-          tx.paymentMethod,
-          tx.timestamp || new Date().toISOString()
-        ]);
-      }
-    }
-
-    // Sembrar Progreso
-    console.log('[SUPABASE] Sincronizando progreso de alumnas...');
-    if (localDb.progress) {
-      for (const [userId, prog] of Object.entries(localDb.progress)) {
-        await client.query(`
-          INSERT INTO progress (user_id, streak_days, last_streak_date, total_minutes, favorites, completed, last_played, updated_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          ON CONFLICT (user_id) DO UPDATE SET
-            streak_days = EXCLUDED.streak_days,
-            last_streak_date = EXCLUDED.last_streak_date,
-            total_minutes = EXCLUDED.total_minutes,
-            favorites = EXCLUDED.favorites,
-            completed = EXCLUDED.completed,
-            last_played = EXCLUDED.last_played,
-            updated_at = NOW();
-        `, [
-          userId,
-          prog.streakDays || 0,
-          prog.lastStreakDate || '',
-          prog.totalMinutes || 0,
-          JSON.stringify(prog.favorites || []),
-          JSON.stringify(prog.completed || []),
-          JSON.stringify(prog.lastPlayed || {}),
-          new Date().toISOString()
-        ]);
-      }
-    }
-
-    // Sembrar Logs de Auditoría
-    console.log('[SUPABASE] Sincronizando registros de auditoría...');
-    if (Array.isArray(localDb.auditLogs)) {
-      for (const log of localDb.auditLogs) {
-        await client.query(`
-          INSERT INTO audit_logs (id, timestamp, action, title, details, user_email, status)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
-          ON CONFLICT (id) DO NOTHING;
-        `, [
-          log.id,
-          log.timestamp || new Date().toISOString(),
-          log.action,
-          log.title,
-          log.details,
-          log.userEmail || '',
-          log.status || 'info'
         ]);
       }
     }

@@ -57,19 +57,28 @@ const MembershipService = (() => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.user) {
-            // Nota: La cuenta queda inactiva hasta confirmar el pago en Mercado Pago
             return {
               success: true,
               pending: true,
               active: false,
+              checkoutUrl: data.checkoutUrl,
               transaction: data.transaction,
               member: data.user,
               plan: selectedPlan
             };
           }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          return {
+            success: false,
+            message: errData.message || `No fue posible completar la suscripción (Código ${response.status}).`
+          };
         }
       } catch (e) {
-        // Proceder con fallback local si el servidor no responde
+        return {
+          success: false,
+          message: 'Error de conexión con el servidor del Shala. Por favor intenta nuevamente.'
+        };
       }
     }
 

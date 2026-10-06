@@ -126,9 +126,33 @@ const AdminService = (() => {
     }),
     getAuditLogs: () => fetchJson('/audit-logs'),
     getTransactions: () => fetchJson('/transactions'),
-    getClasses: () => Promise.resolve({ success: true, classes: getLocalClasses() }),
-    saveClass: (classData) => Promise.resolve(saveLocalClass(classData)),
-    deleteClass: (classId) => Promise.resolve(deleteLocalClass(classId)),
+    getClasses: async () => {
+      const res = await fetchJson('/classes');
+      if (res && res.success && Array.isArray(res.classes)) {
+        try {
+          localStorage.setItem('namaste_custom_classes', JSON.stringify(res.classes));
+        } catch (e) {}
+        return res;
+      }
+      return { success: true, classes: getLocalClasses() };
+    },
+    saveClass: async (classData) => {
+      saveLocalClass(classData);
+      const res = await fetchJson('/classes', {
+        method: 'POST',
+        body: JSON.stringify(classData)
+      });
+      if (res && res.success) return res;
+      return { success: true, classes: getLocalClasses() };
+    },
+    deleteClass: async (classId) => {
+      deleteLocalClass(classId);
+      const res = await fetchJson(`/classes/${encodeURIComponent(classId)}`, {
+        method: 'DELETE'
+      });
+      if (res && res.success) return res;
+      return { success: true, classes: getLocalClasses() };
+    },
     getPlans: () => fetchJson('/plans'),
     savePlans: (plansData) => fetchJson('/plans', {
       method: 'POST',

@@ -23,3 +23,6 @@ yarn-error.log*
 /data/*.json
 /data/*.tmp*
 /data/database.json
+
+# Scratch & Test Scripts
+/scratch/

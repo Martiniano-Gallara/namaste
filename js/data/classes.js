@@ -350,7 +350,9 @@ const ClassesService = (() => {
 
   const getClassStreamUrl = async (classId) => {
     const classObj = getClassById(classId);
-    if (!classObj) return null;
+    if (!classObj) {
+      throw new Error('Clase no encontrada.');
+    }
 
     const isStatic = typeof window !== 'undefined' && (
       window.location.hostname.includes('github.io') ||
@@ -361,31 +363,31 @@ const ClassesService = (() => {
       return classObj.videoUrl;
     }
 
-    // Try server protected streaming endpoint if available (solo si no es estático)
-    try {
-        const token = typeof AuthService !== 'undefined' ? AuthService.getToken() : null;
-        if (token && window.location.protocol.startsWith('http')) {
-          const response = await fetch(`/api/classes/${encodeURIComponent(classId)}/stream`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.streamUrl) return data.streamUrl;
-        } else if (response.status === 403) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.message || 'Membresía pausada o nivel insuficiente');
-        }
-      }
-    } catch (e) {
-      if (e.message && e.message.includes('Membresía')) {
-        throw e;
-      }
-      // Silently proceed to fallback stream if offline
+    // Consultar el endpoint seguro del servidor
+    const token = typeof AuthService !== 'undefined' ? AuthService.getToken() : null;
+    if (!token) {
+      throw new Error('Debes iniciar sesión para reproducir esta práctica.');
     }
 
-    return classObj.videoUrl;
+    const response = await fetch(`/api/classes/${encodeURIComponent(classId)}/stream`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.streamUrl) return data.streamUrl;
+    } else if (response.status === 403) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || 'Membresía insuficiente o pausada para reproducir esta práctica.');
+    } else if (response.status === 401) {
+      throw new Error('Tu sesión ha expirado. Por favor ingresa nuevamente a tu cuenta.');
+    } else if (response.status === 404) {
+      throw new Error('La clase solicitada no está disponible en este momento.');
+    }
+
+    throw new Error('No fue posible obtener el stream autorizado de la clase.');
   };
 
   return {

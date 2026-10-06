@@ -170,44 +170,18 @@ const AuthService = (() => {
       }
     }
 
-    // 2. Modo estático restringido (Solo GitHub Pages / file:)
-    const allUsers = getStoredUsers();
-    let user = Object.values(allUsers).find(u => (u.email || '').toLowerCase() === clean);
-    if (!user) {
-      user = allUsers[clean.toUpperCase()];
-    }
-
-    if (clean === 'valeria.manassero@namaste.com' || clean === 'namaste-directora') {
-      if (cleanPwd !== 'valeria2026') {
-        return { success: false, message: 'Contraseña de administradora incorrecta.' };
-      }
-      user = DEFAULT_USERS['NAMASTE-DIRECTORA'];
-    } else if (user) {
-      if (cleanPwd !== 'namaste123') {
-        return { success: false, message: 'Contraseña incorrecta. Por favor verifica tu clave.' };
-      }
-    } else {
-      return { success: false, message: 'No existe una cuenta registrada con este correo. Por favor suscríbete desde la página principal.' };
-    }
-
-    if (!user.active) {
+    // 2. Modo estático restringido (Sin backend REST conectado)
+    if (isStatic()) {
       return {
         success: false,
-        isPendingPayment: true,
-        userEmail: user.email,
-        message: 'Tu cuenta no está activa porque el pago está pendiente o fue cancelado. Completa tu abono en Mercado Pago para habilitar tu acceso.'
+        message: 'Para acceder de forma segura a tu cuenta o panel de administración, utiliza la plataforma oficial conectada al servidor del Shala.'
       };
     }
 
-    try {
-      setToken('local-token-' + Date.now());
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      saveUserRecord(user);
-      window.dispatchEvent(new CustomEvent('namaste:auth-changed', { detail: user }));
-      return { success: true, user };
-    } catch (e) {
-      return { success: false, message: 'Error al iniciar sesión local.' };
-    }
+    return {
+      success: false,
+      message: 'No fue posible conectar con el servidor de autenticación de Namasté.'
+    };
   };
 
   const loginUser = (user, token) => {
@@ -278,7 +252,6 @@ const AuthService = (() => {
       existingUser.billedAmount = amount;
       existingUser.paymentMethod = paymentMethod;
       existingUser.nextBillingDate = nextBillingDate;
-      if (password) existingUser.password = password;
       saveUserRecord(existingUser);
       return existingUser;
     }
@@ -291,7 +264,6 @@ const AuthService = (() => {
       id: 'usr-' + Date.now(),
       name: cleanName,
       email: cleanEmail,
-      password: password,
       accessCode: newCode,
       planId: planId,
       planName: planName,

@@ -236,8 +236,19 @@ const ProgressService = (() => {
 
     state.totalMinutes = (state.totalMinutes || 0) + dur;
 
-    // Cálculo calendario de racha diaria
-    const today = new Date().toISOString().split('T')[0];
+    // Cálculo calendario de racha diaria con zona horaria oficial de Argentina (ART)
+    let today;
+    try {
+      today = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(new Date());
+    } catch (e) {
+      today = new Date().toISOString().split('T')[0];
+    }
+
     const lastDate = state.lastStreakDate;
     if (!lastDate) {
       state.streakDays = 1;

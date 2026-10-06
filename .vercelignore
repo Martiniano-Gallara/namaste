@@ -1,0 +1,8 @@
+# Documentación y scripts de administración
+docs/
+scripts/
+scratch/
+
+# Datos locales y entornos
+data/database.json*
+.env*
