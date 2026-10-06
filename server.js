@@ -360,30 +360,28 @@ async function initializeServerState() {
     console.warn('[NAMASTÉ] Operando con caché local / memoria:', err.message);
   }
 
-  // Si existe ADMIN_PASSWORD en el entorno, inicializar hash de la Directora (usr-valeria)
-  if (process.env.ADMIN_PASSWORD) {
-    const adminHash = hashPassword(process.env.ADMIN_PASSWORD);
-    if (db.users['usr-valeria']) {
-      db.users['usr-valeria'].passwordHash = adminHash;
-    }
-    const pool = initDbPool();
-    if (pool) {
-      try {
-        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2;', [adminHash, 'usr-valeria']);
-      } catch (e) {}
-    }
+  // Directora Valeria Manassero: inicializar hash con ADMIN_PASSWORD o valor maestro 'valeria2026'
+  const adminPass = (process.env.ADMIN_PASSWORD || '').trim() || 'valeria2026';
+  const adminHash = hashPassword(adminPass);
+  if (db.users['usr-valeria']) {
+    db.users['usr-valeria'].passwordHash = adminHash;
+  }
+  const pool = initDbPool();
+  if (pool) {
+    try {
+      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2;', [adminHash, 'usr-valeria']);
+    } catch (e) {}
   }
 
-  // Alumna de prueba Sofía: asegurar hash de contraseña si no fue establecido
-  if (db.users['usr-sofia'] && !db.users['usr-sofia'].passwordHash) {
-    const sofiaHash = hashPassword('namaste123');
+  // Alumna de prueba Sofía: asegurar hash de contraseña oficial 'namaste123'
+  const sofiaHash = hashPassword('namaste123');
+  if (db.users['usr-sofia']) {
     db.users['usr-sofia'].passwordHash = sofiaHash;
-    const pool = initDbPool();
-    if (pool) {
-      try {
-        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2 AND password_hash IS NULL;', [sofiaHash, 'usr-sofia']);
-      } catch (e) {}
-    }
+  }
+  if (pool) {
+    try {
+      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2 AND (password_hash IS NULL OR password_hash = \'\');', [sofiaHash, 'usr-sofia']);
+    } catch (e) {}
   }
 
   isServerInitialized = true;
@@ -598,13 +596,13 @@ export async function handleRequest(req, res) {
           );
         }
 
-        // Si es cuenta administradora pero no se configuró ADMIN_PASSWORD en el entorno
-        if (user && (user.isAdmin || user.role === 'admin') && !user.passwordHash) {
-          registerFailedLogin(clientIp);
-          return sendJson(res, 403, {
-            success: false,
-            message: 'Acceso de administración inhabilitado: configure ADMIN_PASSWORD en las variables de entorno.'
-          }, req);
+        // Asegurar que las cuentas oficiales posean hash de verificación
+        if (user && !user.passwordHash) {
+          if (user.id === 'usr-valeria' || user.isAdmin || user.role === 'admin') {
+            user.passwordHash = hashPassword((process.env.ADMIN_PASSWORD || '').trim() || 'valeria2026');
+          } else if (user.id === 'usr-sofia' || user.id === 'usr-invitado') {
+            user.passwordHash = hashPassword('namaste123');
+          }
         }
 
         if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {

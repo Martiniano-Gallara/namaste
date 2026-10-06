@@ -86,11 +86,15 @@ export async function getUserById(id) {
   }
 }
 
-export async function getUserByEmail(email) {
+export async function getUserByEmail(identifier) {
   const pool = initDbPool();
-  if (!pool || !email) return null;
+  if (!pool || !identifier) return null;
+  const clean = identifier.trim();
   try {
-    const res = await pool.query('SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;', [email.trim()]);
+    const res = await pool.query(
+      'SELECT * FROM users WHERE LOWER(email) = LOWER($1) OR UPPER(access_code) = UPPER($1) LIMIT 1;',
+      [clean]
+    );
     if (res.rows.length === 0) return null;
     return mapUserRow(res.rows[0]);
   } catch (err) {
