@@ -550,7 +550,10 @@ export async function handleRequest(req, res) {
   }
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = parsedUrl.pathname;
+  let pathname = parsedUrl.pathname;
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1);
+  }
 
   // -----------------------------------------------------------
   // 1. API ROUTES
@@ -1019,6 +1022,23 @@ export async function handleRequest(req, res) {
       }
 
       // 1.9 Progreso & Rachas (/api/progress) (NAM-022, NAM-023)
+      if (pathname === '/api/progress' && req.method === 'GET') {
+        const auth = await getAuthenticatedUser(req);
+        if (!auth) {
+          return sendJson(res, 401, { success: false, message: 'Debes iniciar sesión para consultar tu progreso.' }, req);
+        }
+        const userId = auth.user.id;
+        const currentProg = await getProgress(userId) || db.progress[userId] || {
+          streakDays: 1,
+          lastStreakDate: '',
+          totalMinutes: 0,
+          favorites: [],
+          completed: [],
+          lastPlayed: null
+        };
+        return sendJson(res, 200, { success: true, progress: currentProg }, req);
+      }
+
       if (pathname === '/api/progress' && req.method === 'POST') {
         const auth = await getAuthenticatedUser(req);
         if (!auth) {
@@ -1400,8 +1420,17 @@ export async function handleRequest(req, res) {
           }, req);
         }
 
-        // 2.4 Edición de Usuaria (NAM-026)
+        // 2.4 Consulta, Edición y Baja de Usuaria (NAM-026)
         const adminUserMatch = pathname.match(/^\/api\/admin\/users\/([a-zA-Z0-9_-]+)$/);
+        if (adminUserMatch && req.method === 'GET') {
+          const userId = adminUserMatch[1];
+          const user = await getUserById(userId) || db.users[userId];
+          if (!user) {
+            return sendJson(res, 404, { success: false, message: 'Alumna no encontrada.' }, req);
+          }
+          const prog = await getProgress(userId) || db.progress[userId] || { streakDays: 0, totalMinutes: 0 };
+          return sendJson(res, 200, { success: true, user: { ...sanitizeUser(user), progress: prog } }, req);
+        }
         if (adminUserMatch && req.method === 'PUT') {
           const userId = adminUserMatch[1];
           const user = await getUserById(userId) || db.users[userId];
@@ -1505,6 +1534,15 @@ export async function handleRequest(req, res) {
         }
 
         const classDeleteMatch = pathname.match(/^\/api\/admin\/classes\/([a-zA-Z0-9_-]+)$/);
+        if (classDeleteMatch && req.method === 'GET') {
+          const classId = classDeleteMatch[1];
+          const customClasses = await getClasses();
+          const target = customClasses.find(c => c.id === classId) || CLASSES_CATALOG.find(c => c.id === classId);
+          if (!target) {
+            return sendJson(res, 404, { success: false, message: 'Práctica no encontrada.' }, req);
+          }
+          return sendJson(res, 200, { success: true, class: target }, req);
+        }
         if (classDeleteMatch && req.method === 'DELETE') {
           const classId = classDeleteMatch[1];
           await deleteClass(classId);

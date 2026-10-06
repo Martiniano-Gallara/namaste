@@ -9,6 +9,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index"
+    },
+    {
+      "source": "/(admin|auditoria|refugio|plataforma|login|ingreso|acceso)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
