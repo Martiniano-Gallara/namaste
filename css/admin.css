@@ -1958,11 +1958,10 @@ body.modal-open {
 /* Barra de Acciones y Guardado */
 .admin-plans-actions-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding-top: 1.25rem;
   border-top: 1px solid #ECE3D8;
-  flex-wrap: wrap;
   gap: 1rem;
 }
 
