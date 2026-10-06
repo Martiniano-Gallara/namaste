@@ -2331,7 +2331,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:1rem;">
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Alumno:</span><br><strong>${escapeHtml(user.name)}</strong></div>
-                <div><span style="color:var(--text-muted); font-size:0.78rem;">Código:</span><br><code>${escapeHtml(user.accessCode)}</code></div>
+                <div><span style="color:var(--text-muted); font-size:0.78rem;">Email:</span><br><span style="font-size:0.84rem;">${escapeHtml(user.email)}</span></div>
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Plan:</span><br><strong>${escapeHtml(user.planName || 'Plan Refugio')}</strong></div>
                 <div><span style="color:var(--text-muted); font-size:0.78rem;">Renovación:</span><br><strong>${escapeHtml(user.nextBillingDate || 'Próximo mes')}</strong></div>
               </div>
@@ -3242,20 +3242,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // A) Copiar Código de Acceso
-        const copyBtn = e.target.closest('.code-copy-btn, .code-copy-btn-mini');
-        if (copyBtn) {
-          const code = copyBtn.getAttribute('data-code');
-          if (code) {
-            try {
-              await navigator.clipboard.writeText(code);
-              showToast(`Código copiado: ${code}`, 'success');
-            } catch (err) {
-              showToast(`Código: ${code}`, 'info');
-            }
-          }
-          return;
-        }
 
         // B) Pausar / Reactivar Membresía en 1 Clic
         const toggleBtn = e.target.closest('.btn-pause-toggle');
