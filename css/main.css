@@ -1664,13 +1664,14 @@ body.menu-open {
   display: none;
 }
 
-/* Grilla de Planes Compacta */
+/* Grilla de Planes Conscientes (2 Columnas) */
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 420px));
+  justify-content: center;
+  gap: 1.75rem;
   align-items: stretch;
-  max-width: 1040px;
+  max-width: 880px;
   margin: 0 auto;
 }
 

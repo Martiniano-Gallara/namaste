@@ -78,28 +78,28 @@ const PLANS_CATALOG = {
     id: 'plan-esencia',
     name: 'Plan Esencia',
     tag: 'ESENCIA',
-    monthlyPrice: 19000,
-    annualPrice: 190000,
+    monthlyPrice: 29000,
+    annualPrice: 290000,
     currency: 'ARS',
-    allowedCategories: ['suave', 'clasico', 'relax', 'meditacion']
+    allowedCategories: ['suave', 'clasico', 'terapeutico', 'relax', 'meditacion']
   },
   'plan-refugio': {
     id: 'plan-refugio',
     name: 'Plan Refugio',
     tag: 'REFUGIO',
-    monthlyPrice: 29000,
-    annualPrice: 290000,
+    monthlyPrice: 39000,
+    annualPrice: 390000,
     currency: 'ARS',
-    allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'relax', 'meditacion']
+    allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'ashtanga', 'relax', 'meditacion', 'masterclass']
   },
   'plan-sadhana': {
     id: 'plan-sadhana',
-    name: 'Plan Sadhana',
+    name: 'Plan Sadhana (Legado)',
     tag: 'SADHANA',
     monthlyPrice: 39000,
     annualPrice: 390000,
     currency: 'ARS',
-    allowedCategories: ['suave', 'clasico', 'terapeutico', 'dinamico', 'ashtanga', 'relax', 'meditacion']
+    allowedCategories: ['*']
   }
 };
 
@@ -147,10 +147,10 @@ const CLASSES_CATALOG = [
   { id: 'cls-suave-02', title: 'Yoga Suave: Apertura de Pecho & Hombros Ligeros', category: 'suave', categoryLabel: 'Yoga Suave', duration: 30, level: 'Principiante', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: false },
   { id: 'cls-clasico-01', title: 'Yoga Clásico: Posturas Tradicionales & Alineación', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 45, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: true },
   { id: 'cls-clasico-02', title: 'Yoga Clásico: Fortaleza, Enraizamiento & Equilibrio', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-terapeutico-01', title: 'Yoga Terapéutico: Alivio Lumbar & Espalda Baja', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 40, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-refugio', featured: true },
-  { id: 'cls-terapeutico-02', title: 'Yoga Terapéutico: Liberación de Tensión en Caderas', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-refugio', featured: false },
-  { id: 'cls-ashtanga-01', title: 'Ashtanga Yoga: Serie Primaria Guiada (Surya Namaskar)', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 55, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-sadhana', featured: true },
-  { id: 'cls-ashtanga-02', title: 'Ashtanga Yoga: Fuerza en el Centro & Bandhas', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 50, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-sadhana', featured: false },
+  { id: 'cls-terapeutico-01', title: 'Yoga Terapéutico: Alivio Lumbar & Espalda Baja', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 40, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: true },
+  { id: 'cls-terapeutico-02', title: 'Yoga Terapéutico: Liberación de Tensión en Caderas', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: false },
+  { id: 'cls-ashtanga-01', title: 'Ashtanga Yoga: Serie Primaria Guiada (Surya Namaskar)', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 55, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-refugio', featured: true },
+  { id: 'cls-ashtanga-02', title: 'Ashtanga Yoga: Fuerza en el Centro & Bandhas', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 50, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-refugio', featured: false },
   { id: 'cls-dinamico-01', title: 'Yoga Dinámico: Vinyasa Flow Energizante', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 45, level: 'Intermedio / Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-refugio', featured: true },
   { id: 'cls-dinamico-02', title: 'Yoga Dinámico: Fluidez, Transiciones & Ritmo Respiratorio', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-refugio', featured: false },
   { id: 'cls-relax-01', title: 'Yoga Relax: Yoga Nidra & Descanso Profundo Reparador', category: 'relax', categoryLabel: 'Yoga Relax', duration: 30, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: true },
@@ -271,42 +271,28 @@ let db = {
       name: 'Plan Esencia',
       tier: 'inicial',
       badge: 'Inicial',
-      priceMonthly: 19000,
-      priceAnnualTotal: 190000,
+      priceMonthly: 29000,
+      priceAnnualTotal: 290000,
       currency: 'ARS',
-      description: '1 clase semanal de Yoga Clásico con meditaciones guiadas.',
-      features: ['1 clase semanal de Yoga Clásico', 'Meditaciones guiadas y relajación', 'Acceso móvil y computadora', 'Comunidad consciente'],
+      description: 'Clases de Hatha Yoga Clásico, Kinésico Terapéutico y meditaciones guiadas.',
+      features: ['Clases de Hatha Yoga Clásico', 'Hatha Yoga Kinésico Terapéutico', 'Meditaciones guiadas', 'Acceso móvil y computadora', 'Comunidad consciente del Shala'],
       mercadopagoUrl: 'https://www.mercadopago.com.ar',
       mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-06T12:00:00Z'
+      updatedAt: '2026-10-16T12:00:00Z'
     },
     'plan-refugio': {
       id: 'plan-refugio',
       name: 'Plan Refugio',
-      tier: 'intermedio',
+      tier: 'completo',
       badge: 'Más Elegido',
-      priceMonthly: 29000,
-      priceAnnualTotal: 290000,
-      currency: 'ARS',
-      description: '2 clases semanales de Yoga Clásico y Dinámico + meditación.',
-      features: ['2 clases semanales (Clásico y Dinámico)', 'Prácticas de meditación y pranayama', 'Acceso a grabaciones del Shala', 'Encuentros en comunidad'],
-      mercadopagoUrl: 'https://www.mercadopago.com.ar',
-      mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-06T12:00:00Z'
-    },
-    'plan-sadhana': {
-      id: 'plan-sadhana',
-      name: 'Plan Sadhana',
-      tier: 'premium',
-      badge: 'Premium',
       priceMonthly: 39000,
       priceAnnualTotal: 390000,
       currency: 'ARS',
-      description: '3 clases semanales, meditaciones, clases en vivo y masterclasses.',
-      features: ['3 clases semanales de práctica integral', 'Meditaciones profundas guiadas', 'Clases online en vivo', 'Masterclasses exclusivas'],
+      description: 'Acceso total a todas las disciplinas, series dinámicas y masterclasses exclusivas.',
+      features: ['Clases de Hatha Yoga Clásico', 'Hatha Yoga Kinésico Terapéutico', 'Hatha Yoga Dinámico', 'Vinyasa Flow', 'Ashtanga', 'Meditaciones guiadas', 'Masterclasses exclusivas'],
       mercadopagoUrl: 'https://www.mercadopago.com.ar',
       mercadopagoUrlAnnual: 'https://www.mercadopago.com.ar',
-      updatedAt: '2026-10-06T12:00:00Z'
+      updatedAt: '2026-10-16T12:00:00Z'
     }
   }
 };
@@ -1562,11 +1548,14 @@ export async function handleRequest(req, res) {
           if (!incoming || typeof incoming !== 'object') {
             return sendJson(res, 400, { success: false, message: 'Formato de planes inválido.' }, req);
           }
-          Object.keys(incoming).forEach(k => {
+          for (const k of Object.keys(incoming)) {
             if (db.plans[k]) {
               db.plans[k] = { ...db.plans[k], ...incoming[k], updatedAt: new Date().toISOString() };
+            } else {
+              db.plans[k] = { ...incoming[k], updatedAt: new Date().toISOString() };
             }
-          });
+            await syncSingleEntity('plan', db.plans[k]);
+          }
           saveLocalDatabaseCopy();
           recordAuditLog(db, 'PLANS_UPDATED', 'Precios y enlaces actualizados', 'Configuración de planes modificada por Administradora', auth.user.email, 'info');
           return sendJson(res, 200, { success: true, plans: db.plans }, req);

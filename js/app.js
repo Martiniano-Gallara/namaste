@@ -1633,12 +1633,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const isDone = ProgressService.isCompleted(c.id);
       const isAudio = c.format === 'audio' || (!c.format && (c.category === 'meditacion' || c.category === 'relax'));
 
-      const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
+      const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-sadhana': 2 };
       const user = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser() : null;
       const userLevel = user ? (planHierarchy[user.planId] || 1) : 1;
       const requiredPlan = c.planRequired || (
-        c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' :
-        (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio')
+        c.category === 'dinamico' || c.category === 'ashtanga' || c.category === 'masterclass' ? 'plan-refugio' : 'plan-esencia'
       );
       const isLocked = Boolean(user && userLevel < (planHierarchy[requiredPlan] || 1));
 
@@ -1655,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </svg>
               </button>
             </div>
-            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>${requiredPlan === 'plan-sadhana' ? 'Sadhana' : 'Refugio'}</span>` : ''}
+            ${isLocked ? `<span class="badge-tag" style="background: rgba(30, 25, 22, 0.88); color: #E8B982; left: 0.5rem; top: auto; bottom: 0.5rem; font-size: 0.65rem; padding: 2px 7px; border-radius: 999px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Refugio</span>` : ''}
             <span class="class-duration-badge">${c.duration} min</span>
 
             <div class="play-overlay-btn">
@@ -1739,17 +1738,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (user.isAdmin || user.role === 'admin') {
         // Directora / Administradora tiene acceso irrestricto a todas las prácticas
       } else {
-        const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-santuario': 2, 'plan-sadhana': 3 };
+        const planHierarchy = { 'plan-esencia': 1, 'plan-refugio': 2, 'plan-sadhana': 2 };
         const userLevel = planHierarchy[user.planId] || 1;
         const requiredPlan = classObj.planRequired || (
-          classObj.category === 'ashtanga' ? 'plan-sadhana' :
-          (classObj.category === 'suave' || classObj.category === 'clasico' ? 'plan-esencia' : 'plan-refugio')
+          classObj.category === 'dinamico' || classObj.category === 'ashtanga' || classObj.category === 'masterclass' ? 'plan-refugio' : 'plan-esencia'
         );
         const requiredLevel = planHierarchy[requiredPlan] || 1;
 
         if (userLevel < requiredLevel) {
-          const planName = requiredPlan === 'plan-sadhana' ? 'Plan Sadhana' : 'Plan Refugio';
-          showToast(`La práctica "${classObj.title}" requiere ${planName}. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
+          showToast(`La práctica "${classObj.title}" requiere Plan Refugio. Puedes mejorar tu membresía desde tu perfil.`, 'warning');
           return;
         }
       }
@@ -2208,10 +2205,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (container) {
         // Síntesis concisa para máxima elegancia y dimensiones compactas
         const planHighlights = {
-          'plan-esencia': 'Yoga Suave, Clásico y Meditación (+40 clases)',
-          'plan-refugio': 'Catálogo total (+140 clases) • Vinyasa, Hatha y Satsang en vivo',
-          'plan-santuario': 'Catálogo total (+140 clases) • Vinyasa, Hatha y Satsang en vivo',
-          'plan-sadhana': 'Práctica avanzada, masterclasses y mentoría personal'
+          'plan-esencia': 'Hatha Clásico, Kinésico Terapéutico y Meditaciones guiadas',
+          'plan-refugio': 'Acceso total: Clásico, Terapéutico, Dinámico, Vinyasa Flow, Ashtanga y Masterclasses'
         };
 
         container.innerHTML = PLANS_DATA.map(plan => {
@@ -2256,7 +2251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPlanName = btn.getAttribute('data-plan-name');
             const planObj = PLANS_DATA.find(p => p.id === newPlanId);
             const currentUser = AuthService.getCurrentUser();
-            const newAmount = currentUser && currentUser.isAnnual ? (planObj.priceAnnualTotal || planObj.priceMonthly * 10) : (planObj ? planObj.priceMonthly : 29000);
+            const newAmount = currentUser && currentUser.isAnnual ? (planObj.priceAnnualTotal || planObj.priceMonthly * 10) : (planObj ? planObj.priceMonthly : 39000);
             AuthService.updateUserProfile({
               planId: newPlanId,
               planName: newPlanName,
@@ -2314,7 +2309,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } catch (e) {}
         }
         if (!amount) {
-          amount = user.planId === 'plan-esencia' ? 19000 : (user.planId === 'plan-sadhana' ? 39000 : 29000);
+          amount = user.planId === 'plan-esencia' ? 29000 : 39000;
         }
         const formattedAmount = `$ ${Number(amount).toLocaleString('es-AR')} ARS`;
 
@@ -4337,7 +4332,7 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
         }
 
-        const planKeys = ['plan-esencia', 'plan-refugio', 'plan-sadhana'];
+        const planKeys = ['plan-esencia', 'plan-refugio'];
         const updatedPlansPayload = {};
 
         planKeys.forEach(planId => {
@@ -4799,8 +4794,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function resolveClassPlan(c) {
     if (!c) return 'plan-esencia';
     if (c.planRequired) return c.planRequired;
-    if (c.category === 'dinamico' || c.category === 'ashtanga') return 'plan-sadhana';
-    if (c.category === 'suave' || c.category === 'clasico') return 'plan-esencia';
+    if (c.category === 'dinamico' || c.category === 'ashtanga' || c.category === 'masterclass') return 'plan-refugio';
+    if (c.category === 'suave' || c.category === 'clasico' || c.category === 'terapeutico' || c.category === 'relax' || c.category === 'meditacion') return 'plan-esencia';
     return 'plan-refugio';
   }
 
@@ -5082,9 +5077,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!grid) return;
 
     const planKeys = [
-      { id: 'plan-esencia', num: 1, fallbackBadge: 'Inicial', fallbackMonthly: 19000 },
-      { id: 'plan-refugio', num: 2, fallbackBadge: 'Más Elegido', fallbackMonthly: 29000 },
-      { id: 'plan-sadhana', num: 3, fallbackBadge: 'Premium', fallbackMonthly: 39000 }
+      { id: 'plan-esencia', num: 1, fallbackBadge: 'Inicial', fallbackMonthly: 29000 },
+      { id: 'plan-refugio', num: 2, fallbackBadge: 'Más Elegido', fallbackMonthly: 39000 }
     ];
 
     grid.innerHTML = planKeys.map(({ id: planId, num, fallbackBadge, fallbackMonthly }) => {

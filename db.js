@@ -602,6 +602,49 @@ export async function deleteClass(classId) {
   }
 }
 
+export async function savePlan(p) {
+  const pool = initDbPool();
+  if (!pool || !p || !p.id) return false;
+  const id = safeStr(p.id, 50);
+  try {
+    await pool.query(`
+      INSERT INTO plans (
+        id, name, tier, badge, price_monthly, price_annual_total,
+        currency, description, features, mercadopago_url, mercadopago_url_annual, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        tier = EXCLUDED.tier,
+        badge = EXCLUDED.badge,
+        price_monthly = EXCLUDED.price_monthly,
+        price_annual_total = EXCLUDED.price_annual_total,
+        currency = EXCLUDED.currency,
+        description = EXCLUDED.description,
+        features = EXCLUDED.features,
+        mercadopago_url = EXCLUDED.mercadopago_url,
+        mercadopago_url_annual = EXCLUDED.mercadopago_url_annual,
+        updated_at = NOW();
+    `, [
+      id,
+      safeStr(p.name, 100),
+      safeStr(p.tier, 50, 'intermedio'),
+      safeStr(p.badge, 50, ''),
+      Number(p.priceMonthly || p.price_monthly || 0),
+      Number(p.priceAnnualTotal || p.price_annual_total || 0),
+      safeStr(p.currency, 10, 'ARS'),
+      safeStr(p.description, 2000),
+      JSON.stringify(Array.isArray(p.features) ? p.features : []),
+      safeStr(p.mercadopagoUrl || p.mercadopago_url, 1000, 'https://www.mercadopago.com.ar'),
+      safeStr(p.mercadopagoUrlAnnual || p.mercadopago_url_annual, 1000, 'https://www.mercadopago.com.ar')
+    ]);
+    return true;
+  } catch (err) {
+    console.error('[DB] Error savePlan:', err.message);
+    return false;
+  }
+}
+
 // -------------------------------------------------------------
 // 7. CARGA COMPLETA & SINCRONIZACIÓN SIN SEMBRADO DESTRUCTIVO (NAM-003)
 // -------------------------------------------------------------
@@ -724,6 +767,9 @@ export async function syncSingleEntity(entityType, entityData) {
         break;
       case 'class':
         await saveClass(entityData);
+        break;
+      case 'plan':
+        await savePlan(entityData);
         break;
       default:
         break;

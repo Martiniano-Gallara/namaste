@@ -67,7 +67,7 @@ const AdminService = (() => {
     const enriched = initial.map(c => ({
       ...c,
       format: c.format || (c.category === 'meditacion' || c.category === 'relax' ? 'audio' : 'video'),
-      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' ? 'plan-sadhana' : (c.category === 'suave' ? 'plan-esencia' : 'plan-refugio'))
+      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' || c.category === 'masterclass' ? 'plan-refugio' : 'plan-esencia')
     }));
     try {
       localStorage.setItem('namaste_custom_classes', JSON.stringify(enriched));
