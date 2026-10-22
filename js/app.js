@@ -4813,7 +4813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('admin-classes-table-body');
     if (!tableBody) return;
 
-    let classes = [...(state.adminClassesCache && state.adminClassesCache.length > 0 ? state.adminClassesCache : getActiveClasses())];
+    let classes = Array.isArray(state.adminClassesCache) ? [...state.adminClassesCache] : [];
 
     // Filtro por Plan (Esencia / Refugio / Sadhana)
     if (state.adminClassFilterPlan) {
@@ -4846,8 +4846,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (classes.length === 0) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
-            No se encontraron clases con el filtro o búsqueda actual.
+          <td colspan="4" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--color-terracotta); opacity: 0.85;">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              </svg>
+              <span>No hay prácticas cargadas en el panel. Pulsa <strong>+ Subir Clase</strong> para cargar tus videos o audios oficiales.</span>
+            </div>
           </td>
         </tr>
       `;

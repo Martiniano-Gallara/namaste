@@ -61,18 +61,8 @@ const AdminService = (() => {
   // --- Gestión Local y Sincronizada de Clases (Mobile First) ---
   function getLocalClasses() {
     const parsed = safeJsonParse(localStorage.getItem('namaste_custom_classes'), null);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-
-    const initial = typeof CLASSES_DATA !== 'undefined' ? [...CLASSES_DATA] : [];
-    const enriched = initial.map(c => ({
-      ...c,
-      format: c.format || (c.category === 'meditacion' || c.category === 'relax' ? 'audio' : 'video'),
-      planRequired: c.planRequired || (c.category === 'dinamico' || c.category === 'ashtanga' || c.category === 'masterclass' ? 'plan-refugio' : 'plan-esencia')
-    }));
-    try {
-      localStorage.setItem('namaste_custom_classes', JSON.stringify(enriched));
-    } catch (e) {}
-    return enriched;
+    if (Array.isArray(parsed)) return parsed.filter(c => c && c.videoUrl && !c.videoUrl.startsWith('blob:'));
+    return [];
   }
 
   function saveLocalClass(classData) {

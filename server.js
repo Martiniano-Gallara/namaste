@@ -1093,9 +1093,10 @@ export async function handleRequest(req, res) {
       // 1.10 Catálogo de Clases (Combina clases creadas en Shala con el catálogo oficial)
       if (pathname === '/api/classes' && req.method === 'GET') {
         const customClasses = await getClasses();
-        const customIds = new Set(customClasses.map(c => c.id));
+        const validCustomClasses = customClasses.filter(c => c.videoUrl && !c.videoUrl.startsWith('blob:'));
+        const customIds = new Set(validCustomClasses.map(c => c.id));
         const allClasses = [
-          ...customClasses,
+          ...validCustomClasses,
           ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
         ];
         return sendJson(res, 200, { success: true, classes: allClasses }, req);
@@ -1500,12 +1501,7 @@ export async function handleRequest(req, res) {
         // 2.6 Gestión de Clases en BD (NAM-016)
         if (pathname === '/api/admin/classes' && req.method === 'GET') {
           const customClasses = await getClasses();
-          const customIds = new Set(customClasses.map(c => c.id));
-          const allClasses = [
-            ...customClasses,
-            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
-          ];
-          return sendJson(res, 200, { success: true, classes: allClasses }, req);
+          return sendJson(res, 200, { success: true, classes: customClasses }, req);
         }
 
         if (pathname === '/api/admin/classes' && req.method === 'POST') {
@@ -1523,7 +1519,7 @@ export async function handleRequest(req, res) {
         if (classDeleteMatch && req.method === 'GET') {
           const classId = classDeleteMatch[1];
           const customClasses = await getClasses();
-          const target = customClasses.find(c => c.id === classId) || CLASSES_CATALOG.find(c => c.id === classId);
+          const target = customClasses.find(c => c.id === classId);
           if (!target) {
             return sendJson(res, 404, { success: false, message: 'Práctica no encontrada.' }, req);
           }
