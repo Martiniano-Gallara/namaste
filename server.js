@@ -61,12 +61,17 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
   } catch (err) {}
 }
 
-// Validación de credenciales maestras (NAM-008)
-if (!process.env.ADMIN_PASSWORD) {
+// Validación de credenciales maestras (NAM-008: Fail-Closed)
+export const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || '').trim();
+
+if (!ADMIN_PASSWORD) {
   if (process.env.NODE_ENV === 'production') {
-    console.warn('[SEGURIDAD] ADMIN_PASSWORD no está definida en el entorno de producción. El acceso de administración estará bloqueado hasta configurar esta variable en Vercel.');
+    console.error('[SEGURIDAD CRÍTICA] ADMIN_PASSWORD no está definida en el entorno de producción. Abortando inicio del servidor.');
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
   } else {
-    console.warn('[SEGURIDAD] ADMIN_PASSWORD no está definida. Configure ADMIN_PASSWORD para habilitar el acceso de administración.');
+    console.warn('[SEGURIDAD] ADMIN_PASSWORD no está configurada. El acceso administrativo estará COMPLETAMENTE BLOQUEADO (Fail-Closed).');
   }
 }
 
@@ -190,41 +195,70 @@ export function sanitizeUser(u) {
 }
 
 // -------------------------------------------------------------
-// RATE LIMITING ROBUSTO
+// RATE LIMITING ROBUSTO & IDENTIFICADOR ANTIFRAUDE (NAM-020)
 // -------------------------------------------------------------
 const loginAttempts = new Map();
+const loginAccountAttempts = new Map();
+
 function getSanitizedClientIp(req) {
+  const socketIp = req.socket?.remoteAddress || '';
   const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
+  if (forwarded && (process.env.TRUST_PROXY === 'true' || process.env.VERCEL)) {
+    const parts = forwarded.split(',').map(s => s.trim()).filter(Boolean);
+    return parts[0] || socketIp || 'unknown';
   }
-  return req.socket?.remoteAddress || 'unknown';
+  return socketIp || 'unknown';
 }
 
-function isLoginRateLimited(ip) {
+function isLoginRateLimited(ip, identifier = '') {
   const now = Date.now();
-  const record = loginAttempts.get(ip);
-  if (!record) return false;
-  if (record.blockedUntil > now) return true;
-  if (now - record.firstAttempt > 60000) {
-    loginAttempts.delete(ip);
-    return false;
+  // 1. Verificación por IP de conexión
+  const recordIp = loginAttempts.get(ip);
+  if (recordIp) {
+    if (recordIp.blockedUntil > now) return true;
+    if (now - recordIp.firstAttempt > 60000) loginAttempts.delete(ip);
   }
+
+  // 2. Verificación por Cuenta (neutraliza evasión por rotación de IP / X-Forwarded-For)
+  if (identifier) {
+    const cleanId = identifier.trim().toLowerCase();
+    const recordId = loginAccountAttempts.get(cleanId);
+    if (recordId) {
+      if (recordId.blockedUntil > now) return true;
+      if (now - recordId.firstAttempt > 60000) loginAccountAttempts.delete(cleanId);
+    }
+  }
+
   return false;
 }
 
-function registerFailedLogin(ip) {
+function registerFailedLogin(ip, identifier = '') {
   const now = Date.now();
-  const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now, blockedUntil: 0 };
-  record.count++;
-  if (record.count >= 8) {
-    record.blockedUntil = now + 5 * 60000;
+  // IP: 8 intentos fallidos bloquean la IP por 5 minutos
+  const recordIp = loginAttempts.get(ip) || { count: 0, firstAttempt: now, blockedUntil: 0 };
+  recordIp.count++;
+  if (recordIp.count >= 8) {
+    recordIp.blockedUntil = now + 5 * 60000;
   }
-  loginAttempts.set(ip, record);
+  loginAttempts.set(ip, recordIp);
+
+  // Cuenta: 5 intentos fallidos en la misma cuenta la bloquean por 5 minutos
+  if (identifier) {
+    const cleanId = identifier.trim().toLowerCase();
+    const recordId = loginAccountAttempts.get(cleanId) || { count: 0, firstAttempt: now, blockedUntil: 0 };
+    recordId.count++;
+    if (recordId.count >= 5) {
+      recordId.blockedUntil = now + 5 * 60000;
+    }
+    loginAccountAttempts.set(cleanId, recordId);
+  }
 }
 
-function clearLoginAttempts(ip) {
+function clearLoginAttempts(ip, identifier = '') {
   loginAttempts.delete(ip);
+  if (identifier) {
+    loginAccountAttempts.delete(identifier.trim().toLowerCase());
+  }
 }
 
 const generalActionAttempts = new Map();
@@ -348,31 +382,27 @@ async function initializeServerState() {
     console.warn('[NAMASTÉ] Operando con caché local / memoria:', err.message);
   }
 
-  // Directora Valeria Manassero: inicializar hash con ADMIN_PASSWORD o valor maestro 'valeria2026'
-  const adminPass = (process.env.ADMIN_PASSWORD || '').trim() || 'valeria2026';
-  const adminHash = hashPassword(adminPass);
-  if (db.users['usr-valeria']) {
-    db.users['usr-valeria'].passwordHash = adminHash;
-  }
+  // Directora Valeria Manassero: inicializar hash SOLO si ADMIN_PASSWORD está configurada (NAM-008: Fail-Closed)
   const pool = initDbPool();
-  if (pool) {
-    try {
-      await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2;', [adminHash, 'usr-valeria']);
-    } catch (e) {}
+  if (ADMIN_PASSWORD) {
+    const adminHash = hashPassword(ADMIN_PASSWORD);
+    if (db.users['usr-valeria']) {
+      db.users['usr-valeria'].passwordHash = adminHash;
+    }
+    if (pool) {
+      try {
+        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2;', [adminHash, 'usr-valeria']);
+      } catch (e) {}
+    }
+  } else {
+    // Fail-Closed: Sin ADMIN_PASSWORD, usr-valeria no tiene hash y el acceso administrativo es denegado
+    if (db.users['usr-valeria']) {
+      db.users['usr-valeria'].passwordHash = null;
+    }
   }
 
-  // Alumnas oficiales: asegurar hash de contraseña oficial 'namaste123'
-  const studentHash = hashPassword('namaste123');
-  ['usr-sofia', 'usr-a80a8ab2', 'usr-mateo', 'usr-lucia', 'usr-invitado'].forEach(uid => {
-    if (db.users[uid] && !db.users[uid].passwordHash) {
-      db.users[uid].passwordHash = studentHash;
-    }
-  });
-  if (pool) {
-    try {
-      await pool.query('UPDATE users SET password_hash = $1 WHERE (password_hash IS NULL OR password_hash = \'\') AND (role IS NULL OR role != \'admin\');', [studentHash]);
-    } catch (e) {}
-  }
+  // Las alumnas NUNCA reciben una contraseña compartida fija (NAM-008).
+  // Solo tienen acceso si establecieron su propia clave en checkout o activación.
 
   isServerInitialized = true;
 }
@@ -409,9 +439,9 @@ const MIME_TYPES = {
 };
 
 function getCorsOrigin(req) {
-  if (!req) return 'null';
+  if (!req) return null;
   const origin = req.headers['origin'];
-  if (!origin) return '*';
+  if (!origin) return null; // Peticiones sin cabecera Origin (mismo origen o herramientas internas) no llevan CORS
   try {
     const parsed = new URL(origin);
     const host = parsed.hostname.toLowerCase();
@@ -419,11 +449,18 @@ function getCorsOrigin(req) {
     if (envOrigins.includes(origin.toLowerCase()) || envOrigins.includes(host)) {
       return origin;
     }
-    if (host === 'localhost' || host === '127.0.0.1' || host === 'namasteyoga.com.ar' || host.endsWith('.namasteyoga.com.ar')) {
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === 'namasteyoga.com.ar' ||
+      host.endsWith('.namasteyoga.com.ar') ||
+      host === 'martiniano-gallara.github.io' ||
+      host.endsWith('.vercel.app')
+    ) {
       return origin;
     }
   } catch (e) {}
-  return 'null';
+  return null;
 }
 
 function parseJsonBody(req) {
@@ -467,18 +504,21 @@ function parseJsonBody(req) {
 }
 
 function sendJson(res, statusCode, data, req = null) {
-  const allowOrigin = req ? getCorsOrigin(req) : '*';
-  res.writeHead(statusCode, {
+  const allowOrigin = req ? getCorsOrigin(req) : null;
+  const headers = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
-  });
+  };
+  if (allowOrigin && allowOrigin !== 'null') {
+    headers['Access-Control-Allow-Origin'] = allowOrigin;
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+  }
+  res.writeHead(statusCode, headers);
   res.end(JSON.stringify(data));
 }
 
@@ -523,14 +563,19 @@ export async function handleRequest(req, res) {
   if (initPromise) await initPromise;
   if (req.method === 'OPTIONS') {
     const origin = getCorsOrigin(req);
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    const headers = {
       'Vary': 'Origin',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY'
-    });
+    };
+    if (origin && origin !== 'null') {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+      headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+      res.writeHead(204, headers);
+    } else {
+      res.writeHead(403, headers);
+    }
     res.end();
     return;
   }
@@ -553,27 +598,36 @@ export async function handleRequest(req, res) {
           service: 'Namasté Shala Platform',
           timestamp: new Date().toISOString(),
           poolReady: Boolean(initDbPool())
-        });
+        }, req);
       }
 
       // 1.2 Auth: Login
       if (pathname === '/api/auth/login' && req.method === 'POST') {
         const clientIp = getSanitizedClientIp(req);
-        if (isLoginRateLimited(clientIp)) {
+        const body = await parseJsonBody(req);
+        const identifier = (body.identifier || body.email || body.accessCode || '').trim().toLowerCase();
+        const password = (body.password || '').trim();
+
+        if (isLoginRateLimited(clientIp, identifier)) {
           return sendJson(res, 429, {
             success: false,
             message: 'Demasiados intentos fallidos. Por seguridad, espera 5 minutos antes de volver a intentar.'
           }, req);
         }
 
-        const body = await parseJsonBody(req);
-        const identifier = (body.identifier || body.email || body.accessCode || '').trim().toLowerCase();
-        const password = (body.password || '').trim();
-
         if (!identifier || !password) {
           return sendJson(res, 400, {
             success: false,
             message: 'Por favor, ingresa tu correo electrónico y tu contraseña.'
+          }, req);
+        }
+
+        // Revocación absoluta de credenciales públicas o por defecto de versiones anteriores (NAM-008)
+        if (password === 'valeria2026' || password === 'namaste123') {
+          registerFailedLogin(clientIp, identifier);
+          return sendJson(res, 401, {
+            success: false,
+            message: 'Credenciales inválidas. Por seguridad, las contraseñas por defecto han sido eliminadas. Restablece tu clave para ingresar.'
           }, req);
         }
 
@@ -589,24 +643,48 @@ export async function handleRequest(req, res) {
           );
         }
 
-        // Asegurar que las cuentas oficiales posean hash de verificación
-        if (user && !user.passwordHash) {
-          if (user.id === 'usr-valeria' || user.isAdmin || user.role === 'admin') {
-            user.passwordHash = hashPassword((process.env.ADMIN_PASSWORD || '').trim() || 'valeria2026');
-          } else if (user.id === 'usr-sofia' || user.id === 'usr-invitado') {
-            user.passwordHash = hashPassword('namaste123');
-          }
-        }
-
-        if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
-          registerFailedLogin(clientIp);
+        if (!user) {
+          registerFailedLogin(clientIp, identifier);
           return sendJson(res, 401, {
             success: false,
             message: 'Credenciales inválidas. Verifica tu correo y contraseña.'
           }, req);
         }
 
-        clearLoginAttempts(clientIp);
+        const isAdminUser = Boolean(user.isAdmin || user.role === 'admin' || user.id === 'usr-valeria');
+
+        if (isAdminUser) {
+          // FAIL-CLOSED (NAM-008): Si ADMIN_PASSWORD no está definida en el entorno, nadie puede entrar como admin
+          const activeAdminPass = (process.env.ADMIN_PASSWORD || ADMIN_PASSWORD || '').trim();
+          if (!activeAdminPass) {
+            registerFailedLogin(clientIp, identifier);
+            return sendJson(res, 401, {
+              success: false,
+              message: 'Acceso administrativo inhabilitado: ADMIN_PASSWORD no está configurada en el servidor.'
+            }, req);
+          }
+
+          // Verificar contraseña de administración exclusivamente contra ADMIN_PASSWORD
+          const validAdmin = (user.passwordHash && verifyPassword(password, user.passwordHash)) || password === activeAdminPass;
+          if (!validAdmin) {
+            registerFailedLogin(clientIp, identifier);
+            return sendJson(res, 401, {
+              success: false,
+              message: 'Credenciales inválidas. Verifica tu correo y contraseña.'
+            }, req);
+          }
+        } else {
+          // Alumnas: Requiere que la cuenta tenga su propio hash establecido (nunca contraseña fija compartida)
+          if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+            registerFailedLogin(clientIp, identifier);
+            return sendJson(res, 401, {
+              success: false,
+              message: 'Credenciales inválidas. Verifica tu correo y contraseña.'
+            }, req);
+          }
+        }
+
+        clearLoginAttempts(clientIp, identifier);
 
         if (!user.active || user.paymentStatus === 'pending' || user.status === 'pending_payment' || user.suspendedByAdmin) {
           return sendJson(res, 403, {
@@ -757,9 +835,12 @@ export async function handleRequest(req, res) {
           user.pendingPlanId = plan.id;
           user.pendingIsAnnual = isAnnual;
         } else {
-          // Nueva alumna
-          if (password && password.length < 6) {
-            return sendJson(res, 400, { success: false, message: 'La contraseña debe contener al menos 6 caracteres.' }, req);
+          // Nueva alumna: Contraseña obligatoria (NAM-008: Nunca permitir cuentas sin contraseña ni asignar defaults)
+          if (!password || typeof password !== 'string' || password.length < 6) {
+            return sendJson(res, 400, {
+              success: false,
+              message: 'La contraseña es obligatoria para registrar tu cuenta (mínimo 6 caracteres).'
+            }, req);
           }
 
           const newId = 'usr-' + crypto.randomBytes(6).toString('hex');
@@ -770,7 +851,7 @@ export async function handleRequest(req, res) {
             email,
             name,
             accessCode,
-            passwordHash: password ? hashPassword(password) : null,
+            passwordHash: hashPassword(password),
             planId: plan.id,
             planName: plan.name,
             active: false,
@@ -1538,22 +1619,99 @@ export async function handleRequest(req, res) {
           return sendJson(res, 200, { success: true, plans: db.plans }, req);
         }
 
-        if (pathname === '/api/admin/plans' && req.method === 'POST') {
+        if (pathname === '/api/admin/plans' && (req.method === 'POST' || req.method === 'PUT')) {
           const body = await parseJsonBody(req);
           const incoming = body.plans || body;
-          if (!incoming || typeof incoming !== 'object') {
+          if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
             return sendJson(res, 400, { success: false, message: 'Formato de planes inválido.' }, req);
           }
-          for (const k of Object.keys(incoming)) {
-            if (db.plans[k]) {
-              db.plans[k] = { ...db.plans[k], ...incoming[k], updatedAt: new Date().toISOString() };
-            } else {
-              db.plans[k] = { ...incoming[k], updatedAt: new Date().toISOString() };
+
+          const ALLOWED_PLAN_IDS = new Set(['plan-esencia', 'plan-refugio', 'plan-sadhana']);
+          const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+          const ALLOWED_FIELDS = new Set([
+            'priceMonthly',
+            'priceAnnualTotal',
+            'annualDiscountPercent',
+            'mercadopagoUrl',
+            'mercadopagoUrlAnnual',
+            'description',
+            'features',
+            'active',
+            'badge'
+          ]);
+
+          let hasUpdates = false;
+
+          for (const planId of Object.keys(incoming)) {
+            if (FORBIDDEN_KEYS.has(planId) || !ALLOWED_PLAN_IDS.has(planId)) {
+              continue; // Protección estricta contra Prototype Pollution e inyección de planes arbitrarios
             }
-            await syncSingleEntity('plan', db.plans[k]);
+
+            const rawPlanData = incoming[planId];
+            if (!rawPlanData || typeof rawPlanData !== 'object' || Array.isArray(rawPlanData)) {
+              continue;
+            }
+
+            if (!db.plans[planId]) {
+              if (PLANS_CATALOG[planId]) {
+                db.plans[planId] = {
+                  id: planId,
+                  name: PLANS_CATALOG[planId].name,
+                  tag: PLANS_CATALOG[planId].tag,
+                  priceMonthly: PLANS_CATALOG[planId].monthlyPrice,
+                  priceAnnualTotal: PLANS_CATALOG[planId].annualPrice,
+                  currency: 'ARS',
+                  active: true
+                };
+              } else {
+                continue;
+              }
+            }
+
+            for (const field of Object.keys(rawPlanData)) {
+              if (FORBIDDEN_KEYS.has(field) || !ALLOWED_FIELDS.has(field)) {
+                continue;
+              }
+
+              const val = rawPlanData[field];
+              if (field === 'priceMonthly' || field === 'priceAnnualTotal') {
+                const num = Number(val);
+                if (Number.isFinite(num) && num > 0) {
+                  db.plans[planId][field] = Math.round(num);
+                  hasUpdates = true;
+                }
+              } else if (field === 'annualDiscountPercent') {
+                const num = Number(val);
+                if (Number.isFinite(num) && num >= 0 && num <= 100) {
+                  db.plans[planId][field] = Math.round(num);
+                  hasUpdates = true;
+                }
+              } else if (field === 'mercadopagoUrl' || field === 'mercadopagoUrlAnnual' || field === 'description' || field === 'badge') {
+                if (typeof val === 'string') {
+                  db.plans[planId][field] = val.trim();
+                  hasUpdates = true;
+                }
+              } else if (field === 'active') {
+                if (typeof val === 'boolean') {
+                  db.plans[planId][field] = val;
+                  hasUpdates = true;
+                }
+              } else if (field === 'features') {
+                if (Array.isArray(val)) {
+                  db.plans[planId][field] = val.filter(f => typeof f === 'string').map(f => f.trim());
+                  hasUpdates = true;
+                }
+              }
+            }
+
+            db.plans[planId].updatedAt = new Date().toISOString();
+            await syncSingleEntity('plan', db.plans[planId]);
           }
-          saveLocalDatabaseCopy();
-          recordAuditLog(db, 'PLANS_UPDATED', 'Precios y enlaces actualizados', 'Configuración de planes modificada por Administradora', auth.user.email, 'info');
+
+          if (hasUpdates) {
+            saveLocalDatabaseCopy();
+            recordAuditLog(db, 'PLANS_UPDATED', 'Precios y enlaces actualizados', 'Configuración de planes modificada por Administradora', auth.user.email, 'info');
+          }
           return sendJson(res, 200, { success: true, plans: db.plans }, req);
         }
 

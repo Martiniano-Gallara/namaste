@@ -690,8 +690,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const forgotEmailInput = document.getElementById('forgot-email-input');
     const sendWhatsappBtn = document.getElementById('btn-send-whatsapp-recovery');
     const feedback = document.getElementById('login-feedback');
-    const demoBtn = document.getElementById('btn-use-demo-code');
-    const adminBtn = document.getElementById('btn-use-admin-code');
 
     // Número oficial de WhatsApp de Valeria para soporte y recuperación
     const VALERIA_WHATSAPP_PHONE = '5491138859944';
@@ -760,24 +758,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const waUrl = `https://wa.me/${VALERIA_WHATSAPP_PHONE}?text=${encodeURIComponent(msgText)}`;
         window.open(waUrl, '_blank', 'noopener,noreferrer');
         showToast('Abriendo WhatsApp directo de Valeria...', 'info', 4000);
-      });
-    }
-
-    if (demoBtn && input) {
-      demoBtn.addEventListener('click', () => {
-        input.value = 'sofia.varela@ejemplo.com';
-        if (passwordInput) passwordInput.value = 'namaste123';
-        feedback.style.display = 'none';
-        if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
-      });
-    }
-
-    if (adminBtn && input) {
-      adminBtn.addEventListener('click', () => {
-        input.value = 'valeria.manassero@namaste.com';
-        if (passwordInput) passwordInput.value = 'valeria2026';
-        feedback.style.display = 'none';
-        if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
       });
     }
 
