@@ -77,10 +77,12 @@
     grid-template-columns: 1fr;
     max-width: 500px;
     margin: 0 auto;
+    gap: 2.25rem;
   }
 
   .pricing-card.recommended {
     transform: none;
+    margin-top: 0.5rem;
   }
 
   .pricing-card.recommended:hover {
@@ -774,7 +776,7 @@
     text-align: center !important;
   }
 
-  /* Carrusel Horizontal de Planes Móvil (Deslizable como las reseñas) */
+  /* Planes y Membresías Móvil (Columna Vertical Fluida, 100% Legible y sin Cortes) */
   .plans-slider-wrap {
     position: relative !important;
     width: 100% !important;
@@ -782,14 +784,15 @@
 
   .plans-grid {
     display: flex !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    -webkit-overflow-scrolling: touch !important;
-    gap: 0.85rem !important;
-    padding: 0.85rem 0.5rem 1.25rem 0.5rem !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    scrollbar-width: none !important;
+    flex-direction: column !important;
+    gap: 2.25rem !important;
+    padding: 0.85rem 0 1rem 0 !important;
+    max-width: 440px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+    justify-content: flex-start !important;
+    scroll-snap-type: none !important;
   }
 
   .plans-grid::-webkit-scrollbar {
@@ -797,57 +800,48 @@
   }
 
   .pricing-card {
-    flex: 0 0 84% !important;
-    min-width: 270px !important;
-    max-width: 320px !important;
-    padding: 1.65rem 1.4rem !important;
-    border-radius: 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 1.85rem 1.45rem !important;
+    border-radius: 20px !important;
     background: #FFFFFF !important;
     border: 1.5px solid rgba(199, 107, 78, 0.25) !important;
-    box-shadow: 0 10px 30px rgba(44, 38, 35, 0.1), 0 2px 8px rgba(44, 38, 35, 0.04) !important;
-    scroll-snap-align: start !important;
+    box-shadow: 0 10px 30px rgba(44, 38, 35, 0.08), 0 2px 8px rgba(44, 38, 35, 0.04) !important;
+    box-sizing: border-box !important;
+    scroll-snap-align: none !important;
   }
 
   .pricing-card.recommended {
     border: 2.5px solid var(--terracotta) !important;
-    box-shadow: 0 14px 40px rgba(199, 107, 78, 0.25), 0 4px 12px rgba(199, 107, 78, 0.1) !important;
+    box-shadow: 0 14px 40px rgba(199, 107, 78, 0.22), 0 4px 12px rgba(199, 107, 78, 0.1) !important;
+    transform: none !important;
+    margin-top: 0.5rem !important;
   }
 
   .plans-slider-hint {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    margin-top: 0.25rem !important;
-  }
-
-  .plans-drag-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--terracotta);
-    opacity: 0.85;
-    letter-spacing: 0.04em;
+    display: none !important;
   }
 
   .pricing-desc {
     min-height: auto !important;
-    font-size: 0.82rem !important;
-    margin-bottom: 0.5rem !important;
+    font-size: 0.86rem !important;
+    margin-bottom: 0.6rem !important;
   }
 
   .pricing-amount {
-    font-size: 2.2rem !important;
+    font-size: 2.35rem !important;
   }
 
   .pricing-features-list {
-    gap: 0.45rem !important;
-    margin-bottom: 1.15rem !important;
+    gap: 0.55rem !important;
+    margin-bottom: 1.35rem !important;
   }
 
   .pricing-feature-item {
-    font-size: 0.84rem !important;
+    font-size: 0.86rem !important;
+    line-height: 1.4 !important;
   }
 
   .classes-catalog-grid {

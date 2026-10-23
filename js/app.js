@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
    * Habilita arrastre fluido con mouse para los carruseles (testimonios, planes y clases) en escritorio
    */
   function setupHorizontalSliders() {
-    ['testimonials-slider', 'benefits-slider', 'steps-slider', 'plans-slider', 'carousel-yoga', 'carousel-meditation'].forEach(id => {
+    ['testimonials-slider', 'benefits-slider', 'steps-slider', 'carousel-yoga', 'carousel-meditation'].forEach(id => {
       const slider = document.getElementById(id);
       if (!slider) return;
 
