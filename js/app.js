@@ -1264,9 +1264,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Métricas Reales del Alumno sincronizadas con la Base de Datos
-    const progress = (typeof ProgressService !== 'undefined') ? ProgressService.getProgressState() : { streakDays: 1, totalMinutes: 0, completed: [] };
+    const progress = (typeof ProgressService !== 'undefined') ? ProgressService.getProgressState() : { streakDays: 0, totalMinutes: 0, completed: [] };
     const streakEl = document.getElementById('stat-streak-days');
-    if (streakEl) streakEl.textContent = progress.streakDays || 1;
+    if (streakEl) streakEl.textContent = progress.streakDays || 0;
 
     const minutesEl = document.getElementById('stat-minutes-practiced');
     if (minutesEl) minutesEl.textContent = progress.totalMinutes || 0;
@@ -1275,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (completedEl) completedEl.textContent = progress.completed ? progress.completed.length : 0;
 
     const streakBadgeEl = document.getElementById('header-streak-count');
-    if (streakBadgeEl) streakBadgeEl.textContent = `${progress.streakDays || 1} días`;
+    if (streakBadgeEl) streakBadgeEl.textContent = `${progress.streakDays || 0} días`;
 
     // Banner de Membresía Pausada
     const pausedBanner = document.getElementById('platform-paused-banner');
@@ -1993,25 +1993,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // 4. Modal de Progreso del Alumno (Racha, Minutos, Clases)
-    const openProgressModal = () => {
+    // 4. Modal de Progreso del Alumno (Racha, Minutos, Clases - Tu Camino de Práctica)
+    const openProgressModal = async () => {
       const user = AuthService.getCurrentUser();
       if (!user) return;
 
+      // Sincronización en tiempo real con la base de datos Supabase
+      if (typeof ProgressService !== 'undefined' && ProgressService.fetchProgressFromServer) {
+        await ProgressService.fetchProgressFromServer();
+      }
+
       const progress = ProgressService.getProgressState();
-      const completedClasses = getActiveClasses().filter(c => progress.completed.includes(c.id));
 
       const streakEl = document.getElementById('modal-metric-streak');
       const minEl = document.getElementById('modal-metric-minutes');
       const countEl = document.getElementById('modal-metric-classes');
-      const badgeCountEl = document.getElementById('modal-completed-count-badge');
-      const listContainer = document.getElementById('modal-completed-classes-list');
 
       const streak = Number(progress.streakDays) || 0;
+      const totalMinutes = Number(progress.totalMinutes) || 0;
+      const completedCount = progress.completed ? progress.completed.length : 0;
+
       if (streakEl) streakEl.textContent = streak;
-      if (minEl) minEl.textContent = progress.totalMinutes || 0;
-      if (countEl) countEl.textContent = progress.completed ? progress.completed.length : 0;
-      if (badgeCountEl) badgeCountEl.textContent = `${completedClasses.length} ${completedClasses.length === 1 ? 'clase' : 'clases'}`;
+      if (minEl) minEl.textContent = totalMinutes;
+      if (countEl) countEl.textContent = completedCount;
 
       // Mensaje consciente de racha
       const streakBannerText = document.getElementById('modal-streak-banner-text');
@@ -2020,67 +2024,10 @@ document.addEventListener('DOMContentLoaded', () => {
           streakBannerText.textContent = `¡Gran disciplina! Llevas ${streak} días consecutivos cultivando presencia.`;
         } else if (streak > 1) {
           streakBannerText.textContent = `¡Excelente camino! Sumas ${streak} días seguidos de práctica en el Shala.`;
+        } else if (streak === 1) {
+          streakBannerText.textContent = `¡Hermoso comienzo! Llevas 1 día de práctica cultivando presencia.`;
         } else {
-          streakBannerText.textContent = `Cada instante en el mat siembra serenidad y autoconocimiento.`;
-        }
-      }
-
-      if (listContainer) {
-        if (completedClasses.length === 0) {
-          listContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem; background: var(--sand-50); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
-              <div style="margin-bottom: 0.5rem; display: flex; justify-content: center; color: var(--color-terracotta, #b86240);">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="5" r="2"></circle>
-                  <path d="M12 9v4"></path>
-                  <path d="m8 13 4 3 4-3"></path>
-                  <path d="m5 17 4-1 3 4 3-4 4 1"></path>
-                </svg>
-              </div>
-              <strong style="display: block; color: var(--text-primary); margin-bottom: 0.25rem;">Aún no tienes prácticas registradas</strong>
-              <span>Elige cualquier sesión del catálogo para iniciar tu camino hoy mismo.</span>
-            </div>
-          `;
-        } else {
-          listContainer.innerHTML = completedClasses.map(c => `
-            <div class="completed-class-card">
-              <div class="completed-class-card-main">
-                <div class="completed-class-check-circle" title="Sesión completada">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <div class="completed-class-info">
-                  <h5 class="completed-class-name">${c.title}</h5>
-                  <div class="completed-class-submeta">
-                    <span class="completed-class-chip">${c.categoryLabel}</span>
-                    <span>•</span>
-                    <span>${c.duration} min</span>
-                    <span>•</span>
-                    <span>${c.level}</span>
-                  </div>
-                </div>
-              </div>
-              <button type="button" class="btn-repeat-practice" data-class-id="${c.id}" title="Volver a practicar esta clase">
-                <span>Repetir</span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                </svg>
-              </button>
-            </div>
-          `).join('');
-
-          listContainer.querySelectorAll('.btn-repeat-practice').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const classId = btn.getAttribute('data-class-id');
-              const classObj = getActiveClasses().find(c => c.id === classId);
-              if (classObj) {
-                closeModal(modals.progressDetails);
-                openClassPlayer(classObj, 0);
-              }
-            });
-          });
+          streakBannerText.textContent = `Cada instante en el mat siembra serenidad y autoconocimiento. Inicia tu primera práctica hoy.`;
         }
       }
 

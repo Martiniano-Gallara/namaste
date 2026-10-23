@@ -50,12 +50,15 @@ const ProgressService = (() => {
   const getProgressState = () => {
     const currentId = getActiveUserId();
     if (cachedUserId === currentId && cachedState) {
+      if (cachedState.totalMinutes === 275 || (Array.isArray(cachedState.completed) && cachedState.completed.length === 8)) {
+        cachedState = getCleanProgressState();
+      }
       return cachedState;
     }
 
-    // Purgar de una sola vez cualquier residuo de clases ficticias heredadas en el navegador
+    // Purgar de forma definitiva cualquier residuo de clases ficticias heredadas en el navegador
     try {
-      const purgeKey = 'namaste_real_progress_v4';
+      const purgeKey = 'namaste_real_progress_v7';
       if (!localStorage.getItem(purgeKey)) {
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
@@ -75,6 +78,15 @@ const ProgressService = (() => {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
+          // Si el registro guardado contiene el mock residual de 275 min u 8 clases
+          if (parsed.totalMinutes === 275 || (Array.isArray(parsed.completed) && parsed.completed.length === 8)) {
+            const clean = getCleanProgressState();
+            localStorage.setItem(key, JSON.stringify(clean));
+            cachedUserId = currentId;
+            cachedState = clean;
+            return clean;
+          }
+
           cachedUserId = currentId;
           cachedState = {
             streakDays: Number(parsed.streakDays) || 0,
@@ -271,10 +283,10 @@ const ProgressService = (() => {
   };
 
   const fetchProgressFromServer = async () => {
-    if (isStatic() || typeof AuthService === 'undefined') return;
+    if (isStatic() || typeof AuthService === 'undefined') return null;
     const token = AuthService.getToken();
     const user = AuthService.getCurrentUser();
-    if (!token || !user || typeof window === 'undefined' || !window.location.protocol.startsWith('http')) return;
+    if (!token || !user || typeof window === 'undefined' || !window.location.protocol.startsWith('http')) return null;
 
     try {
       const response = await fetch('/api/progress', {
@@ -282,23 +294,30 @@ const ProgressService = (() => {
       });
       if (response.ok) {
         const data = await response.json();
-        if (data.progress) {
+        if (data && data.progress) {
           setInitialProgress(user.id, data.progress);
+          return data.progress;
         }
       }
     } catch (e) {
       // Silencioso si no hay conexión
     }
+    return null;
   };
 
   if (typeof window !== 'undefined') {
     window.addEventListener('namaste:auth-changed', (e) => {
       if (e.detail && e.detail.id) {
-        setTimeout(fetchProgressFromServer, 200);
+        setTimeout(fetchProgressFromServer, 100);
       } else {
         clearActiveUser();
       }
     });
+
+    // Auto-sincronización con el servidor al cargar la aplicación
+    setTimeout(() => {
+      fetchProgressFromServer();
+    }, 250);
   }
 
   return {

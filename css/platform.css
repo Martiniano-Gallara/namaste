@@ -2151,7 +2151,8 @@
 
 /* --- Modal de Progreso del Alumno (Camino de Práctica Rediseñado) --- */
 .modal-dialog-progress {
-  max-width: 520px;
+  max-width: 480px;
+  width: 92%;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-medium);
   box-shadow: var(--shadow-float);
@@ -2272,13 +2273,14 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.65rem 0.95rem;
+  padding: 0.75rem 1rem;
   background-color: var(--sand-50);
   border-left: 3px solid var(--olive);
   border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  margin-bottom: 1.15rem;
+  margin-bottom: 0;
+  line-height: 1.45;
 }
 
 .progress-streak-banner-icon {

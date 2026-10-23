@@ -104,7 +104,15 @@ const AuthService = (() => {
   const getCurrentUser = () => {
     try {
       const userJson = localStorage.getItem(SESSION_KEY);
-      return userJson ? JSON.parse(userJson) : null;
+      if (!userJson) return null;
+      const user = JSON.parse(userJson);
+      if (user && (user.totalMinutesPracticed === 275 || user.completedClassesCount === 8)) {
+        user.totalMinutesPracticed = 0;
+        user.completedClassesCount = 0;
+        user.streakDays = 0;
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      }
+      return user;
     } catch (e) {
       return null;
     }
