@@ -457,16 +457,19 @@ export async function getReviews(onlyApproved = true) {
   if (!pool) return [];
   try {
     const q = onlyApproved
-      ? 'SELECT * FROM reviews WHERE approved = TRUE ORDER BY created_at DESC;'
+      ? 'SELECT * FROM reviews WHERE approved = TRUE AND rating = 5 ORDER BY created_at DESC;'
       : 'SELECT * FROM reviews ORDER BY created_at DESC;';
     const res = await pool.query(q);
     return res.rows.map(r => ({
       id: r.id,
       userId: r.user_id,
       name: r.user_name,
+      userName: r.user_name,
       plan: r.user_plan,
+      userPlan: r.user_plan,
       rating: Number(r.rating),
       comment: r.comment,
+      quote: r.comment,
       approved: Boolean(r.approved),
       createdAt: r.created_at
     }));
@@ -480,6 +483,8 @@ export async function saveReview(review) {
   const pool = initDbPool();
   if (!pool || !review) return false;
   const id = safeStr(review.id || 'rev_' + Date.now().toString(36), 100);
+  const rating = Math.max(1, Math.min(5, Number(review.rating || 5)));
+  const isApproved = review.approved !== undefined ? Boolean(review.approved) : rating === 5;
   try {
     await pool.query(`
       INSERT INTO reviews (id, user_id, user_name, user_plan, rating, comment, approved, created_at)
@@ -493,9 +498,9 @@ export async function saveReview(review) {
       safeStr(review.userId, 100),
       safeStr(review.userName || review.name, 150, 'Alumna'),
       safeStr(review.userPlan || review.plan, 100, 'Plan Esencia'),
-      Math.max(1, Math.min(5, Number(review.rating || 5))),
+      rating,
       safeStr(review.comment || review.quote, 1000),
-      review.approved !== false
+      isApproved
     ]);
     return true;
   } catch (err) {

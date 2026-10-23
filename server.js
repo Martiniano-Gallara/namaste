@@ -1218,9 +1218,11 @@ export async function handleRequest(req, res) {
       }
 
       // 1.12 Reseñas Reales y Moderadas (NAM-015)
+      // Exclusivamente las reseñas de 5 estrellas aprobadas se publican en testimonios del inicio
       if (pathname === '/api/reviews' && req.method === 'GET') {
         const reviews = await getReviews(true);
-        return sendJson(res, 200, { success: true, reviews }, req);
+        const fiveStarOnly = reviews.filter(r => Number(r.rating) === 5);
+        return sendJson(res, 200, { success: true, reviews: fiveStarOnly }, req);
       }
 
       if (pathname === '/api/reviews' && req.method === 'POST') {
@@ -1237,6 +1239,7 @@ export async function handleRequest(req, res) {
           return sendJson(res, 400, { success: false, message: 'Por favor escribe un comentario para tu reseña.' }, req);
         }
 
+        const isFiveStars = rating === 5;
         const reviewData = {
           id: 'rev_' + crypto.randomBytes(6).toString('hex'),
           userId: auth.user.id,
@@ -1244,16 +1247,19 @@ export async function handleRequest(req, res) {
           userPlan: auth.user.planName || 'Plan Esencia',
           rating,
           comment: quote,
-          approved: true
+          approved: isFiveStars // Exclusivamente visible en inicio si tiene 5 estrellas
         };
 
         await saveReview(reviewData);
-        recordAuditLog(db, 'REVIEW_POSTED', 'Nueva reseña recibida', `${auth.user.name} publicó una valoración de ${rating} estrellas`, auth.user.email, 'info');
+        recordAuditLog(db, 'REVIEW_POSTED', 'Nueva reseña recibida', `${auth.user.name} publicó una valoración de ${rating} estrellas (${isFiveStars ? 'Visible en Inicio' : 'Privada para el equipo'})`, auth.user.email, 'info');
 
         return sendJson(res, 201, {
           success: true,
           review: reviewData,
-          message: '¡Tu reseña ha sido publicada con éxito!'
+          isFiveStars,
+          message: isFiveStars
+            ? '¡Tu reseña de 5 estrellas ha sido publicada en los testimonios del inicio!'
+            : '¡Gracias por tu valoración! Tu opinión ha sido enviada al equipo docente para mejorar la práctica.'
         }, req);
       }
 

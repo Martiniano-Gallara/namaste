@@ -2605,27 +2605,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // CASO 2: Ya publicó una reseña (Vista de lectura con opción a editar)
     if (existingReview && !container.dataset.editing) {
       container.className = 'drawer-review-card';
+      const isFiveStars = (Number(existingReview.rating) || 5) === 5;
       const starsHtml = '★'.repeat(existingReview.rating || 5);
       container.innerHTML = `
         <div class="drawer-review-header">
           <div>
-            <h4 class="drawer-review-title">Tu Reseña en el Inicio</h4>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">Publicada en orden cronológico</div>
+            <h4 class="drawer-review-title">Tu Reseña de Práctica</h4>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem;">
+              ${isFiveStars ? 'Publicada en testimonios del inicio' : 'Valoración privada para el equipo'}
+            </div>
           </div>
-          <span class="drawer-review-badge">Publicada</span>
+          <span class="drawer-review-badge ${isFiveStars ? '' : 'badge-locked'}">
+            ${isFiveStars ? 'En Inicio ★★★★★' : 'Recibida'}
+          </span>
         </div>
         <div class="drawer-review-published-box">
           <div style="color:#B65E42; font-size:0.95rem; letter-spacing:1px; line-height:1;">${starsHtml}</div>
           <p class="drawer-review-published-quote">«${escapeHtml(existingReview.quote)}»</p>
           <div class="drawer-review-published-meta">
-            <span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Visible en testimonios de inicio</span>
+            <span>${isFiveStars ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Visible en testimonios de inicio' : 'Enviada en privado (solo las de 5★ se muestran en inicio)'}</span>
             ${existingReview.dateFormatted ? `<span>• ${escapeHtml(existingReview.dateFormatted)}</span>` : ''}
           </div>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.2rem;">
-          <button type="button" class="btn btn-secondary" id="btn-view-review-landing" style="padding:0.35rem 0.65rem; font-size:0.74rem;">
-            <span>Ver en Inicio</span>
-          </button>
+          ${isFiveStars ? `
+            <button type="button" class="btn btn-secondary" id="btn-view-review-landing" style="padding:0.35rem 0.65rem; font-size:0.74rem;">
+              <span>Ver en Inicio</span>
+            </button>
+          ` : '<div></div>'}
           <button type="button" class="btn btn-secondary" id="btn-drawer-edit-review" style="padding:0.35rem 0.75rem; font-size:0.74rem;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             <span>Modificar reseña</span>
@@ -2653,7 +2660,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // CASO 3: Habilitada para escribir / editar reseña corta
+    // CASO 3: Habilitada para escribir / editar reseña corta (accesible para cualquier nueva clienta)
     container.className = 'drawer-review-card';
     let currentRating = existingReview ? (existingReview.rating || 5) : 5;
     const initialText = existingReview ? existingReview.quote : '';
@@ -2662,7 +2669,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="drawer-review-header">
         <div>
           <h4 class="drawer-review-title">${existingReview ? 'Modificar Tu Reseña' : 'Dejar una Reseña'}</h4>
-          <div style="font-size:0.74rem; color:var(--text-muted); margin-top:0.1rem;">Se publicará en testimonios del inicio</div>
+          <div id="drawer-review-sub" style="font-size:0.74rem; color:var(--text-muted); margin-top:0.1rem;">
+            ${currentRating === 5 ? 'Se publicará en testimonios del inicio' : 'Feedback privado para Valeria (en inicio solo 5★)'}
+          </div>
         </div>
         <div class="drawer-review-stars-wrap" id="drawer-review-stars" title="Calificación">
           ${[1, 2, 3, 4, 5].map(star => `
@@ -2695,6 +2704,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Interacción con Estrellas
     const starBtns = container.querySelectorAll('.review-star-btn');
+    const subHint = document.getElementById('drawer-review-sub');
     starBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         currentRating = parseInt(btn.getAttribute('data-val'), 10) || 5;
@@ -2702,6 +2712,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const val = parseInt(b.getAttribute('data-val'), 10);
           b.classList.toggle('active', val <= currentRating);
         });
+        if (subHint) {
+          if (currentRating === 5) {
+            subHint.textContent = 'Se publicará en testimonios del inicio';
+            subHint.style.color = 'var(--text-muted)';
+          } else {
+            subHint.textContent = 'Feedback privado para Valeria (en inicio solo 5★)';
+            subHint.style.color = 'var(--terracotta)';
+          }
+        }
       });
     });
 
@@ -2748,7 +2767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             delete container.dataset.editing;
             renderDrawerReviewSection(user);
             renderTestimonialsSlider();
-            showToast('¡Tu reseña ha sido publicada en la sección de inicio!', 'success');
+            showToast(res.message, 'success');
           } else {
             showToast(res.message || 'No se pudo publicar la reseña.', 'error');
             submitBtn.disabled = false;
@@ -2765,7 +2784,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Renderiza el slider de testimonios de la página de inicio en estricto orden cronológico
+   * Renderiza el slider de testimonios de la página de inicio en estricto orden cronológico.
+   * EXCLUSIVAMENTE muestra reseñas de 5 estrellas.
    */
   function renderTestimonialsSlider() {
     const slider = document.getElementById('testimonials-slider');
@@ -2773,14 +2793,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof ReviewsService === 'undefined') return;
 
-    const reviews = ReviewsService.getAllReviews();
+    // Exclusivamente reseñas de 5 estrellas
+    const reviews = ReviewsService.getAllReviews().filter(r => (Number(r.rating) || 5) === 5);
     if (!reviews || !reviews.length) return;
 
     slider.innerHTML = reviews.map(r => {
-      const stars = '★'.repeat(r.rating || 5);
-      const authorName = escapeHtml(r.name || r.authorName || 'Alumna');
+      const stars = '★'.repeat(5);
+      const authorName = escapeHtml(r.name || r.userName || r.authorName || 'Alumna');
       const authorMeta = escapeHtml(r.memberSince || r.meta || (r.planName ? `Alumna • ${r.planName}` : 'Alumna de Namasté'));
-      const quote = escapeHtml(r.quote);
+      const quote = escapeHtml(r.quote || r.comment || '');
       const isStudent = r.isStudentReview ? ' student-verified' : '';
 
       return `

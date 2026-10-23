@@ -72,6 +72,7 @@ const ReviewsService = (() => {
 
   /**
    * Obtiene todas las reseñas (semillas + publicadas por alumnas),
+   * EXCLUSIVAMENTE aquellas con 5 estrellas para la sección de inicio,
    * ordenadas cronológicamente por fecha/timestamp.
    */
   const getAllReviews = () => {
@@ -88,56 +89,32 @@ const ReviewsService = (() => {
       }
     });
 
+    // EXCLUSIVAMENTE reseñas de 5 estrellas para la sección de inicio
+    const fiveStarReviews = all.filter(r => (Number(r.rating) || 5) === 5);
+
     // Orden cronológico (por fecha de publicación)
-    return all.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+    return fiveStarReviews.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
   };
 
   /**
-   * Evalúa si una alumna puede publicar reseña.
-   * Regla de negocio: Debe tener al menos 7 días (1 semana) desde que activó la membresía.
+   * Evalúa si una usuaria puede publicar reseña.
+   * Cualquier clienta o practicante registrada (incluso nueva clienta) puede dejar su reseña de inmediato.
    */
   const checkEligibility = (user) => {
     if (!user) {
-      return { eligible: false, reason: 'no_user', daysRemaining: 7, daysActive: 0 };
+      return { eligible: false, reason: 'no_user', daysRemaining: 0, daysActive: 0 };
     }
 
     if (user.role === 'admin' || user.isAdmin) {
       return { eligible: false, reason: 'is_admin', daysRemaining: 0, daysActive: 999 };
     }
 
-    // Cuenta histórica de Sofía o con memberSince en meses pasados
-    if (user.accessCode === 'NAMASTE-ALUMNO' || (user.email || '').toLowerCase() === 'sofia.varela@ejemplo.com') {
-      return { eligible: true, daysRemaining: 0, daysActive: 215 };
-    }
-
-    // Si memberSince especifica meses anteriores a Octubre 2026
-    const pastMonths = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre'];
-    const memberSinceLower = (user.memberSince || '').toLowerCase();
-    if (pastMonths.some(m => memberSinceLower.includes(m))) {
-      return { eligible: true, daysRemaining: 0, daysActive: 30 };
-    }
-
-    // Cálculo por timestamp de creación o activación
-    let activationTime = null;
-    if (user.createdAt) {
-      activationTime = new Date(user.createdAt).getTime();
-    } else if (user.activatedAt) {
-      activationTime = new Date(user.activatedAt).getTime();
-    }
-
-    if (!activationTime || isNaN(activationTime)) {
-      activationTime = Date.now();
-    }
-
-    const diffMs = Date.now() - activationTime;
-    const daysActive = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-    const daysRemaining = Math.max(1, 7 - daysActive);
-
+    // Toda clienta registrada puede opinar de inmediato
     return {
-      eligible: daysActive >= 7,
-      reason: daysActive >= 7 ? 'eligible' : 'too_new',
-      daysRemaining,
-      daysActive
+      eligible: true,
+      reason: 'eligible',
+      daysRemaining: 0,
+      daysActive: 30
     };
   };
 
@@ -152,7 +129,8 @@ const ReviewsService = (() => {
   };
 
   /**
-   * Publica o actualiza la reseña corta de una alumna
+   * Publica o actualiza la reseña corta de una alumna.
+   * Si la calificación es de 5 estrellas (exclusivamente), se publica en el inicio.
    */
   const publishReview = async ({ quote, rating = 5, user }) => {
     if (!user) return { success: false, message: 'Debes iniciar sesión.' };
@@ -170,10 +148,11 @@ const ReviewsService = (() => {
     if (!eligibility.eligible) {
       return {
         success: false,
-        message: `Tu reseña se habilitará en ${eligibility.daysRemaining} días (tras completar tu primera semana de práctica).`
+        message: 'Debes tener una cuenta de alumna activa para publicar tu reseña.'
       };
     }
 
+    const numRating = Math.max(1, Math.min(5, Number(rating) || 5));
     const now = new Date();
     const monthsEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const formattedDate = `${now.getDate()} ${monthsEs[now.getMonth()]} ${now.getFullYear()}`;
@@ -189,7 +168,7 @@ const ReviewsService = (() => {
       planName: user.planName || 'Plan Refugio',
       memberSince: `Alumna • ${user.planName || 'Plan Refugio'}`,
       quote: cleanQuote,
-      rating: Math.max(1, Math.min(5, Number(rating) || 5)),
+      rating: numRating,
       timestamp: existing ? existing.timestamp : now.getTime(),
       dateFormatted: formattedDate,
       isStudentReview: true
@@ -217,7 +196,7 @@ const ReviewsService = (() => {
           },
           body: JSON.stringify({
             quote: cleanQuote,
-            rating: Math.max(1, Math.min(5, Number(rating) || 5))
+            rating: numRating
           })
         });
 
@@ -236,10 +215,14 @@ const ReviewsService = (() => {
       }
     }
 
+    const isFiveStars = numRating === 5;
     return {
       success: true,
       review: reviewObj,
-      message: '¡Tu reseña ha sido publicada en el inicio con éxito!'
+      isFiveStars,
+      message: isFiveStars
+        ? '¡Tu reseña ha sido publicada en los testimonios del inicio!'
+        : '¡Gracias por tu valoración! Tu opinión ha sido enviada al equipo docente para mejorar la práctica.'
     };
   };
 
@@ -256,8 +239,22 @@ const ReviewsService = (() => {
           const local = getStoredReviews();
           const merged = [...local];
           data.reviews.forEach(sr => {
-            if (!merged.some(m => m.id === sr.id)) {
-              merged.push(sr);
+            const mapped = {
+              id: sr.id,
+              userId: sr.userId,
+              name: sr.name || sr.userName || 'Alumna',
+              planName: sr.plan || sr.userPlan || 'Plan Refugio',
+              memberSince: sr.memberSince || `Alumna • ${sr.plan || sr.userPlan || 'Plan Refugio'}`,
+              quote: sr.quote || sr.comment || '',
+              rating: Number(sr.rating) || 5,
+              timestamp: sr.createdAt ? new Date(sr.createdAt).getTime() : (sr.timestamp || Date.now()),
+              isStudentReview: true
+            };
+            const idx = merged.findIndex(m => m.id === mapped.id || (m.userId && m.userId === mapped.userId));
+            if (idx > -1) {
+              merged[idx] = { ...merged[idx], ...mapped };
+            } else {
+              merged.push(mapped);
             }
           });
           saveStoredReviews(merged);
