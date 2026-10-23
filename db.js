@@ -523,14 +523,15 @@ export async function getClasses() {
       title: c.title,
       category: c.category,
       categoryLabel: c.category_label,
-      duration: Number(c.duration),
-      level: c.level,
+      duration: Number(c.duration || 35),
+      level: c.level || 'Todos los niveles',
       instructor: c.instructor,
       instructorRole: c.instructor_role,
       thumbnail: c.thumbnail,
       description: c.description,
       props: Array.isArray(c.props) ? c.props : (typeof c.props === 'string' ? JSON.parse(c.props) : []),
       intentions: Array.isArray(c.intentions) ? c.intentions : (typeof c.intentions === 'string' ? JSON.parse(c.intentions) : []),
+      musicUrl: c.music_url || '',
       planRequired: c.plan_required,
       format: c.format,
       videoUrl: c.video_url,
@@ -554,9 +555,9 @@ export async function saveClass(c) {
       INSERT INTO classes (
         id, title, category, category_label, duration, level, instructor,
         instructor_role, thumbnail, description, props, intentions,
-        plan_required, format, video_url, views_count, is_new, featured, created_at
+        plan_required, format, video_url, views_count, is_new, featured, music_url, created_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW())
       ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         category = EXCLUDED.category,
@@ -565,6 +566,9 @@ export async function saveClass(c) {
         level = EXCLUDED.level,
         thumbnail = EXCLUDED.thumbnail,
         description = EXCLUDED.description,
+        props = EXCLUDED.props,
+        intentions = EXCLUDED.intentions,
+        music_url = EXCLUDED.music_url,
         plan_required = EXCLUDED.plan_required,
         format = EXCLUDED.format,
         video_url = EXCLUDED.video_url;
@@ -586,7 +590,8 @@ export async function saveClass(c) {
       safeStr(c.videoUrl, 1000),
       Number(c.viewsCount || 0),
       Boolean(c.isNew),
-      Boolean(c.featured)
+      Boolean(c.featured),
+      safeStr(c.musicUrl || c.music_url || '', 500)
     ]);
     return true;
   } catch (err) {

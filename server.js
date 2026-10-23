@@ -137,22 +137,294 @@ const CLASS_CATEGORIES = {
 };
 
 const CLASSES_CATALOG = [
-  { id: 'cls-suave-01', title: 'Yoga Suave: Despertar Matutino & Movilidad Articular', category: 'suave', categoryLabel: 'Yoga Suave', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-suave-02', title: 'Yoga Suave: Apertura de Pecho & Hombros Ligeros', category: 'suave', categoryLabel: 'Yoga Suave', duration: 30, level: 'Principiante', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-clasico-01', title: 'Yoga Clásico: Posturas Tradicionales & Alineación', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 45, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-clasico-02', title: 'Yoga Clásico: Fortaleza, Enraizamiento & Equilibrio', category: 'clasico', categoryLabel: 'Yoga Clásico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-terapeutico-01', title: 'Yoga Terapéutico: Alivio Lumbar & Espalda Baja', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 40, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-terapeutico-02', title: 'Yoga Terapéutico: Liberación de Tensión en Caderas', category: 'terapeutico', categoryLabel: 'Yoga Terapéutico', duration: 35, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-ashtanga-01', title: 'Ashtanga Yoga: Serie Primaria Guiada (Surya Namaskar)', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 55, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-refugio', featured: true },
-  { id: 'cls-ashtanga-02', title: 'Ashtanga Yoga: Fuerza en el Centro & Bandhas', category: 'ashtanga', categoryLabel: 'Yoga Ashtanga', duration: 50, level: 'Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-refugio', featured: false },
-  { id: 'cls-dinamico-01', title: 'Yoga Dinámico: Vinyasa Flow Energizante', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 45, level: 'Intermedio / Avanzado', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-refugio', featured: true },
-  { id: 'cls-dinamico-02', title: 'Yoga Dinámico: Fluidez, Transiciones & Ritmo Respiratorio', category: 'dinamico', categoryLabel: 'Yoga Dinámico', duration: 40, level: 'Intermedio', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-refugio', featured: false },
-  { id: 'cls-relax-01', title: 'Yoga Relax: Yoga Nidra & Descanso Profundo Reparador', category: 'relax', categoryLabel: 'Yoga Relax', duration: 30, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-relax-02', title: 'Yoga Relax: Estiramientos Restaurativos Nocturnos', category: 'relax', categoryLabel: 'Yoga Relax', duration: 25, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/hero.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-med-01', title: 'Meditación Guiada: Presencia Plena & Silencio Interior', category: 'meditacion', categoryLabel: 'Mindfulness', duration: 15, level: 'Principiante', instructor: 'Vale Manassero', thumbnail: 'assets/images/meditation.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-med-02', title: 'Pranayama Consciente: Respiración Nadi Shodhana & Calma', category: 'meditacion', categoryLabel: 'Pranayama', duration: 20, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/pranayama.jpg', planRequired: 'plan-esencia', featured: true },
-  { id: 'cls-med-03', title: 'Yoga Nidra Nocturno: Sueño Profundo & Restauración', category: 'meditacion', categoryLabel: 'Yoga Nidra', duration: 30, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/yin.jpg', planRequired: 'plan-esencia', featured: false },
-  { id: 'cls-med-04', title: 'Meditación Antiestrés: Liberación de Cargas Mentales', category: 'meditacion', categoryLabel: 'Sosiego Mental', duration: 18, level: 'Todos los niveles', instructor: 'Vale Manassero', thumbnail: 'assets/images/shala.jpg', planRequired: 'plan-esencia', featured: false }
+  {
+    id: 'cls-suave-01',
+    title: 'Yoga Suave: Despertar Matutino & Movilidad Articular',
+    category: 'suave',
+    categoryLabel: 'Yoga Suave',
+    duration: 35,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/shala.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'Una práctica dulce y sin impacto para activar el cuerpo a primera hora de la mañana. Despertamos las articulaciones, estiramos la columna suavemente y oxigenamos los órganos a través de respiraciones amplias. Enfoque integral en Cuerpo • Mente • Corazón.',
+    props: ['Esterilla', '1 Manta doblada'],
+    intentions: ['Despertar corporal', 'Movilidad articular', 'Calma matutina'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-suave-02',
+    title: 'Yoga Suave: Apertura de Pecho & Hombros Ligeros',
+    category: 'suave',
+    categoryLabel: 'Yoga Suave',
+    duration: 30,
+    level: 'Principiante',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/hero.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'Movimientos fluidos a ritmo pausado guiados por Vale Manassero, enfocados en liberar la rigidez acumulada en la parte alta de la espalda, hombros y cuello, fomentando una respiración libre.',
+    props: ['Esterilla', '1 Cojín o zafu'],
+    intentions: ['Postura relajada', 'Alivio de cuello', 'Presencia serena'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-clasico-01',
+    title: 'Yoga Clásico: Posturas Tradicionales & Alineación',
+    category: 'clasico',
+    categoryLabel: 'Yoga Clásico',
+    duration: 50,
+    level: 'Principiante',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/hatha.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'Exploración de las asanas clásicas del yoga tradicional con énfasis en la alineación biomecánica correcta, el sostén consciente de la postura y el control de la respiración. Más de 14 años de método refinado en nuestro Shala.',
+    props: ['Esterilla', '2 Bloques', '1 Cinto'],
+    intentions: ['Alineación postural', 'Fuerza estable', 'Enfoque mental'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-clasico-02',
+    title: 'Yoga Clásico de la Tarde: Equilibrio & Enraizamiento',
+    category: 'clasico',
+    categoryLabel: 'Yoga Clásico',
+    duration: 45,
+    level: 'Multinivel',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/shala.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'Secuencia clásica vespertina guiada por Vale Manassero para reconectar con el centro de gravedad, fortalecer piernas y enraizar la energía tras las actividades del día.',
+    props: ['Esterilla', '1 Bloque'],
+    intentions: ['Equilibrio', 'Enraizamiento', 'Firmeza y paz'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-terapeutico-01',
+    title: 'Yoga Terapéutico: Cuidado de Columna & Zona Lumbar',
+    category: 'terapeutico',
+    categoryLabel: 'Yoga Terapéutico',
+    duration: 45,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • Especialista en Yoga Terapéutico',
+    thumbnail: 'assets/images/yin.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'Práctica especializada diseñada para descomprimir los discos vertebrales, aliviar dolores lumbares y corregir desequilibrios posturales. Desarrollada por Vale Manassero a lo largo de 14 años de acompañamiento terapéutico.',
+    props: ['Esterilla', 'Manta de yoga', 'Cojín o bolster'],
+    intentions: ['Espalda sana', 'Alivio lumbar', 'Movilidad sin dolor'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-terapeutico-02',
+    title: 'Yoga Terapéutico: Liberación de Ciática & Caderas',
+    category: 'terapeutico',
+    categoryLabel: 'Yoga Terapéutico',
+    duration: 40,
+    level: 'Principiante',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria',
+    thumbnail: 'assets/images/meditation.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'Estiramientos profundos y biomecánica segura para liberar la compresión del nervio ciático y devolver la libertad de movimiento a la pelvis y las caderas.',
+    props: ['Esterilla', '1 Cinto', '1 Bloque'],
+    intentions: ['Alivio ciático', 'Flexibilidad pélvica', 'Descompresión'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-ashtanga-01',
+    title: 'Yoga Ashtanga: Serie Primaria & Saludos al Sol',
+    category: 'ashtanga',
+    categoryLabel: 'Yoga Ashtanga',
+    duration: 55,
+    level: 'Intermedio',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/vinyasa.jpg',
+    planRequired: 'plan-refugio',
+    featured: true,
+    description: 'La tradición clásica adaptada con precisión. Sincronización exacta de respiración Ujjayi, posturas de pie y cierres corporales (Bandhas) para generar calor purificador interno.',
+    props: ['Esterilla con buen agarre'],
+    intentions: ['Fuerza y resistencia', 'Disciplina', 'Purificación interna'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/The_Flow_of_Breath_-_Ashtanga_Yoga_Demo_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-ashtanga-02',
+    title: 'Yoga Ashtanga: Fuerza de Core & Posturas Sentadas',
+    category: 'ashtanga',
+    categoryLabel: 'Yoga Ashtanga',
+    duration: 60,
+    level: 'Intermedio / Avanzado',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Docente de Ashtanga & Alineación',
+    thumbnail: 'assets/images/hero.jpg',
+    planRequired: 'plan-refugio',
+    featured: false,
+    description: 'Profundización en las asanas en el suelo de la primera serie de Ashtanga Yoga: flexiones hacia adelante, torsiones y apertura de cadera con transiciones conscientes.',
+    props: ['Esterilla', 'Toalla de práctica'],
+    intentions: ['Potencia muscular', 'Flexibilidad activa', 'Enfoque Drishthi'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/The_Flow_of_Breath_-_Ashtanga_Yoga_Demo_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-dinamico-01',
+    title: 'Yoga Dinámico: Fluidez, Vitalidad & Movimiento Continuo',
+    category: 'dinamico',
+    categoryLabel: 'Yoga Dinámico',
+    duration: 45,
+    level: 'Multinivel',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria',
+    thumbnail: 'assets/images/vinyasa.jpg',
+    planRequired: 'plan-refugio',
+    featured: true,
+    description: 'Nuestra clase central de las 19:00 hs. Transiciones fluidas y creativas guiadas por la respiración que encienden la vitalidad del cuerpo y limpian la mente tras el día. Tríada Cuerpo • Mente • Corazón en acción.',
+    props: ['Esterilla', '2 Bloques (opcional)'],
+    intentions: ['Vitalidad y sudoración', 'Fluidez corporal', 'Desconexión mental'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-dinamico-02',
+    title: 'Yoga Dinámico: Fuerza, Apertura de Caderas & Corazón',
+    category: 'dinamico',
+    categoryLabel: 'Yoga Dinámico',
+    duration: 50,
+    level: 'Intermedio',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté',
+    thumbnail: 'assets/images/hero.jpg',
+    planRequired: 'plan-refugio',
+    featured: false,
+    description: 'Secuencia progresiva que combina posturas de fuerza sobre brazos, aperturas torácicas expansivas y extensiones de cadera con ritmo ágil y armonioso.',
+    props: ['Esterilla'],
+    intentions: ['Expansión de pecho', 'Fuerza integral', 'Energía renovada'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-relax-01',
+    title: 'Yoga Relax: Descompresión del Sistema Nervioso & Calma',
+    category: 'relax',
+    categoryLabel: 'Yoga Relax',
+    duration: 35,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • +14 años de trayectoria (desde 2012)',
+    thumbnail: 'assets/images/yin.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'La práctica ideal para las 20:15 hs. Posturas pasivas en el suelo sostenidas con ayuda de soportes, respiración suave y atenuación de estímulos para inducir un descanso reparador y calmar el corazón.',
+    props: ['Esterilla', 'Bolster o almohadón firme', 'Manta tibia'],
+    intentions: ['Relajación nerviosa', 'Liberación de tensiones', 'Sosiego mental'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-relax-02',
+    title: 'Yoga Relax: El Arte del Savasana & Relajación Guiada',
+    category: 'relax',
+    categoryLabel: 'Yoga Relax',
+    duration: 30,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté',
+    thumbnail: 'assets/images/meditation.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'Una sesión de quietud total y relajación consciente guiada por la voz serena de Vale Manassero para soltar cualquier carga residual del día antes de acostarte.',
+    props: ['Manta suave', 'Almohadita para los ojos'],
+    intentions: ['Sueño profundo', 'Paz interior', 'Descanso fascial'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-med-01',
+    title: 'Meditación Guiada: Presencia Plena & Silencio Interior',
+    category: 'meditacion',
+    categoryLabel: 'Mindfulness',
+    duration: 15,
+    level: 'Principiante',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté • Guía de Meditación Consciente',
+    thumbnail: 'assets/images/meditation.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'Una práctica breve y transformadora para silenciar el ruido mental. Anclamos la atención en el flujo natural de la respiración, cultivando serenidad y espacio interior en cualquier momento del día.',
+    props: ['Cojín de meditación o silla cómoda'],
+    intentions: ['Silencio mental', 'Paz inmediata', 'Claridad'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-med-02',
+    title: 'Pranayama Consciente: Respiración Nadi Shodhana & Calma',
+    category: 'meditacion',
+    categoryLabel: 'Pranayama',
+    duration: 20,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté',
+    thumbnail: 'assets/images/pranayama.jpg',
+    planRequired: 'plan-esencia',
+    featured: true,
+    description: 'Técnica milenaria de respiración alternada por fosas nasales para equilibrar los hemisferios cerebrales, reducir la ansiedad y purificar los canales de energía sutil del cuerpo.',
+    props: ['Espacio tranquilo', 'Postura sentada erguida'],
+    intentions: ['Equilibrio sutil', 'Alivio de ansiedad', 'Oxigenación profunda'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nadi_sodhana.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-med-03',
+    title: 'Yoga Nidra Nocturno: Sueño Profundo & Restauración',
+    category: 'meditacion',
+    categoryLabel: 'Yoga Nidra',
+    duration: 30,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Docente de Yoga Terapéutico & Restaurativo',
+    thumbnail: 'assets/images/yin.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'El sueño yóguico consciente. Acuéstate cómodamente y deja que la voz de Vale te guíe a través de una rotación de conciencia que induce ondas alfa y regeneración celular profunda.',
+    props: ['Cama o esterilla', 'Manta abrigada', 'Almohada baja'],
+    intentions: ['Reposo celular', 'Sueño profundo', 'Sanación interior'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/45/The_Music_of_Yoga_-_Ty_Landrum.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  },
+  {
+    id: 'cls-med-04',
+    title: 'Meditación Antiestrés: Liberación de Cargas Mentales',
+    category: 'meditacion',
+    categoryLabel: 'Sosiego Mental',
+    duration: 18,
+    level: 'Todos los niveles',
+    instructor: 'Vale Manassero',
+    instructorRole: 'Fundadora de Namasté',
+    thumbnail: 'assets/images/shala.jpg',
+    planRequired: 'plan-esencia',
+    featured: false,
+    description: 'Pausa consciente para soltar las tensiones de la jornada laboral. Ejercicios suaves de exhalación prolongada y visualización del espacio sagrado del Shala para reencontrar el centro.',
+    props: ['Lugar sereno'],
+    intentions: ['Descompresión', 'Claridad emocional', 'Regreso al centro'],
+    videoUrl: 'https://upload.wikimedia.org/wikipedia/commons/8/81/Mysore_Class_-_Yoga_Workshop.webm',
+    musicUrl: 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m'
+  }
 ];
 
 // -------------------------------------------------------------
@@ -1573,25 +1845,54 @@ export async function handleRequest(req, res) {
         // 2.6 Gestión de Clases en BD (NAM-016)
         if (pathname === '/api/admin/classes' && req.method === 'GET') {
           const customClasses = await getClasses();
-          return sendJson(res, 200, { success: true, classes: customClasses }, req);
+          const customIds = new Set(customClasses.map(c => c.id));
+          const combinedClasses = [
+            ...customClasses,
+            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
+          ];
+          return sendJson(res, 200, { success: true, classes: combinedClasses }, req);
         }
 
         if (pathname === '/api/admin/classes' && req.method === 'POST') {
           const body = await parseJsonBody(req);
-          if (!body.title || !body.videoUrl) {
-            return sendJson(res, 400, { success: false, message: 'Título y URL de video son requeridos.' }, req);
+          if (!body.title) {
+            return sendJson(res, 400, { success: false, message: 'Título es requerido.' }, req);
+          }
+          if (!body.videoUrl) {
+            const existing = CLASSES_CATALOG.find(c => c.id === body.id);
+            if (existing && existing.videoUrl) {
+              body.videoUrl = existing.videoUrl;
+            } else {
+              return sendJson(res, 400, { success: false, message: 'Título y archivo de video son requeridos.' }, req);
+            }
+          }
+          if (!body.thumbnail) {
+            const existing = CLASSES_CATALOG.find(c => c.id === body.id);
+            if (existing && existing.thumbnail) {
+              body.thumbnail = existing.thumbnail;
+            }
           }
           await saveClass(body);
           recordAuditLog(db, 'CLASS_SAVED', 'Práctica guardada en catálogo', `Práctica: ${body.title}`, auth.user.email, 'info');
-          const updatedClasses = await getClasses();
-          return sendJson(res, 200, { success: true, classes: updatedClasses }, req);
+          const customClasses = await getClasses();
+          const customIds = new Set(customClasses.map(c => c.id));
+          const combinedClasses = [
+            ...customClasses,
+            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
+          ];
+          return sendJson(res, 200, { success: true, classes: combinedClasses }, req);
         }
 
         const classDeleteMatch = pathname.match(/^\/api\/admin\/classes\/([a-zA-Z0-9_-]+)$/);
         if (classDeleteMatch && req.method === 'GET') {
           const classId = classDeleteMatch[1];
           const customClasses = await getClasses();
-          const target = customClasses.find(c => c.id === classId);
+          const customIds = new Set(customClasses.map(c => c.id));
+          const combinedClasses = [
+            ...customClasses,
+            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id))
+          ];
+          const target = combinedClasses.find(c => c.id === classId);
           if (!target) {
             return sendJson(res, 404, { success: false, message: 'Práctica no encontrada.' }, req);
           }
@@ -1601,8 +1902,13 @@ export async function handleRequest(req, res) {
           const classId = classDeleteMatch[1];
           await deleteClass(classId);
           recordAuditLog(db, 'CLASS_DELETED', 'Práctica eliminada', `ID: ${classId}`, auth.user.email, 'warning');
-          const updatedClasses = await getClasses();
-          return sendJson(res, 200, { success: true, classes: updatedClasses }, req);
+          const customClasses = await getClasses();
+          const customIds = new Set(customClasses.map(c => c.id));
+          const combinedClasses = [
+            ...customClasses,
+            ...CLASSES_CATALOG.filter(c => !customIds.has(c.id) && c.id !== classId)
+          ];
+          return sendJson(res, 200, { success: true, classes: combinedClasses }, req);
         }
 
         // 2.7 Configuración de Planes

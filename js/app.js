@@ -1813,7 +1813,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Props / Accesorios
     const propsListEl = document.getElementById('player-class-props');
     if (propsListEl) {
-      propsListEl.innerHTML = classObj.props.map(prop => `
+      const propsArr = Array.isArray(classObj.props)
+        ? classObj.props
+        : (typeof classObj.props === 'string' ? classObj.props.split(',').map(s => s.trim()).filter(Boolean) : []);
+      propsListEl.innerHTML = (propsArr.length > 0 ? propsArr : ['Esterilla']).map(prop => `
         <li class="player-prop-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(prop)}</li>
       `).join('');
     }
@@ -1821,9 +1824,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Intenciones
     const intentionsEl = document.getElementById('player-class-intentions');
     if (intentionsEl) {
-      intentionsEl.innerHTML = classObj.intentions.map(int => `
+      const intArr = Array.isArray(classObj.intentions)
+        ? classObj.intentions
+        : (typeof classObj.intentions === 'string' ? classObj.intentions.split(',').map(s => s.trim()).filter(Boolean) : []);
+      intentionsEl.innerHTML = (intArr.length > 0 ? intArr : ['Presencia y bienestar']).map(int => `
         <span class="badge-tag">${escapeHtml(int)}</span>
       `).join('');
+    }
+
+    // Enlace de música recomendada / Spotify
+    const musicLinkEl = document.getElementById('player-music-link');
+    if (musicLinkEl) {
+      musicLinkEl.href = classObj.musicUrl || 'https://open.spotify.com/playlist/37i9dQZF1DX9uKNf5jGX6m';
     }
 
     // Estado de botón Completada
@@ -3713,7 +3725,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const bgVolEl = document.getElementById('audio-param-bg-vol');
       const bgValEl = document.getElementById('val-audio-bg-vol');
       if (bgVolEl) bgVolEl.value = 30;
-      if (bgValEl) bgValEl.textContent = '30%';
+      const levelEl = document.getElementById('form-class-level');
+      if (levelEl) levelEl.value = 'Todos los niveles';
+      const durEl = document.getElementById('form-class-duration');
+      if (durEl) durEl.value = '';
+      const propsEl = document.getElementById('form-class-props');
+      if (propsEl) propsEl.value = '';
+      const intEl = document.getElementById('form-class-intentions');
+      if (intEl) intEl.value = '';
+      const musicEl = document.getElementById('form-class-music-url');
+      if (musicEl) musicEl.value = '';
 
       _applyEqGain();
     }
@@ -4079,14 +4100,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = document.getElementById('form-class-title')?.value.trim();
         const planRequired = document.getElementById('form-class-plan')?.value || 'plan-esencia';
         const category = document.getElementById('form-class-category')?.value || 'suave';
+        const level = document.getElementById('form-class-level')?.value || 'Todos los niveles';
+        const durationInput = parseInt(document.getElementById('form-class-duration')?.value, 10);
         const description = document.getElementById('form-class-desc')?.value.trim() || '';
+        const propsRaw = document.getElementById('form-class-props')?.value || '';
+        const props = propsRaw.split(',').map(s => s.trim()).filter(Boolean);
+        const intentionsRaw = document.getElementById('form-class-intentions')?.value || '';
+        const intentions = intentionsRaw.split(',').map(s => s.trim()).filter(Boolean);
+        const musicUrl = document.getElementById('form-class-music-url')?.value.trim() || '';
 
         // Media: blob local seleccionado o guardado previamente
-        const mediaUrl = _classMediaBlob || '';
+        let mediaUrl = _classMediaBlob || '';
         const format = _classMediaFormat || 'video';
 
-        // Thumbnail: blob local seleccionado o imagen por defecto
-        const thumbnail = _classThumbBlob || 'assets/images/shala.jpg';
+        // Si es una clase existente y no se seleccionó un nuevo archivo, conservar el existente
+        if (!mediaUrl && classId) {
+          const prev = (state.adminClassesCache || []).find(c => c.id === classId) || getActiveClasses().find(c => c.id === classId);
+          if (prev && prev.videoUrl) mediaUrl = prev.videoUrl;
+        }
+
+        // Thumbnail: blob local seleccionado o imagen previa / por defecto
+        let thumbnail = _classThumbBlob || '';
+        if (!thumbnail && classId) {
+          const prev = (state.adminClassesCache || []).find(c => c.id === classId) || getActiveClasses().find(c => c.id === classId);
+          if (prev && prev.thumbnail) thumbnail = prev.thumbnail;
+        }
+        if (!thumbnail) thumbnail = 'assets/images/shala.jpg';
 
         if (!title) {
           showToast('Por favor escribe el título de la práctica', 'warning');
@@ -4107,6 +4146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const calcDuration = _classMediaFormat === 'video' && _videoTrim.end > _videoTrim.start
           ? Math.max(1, Math.round((_videoTrim.end - _videoTrim.start) / 60))
           : 35;
+        const duration = (!isNaN(durationInput) && durationInput > 0) ? durationInput : calcDuration;
 
         const classData = {
           id: classId || undefined,
@@ -4115,11 +4155,14 @@ document.addEventListener('DOMContentLoaded', () => {
           planRequired,
           category,
           categoryLabel: categoryLabels[category] || 'Práctica Holística',
-          duration: calcDuration,
+          duration,
+          level,
+          props: props.length > 0 ? props : ['Esterilla'],
+          intentions: intentions.length > 0 ? intentions : ['Presencia y calma'],
+          musicUrl,
           videoUrl: mediaUrl,
           thumbnail,
           description,
-          level: 'Todos los niveles',
           videoTrim: _classMediaFormat === 'video' ? _videoTrim : undefined,
           videoFilters: _classMediaFormat === 'video' ? _videoFilters : undefined,
           audioSettings: _classMediaFormat === 'audio' ? _audioSettings : undefined
@@ -4195,6 +4238,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (catSelect) catSelect.value = classObj.category || 'suave';
             const descInput = document.getElementById('form-class-desc');
             if (descInput) descInput.value = classObj.description || '';
+            const levelSelect = document.getElementById('form-class-level');
+            if (levelSelect) levelSelect.value = classObj.level || 'Todos los niveles';
+            const durInput = document.getElementById('form-class-duration');
+            if (durInput) durInput.value = classObj.duration || 35;
+            const propsInput = document.getElementById('form-class-props');
+            if (propsInput) {
+              propsInput.value = Array.isArray(classObj.props) ? classObj.props.join(', ') : (classObj.props || '');
+            }
+            const intInput = document.getElementById('form-class-intentions');
+            if (intInput) {
+              intInput.value = Array.isArray(classObj.intentions) ? classObj.intentions.join(', ') : (classObj.intentions || '');
+            }
+            const musicInput = document.getElementById('form-class-music-url');
+            if (musicInput) musicInput.value = classObj.musicUrl || '';
 
             // Formato y archivo existente
             _classMediaFormat = classObj.format || (classObj.category === 'meditacion' || classObj.category === 'relax' ? 'audio' : 'video');
