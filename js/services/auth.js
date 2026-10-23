@@ -23,9 +23,9 @@ const AuthService = (() => {
       memberSince: 'Enero 2012',
       nextBillingDate: 'Cuenta Maestra (Vitalicia)',
       active: true,
-      streakDays: 365,
-      totalMinutesPracticed: 9999,
-      completedClassesCount: 150
+      streakDays: 0,
+      totalMinutesPracticed: 0,
+      completedClassesCount: 0
     },
     'NAMASTE-ALUMNO': {
       id: 'usr-sofia',
@@ -37,9 +37,9 @@ const AuthService = (() => {
       memberSince: 'Marzo 2026',
       nextBillingDate: '28 Octubre 2026',
       active: true,
-      streakDays: 8,
-      totalMinutesPracticed: 275,
-      completedClassesCount: 8
+      streakDays: 0,
+      totalMinutesPracticed: 0,
+      completedClassesCount: 0
     },
     'NAMASTE-DEMO': {
       id: 'usr-invitado',
@@ -51,9 +51,9 @@ const AuthService = (() => {
       memberSince: 'Septiembre 2026',
       nextBillingDate: '28 Octubre 2026',
       active: true,
-      streakDays: 1,
-      totalMinutesPracticed: 35,
-      completedClassesCount: 1
+      streakDays: 0,
+      totalMinutesPracticed: 0,
+      completedClassesCount: 0
     }
   };
 
@@ -274,7 +274,7 @@ const AuthService = (() => {
       nextBillingDate: nextBillingDate,
       active: active, // Inactivo hasta que se complete el pago
       paymentStatus: paymentStatus,
-      streakDays: 1,
+      streakDays: 0,
       totalMinutesPracticed: 0,
       completedClassesCount: 0,
       lastPracticeDate: null

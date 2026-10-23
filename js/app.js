@@ -1995,7 +1995,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const badgeCountEl = document.getElementById('modal-completed-count-badge');
       const listContainer = document.getElementById('modal-completed-classes-list');
 
-      const streak = progress.streakDays || 1;
+      const streak = Number(progress.streakDays) || 0;
       if (streakEl) streakEl.textContent = streak;
       if (minEl) minEl.textContent = progress.totalMinutes || 0;
       if (countEl) countEl.textContent = progress.completed ? progress.completed.length : 0;

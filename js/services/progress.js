@@ -32,29 +32,16 @@ const ProgressService = (() => {
   };
 
   /**
-   * Estado por defecto de la alumna demo oficial Sofía Varela (usr-sofia)
-   * exactamente sincronizado con database.json (8 clases completadas, 275 min, 8 días racha).
+   * Estado de progreso inicial limpio (0 clases completadas, 0 minutos, 0 racha).
+   * A partir de ahora, todo progreso de alumnas se guarda de forma 100% real.
    */
-  const getSofiaDefaultProgress = () => ({
-    streakDays: 8,
-    lastStreakDate: '2026-10-02',
-    totalMinutes: 275,
-    favorites: ['cls-dinamico-01', 'cls-terapeutico-01'],
-    completed: [
-      'cls-suave-01',
-      'cls-relax-02',
-      'cls-suave-02',
-      'cls-dinamico-01',
-      'cls-terapeutico-01',
-      'cls-relax-01',
-      'cls-med-02',
-      'cls-terapeutico-02'
-    ],
-    lastPlayed: {
-      classId: 'cls-dinamico-01',
-      progressSeconds: 480,
-      timestamp: '2026-10-02T14:30:00Z'
-    }
+  const getCleanProgressState = () => ({
+    streakDays: 0,
+    lastStreakDate: null,
+    totalMinutes: 0,
+    favorites: [],
+    completed: [],
+    lastPlayed: null
   });
 
   /**
@@ -65,6 +52,22 @@ const ProgressService = (() => {
     if (cachedUserId === currentId && cachedState) {
       return cachedState;
     }
+
+    // Purgar de una sola vez cualquier residuo de clases ficticias heredadas en el navegador
+    try {
+      const purgeKey = 'namaste_real_progress_v4';
+      if (!localStorage.getItem(purgeKey)) {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('namaste_user_progress_')) {
+            localStorage.removeItem(k);
+          }
+        }
+        localStorage.setItem(purgeKey, 'true');
+        cachedUserId = null;
+        cachedState = null;
+      }
+    } catch (e) {}
 
     const key = getStorageKey(currentId);
     try {
@@ -85,37 +88,14 @@ const ProgressService = (() => {
         }
       }
 
-      // Si es Sofía Varela y aún no tiene registro local, inicializar con el estado oficial sincronizado
-      const user = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser() : null;
-      if (currentId === 'usr-sofia' || (user && (user.accessCode === 'NAMASTE-ALUMNO' || user.email === 'sofia.varela@ejemplo.com'))) {
-        const sofiaProgress = getSofiaDefaultProgress();
-        localStorage.setItem(key, JSON.stringify(sofiaProgress));
-        cachedUserId = currentId;
-        cachedState = sofiaProgress;
-        return cachedState;
-      }
-
-      // Para cualquier otro alumno nuevo, iniciar en 0 sin mezclar datos de otros usuarios
-      const cleanState = {
-        streakDays: 0,
-        lastStreakDate: null,
-        totalMinutes: 0,
-        favorites: [],
-        completed: [],
-        lastPlayed: null
-      };
+      // Estado 100% limpio en 0 para todos los alumnos
+      const cleanState = getCleanProgressState();
+      localStorage.setItem(key, JSON.stringify(cleanState));
       cachedUserId = currentId;
       cachedState = cleanState;
       return cachedState;
     } catch (e) {
-      return {
-        streakDays: 0,
-        lastStreakDate: null,
-        totalMinutes: 0,
-        favorites: [],
-        completed: [],
-        lastPlayed: null
-      };
+      return getCleanProgressState();
     }
   };
 

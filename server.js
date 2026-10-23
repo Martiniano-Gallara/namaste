@@ -673,8 +673,8 @@ export async function handleRequest(req, res) {
         };
 
         const prog = await getProgress(user.id) || db.progress[user.id] || {
-          streakDays: 1,
-          lastStreakDate: getArgentinaTodayStr(),
+          streakDays: 0,
+          lastStreakDate: null,
           totalMinutes: 0,
           favorites: [],
           completed: [],
@@ -697,8 +697,8 @@ export async function handleRequest(req, res) {
           return sendJson(res, 401, { success: false, message: 'Sesión no válida o expirada.' }, req);
         }
         const prog = await getProgress(auth.user.id) || db.progress[auth.user.id] || {
-          streakDays: 1,
-          lastStreakDate: getArgentinaTodayStr(),
+          streakDays: 0,
+          lastStreakDate: null,
           totalMinutes: 0,
           favorites: [],
           completed: [],
@@ -836,8 +836,8 @@ export async function handleRequest(req, res) {
 
           db.progress[newId] = {
             userId: newId,
-            streakDays: 1,
-            lastStreakDate: getArgentinaTodayStr(),
+            streakDays: 0,
+            lastStreakDate: null,
             totalMinutes: 0,
             favorites: [],
             completed: [],
@@ -1062,8 +1062,8 @@ export async function handleRequest(req, res) {
         }
         const userId = auth.user.id;
         const currentProg = await getProgress(userId) || db.progress[userId] || {
-          streakDays: 1,
-          lastStreakDate: '',
+          streakDays: 0,
+          lastStreakDate: null,
           totalMinutes: 0,
           favorites: [],
           completed: [],
@@ -1081,8 +1081,8 @@ export async function handleRequest(req, res) {
         const body = await parseJsonBody(req);
         const userId = auth.user.id;
         const currentProg = await getProgress(userId) || db.progress[userId] || {
-          streakDays: 1,
-          lastStreakDate: '',
+          streakDays: 0,
+          lastStreakDate: null,
           totalMinutes: 0,
           favorites: [],
           completed: [],
@@ -1092,7 +1092,9 @@ export async function handleRequest(req, res) {
         // Si se completa una clase, calcular racha con zona horaria de Argentina
         if (body.completedClassId) {
           const classId = String(body.completedClassId).trim();
-          if (CLASS_CATEGORIES[classId] || YOGA_STREAMS[classId]) {
+          const customClasses = await getClasses();
+          const isKnownClass = CLASS_CATEGORIES[classId] || YOGA_STREAMS[classId] || customClasses.some(c => c.id === classId);
+          if (isKnownClass) {
             if (!currentProg.completed.includes(classId)) {
               currentProg.completed.push(classId);
             }
@@ -1118,8 +1120,25 @@ export async function handleRequest(req, res) {
           }
         }
 
+        // Sincronización completa de estado de progreso (ProgressService)
+        if (Array.isArray(body.completed)) {
+          currentProg.completed = body.completed.filter(id => typeof id === 'string' && id.trim().length > 0);
+        }
+
+        if (Number.isFinite(body.totalMinutes)) {
+          currentProg.totalMinutes = Math.max(0, Math.round(body.totalMinutes));
+        }
+
+        if (Number.isFinite(body.streakDays)) {
+          currentProg.streakDays = Math.max(0, Math.round(body.streakDays));
+        }
+
+        if (body.lastStreakDate !== undefined) {
+          currentProg.lastStreakDate = body.lastStreakDate ? String(body.lastStreakDate) : null;
+        }
+
         if (Array.isArray(body.favorites)) {
-          currentProg.favorites = body.favorites.filter(id => typeof id === 'string' && (CLASS_CATEGORIES[id] || YOGA_STREAMS[id]));
+          currentProg.favorites = body.favorites.filter(id => typeof id === 'string');
         }
 
         if (body.lastPlayed && typeof body.lastPlayed === 'object') {
@@ -1434,8 +1453,8 @@ export async function handleRequest(req, res) {
 
           db.progress[newId] = {
             userId: newId,
-            streakDays: 1,
-            lastStreakDate: getArgentinaTodayStr(),
+            streakDays: 0,
+            lastStreakDate: null,
             totalMinutes: 0,
             favorites: [],
             completed: [],
