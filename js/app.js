@@ -2490,9 +2490,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailEl = document.getElementById('drawer-user-email');
     if (emailEl) emailEl.textContent = user.email;
 
-    const codeEl = document.getElementById('drawer-access-code');
-    if (codeEl) codeEl.textContent = user.accessCode || user.email;
-
     const planNameEl = document.getElementById('drawer-plan-name');
     if (planNameEl) planNameEl.textContent = user.planName || 'Plan Refugio';
 
@@ -2501,11 +2498,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const billingAmountEl = document.getElementById('drawer-billing-amount');
     if (billingAmountEl) {
-      if (user.billedAmount) {
+      if (user.isAdmin || user.role === 'admin') {
+        billingAmountEl.textContent = 'Acceso Vitalicio';
+      } else if (user.billedAmount) {
         const periodStr = user.isAnnual || user.billingCycle === 'annual' ? '/año' : '/mes';
-        billingAmountEl.textContent = `($ ${Number(user.billedAmount).toLocaleString('es-AR')} ARS${periodStr})`;
+        billingAmountEl.textContent = `$ ${Number(user.billedAmount).toLocaleString('es-AR')} ARS${periodStr}`;
       } else {
-        billingAmountEl.textContent = '($ 29.000 ARS/mes)';
+        const isRefugio = (user.planId || '').includes('refugio');
+        billingAmountEl.textContent = isRefugio ? '$ 39.000 ARS/mes' : '$ 29.000 ARS/mes';
       }
     }
 
