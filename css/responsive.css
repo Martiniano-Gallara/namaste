@@ -1324,7 +1324,12 @@
   }
 
   .modal-body {
-    padding: 1.25rem;
+    padding: 1.25rem 1rem !important;
+  }
+
+  .modal-login-subtitle {
+    font-size: clamp(0.70rem, 3.2vw, 0.88rem) !important;
+    white-space: nowrap !important;
   }
 
   /* Ocultar flechas de carrusel en móvil (swipe táctil nativo) */

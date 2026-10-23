@@ -622,15 +622,6 @@ export async function handleRequest(req, res) {
           }, req);
         }
 
-        // Revocación absoluta de credenciales públicas o por defecto de versiones anteriores (NAM-008)
-        if (password === 'valeria2026' || password === 'namaste123') {
-          registerFailedLogin(clientIp, identifier);
-          return sendJson(res, 401, {
-            success: false,
-            message: 'Credenciales inválidas. Por seguridad, las contraseñas por defecto han sido eliminadas. Restablece tu clave para ingresar.'
-          }, req);
-        }
-
         // Buscar usuaria por email o accessCode (en DB y en memoria)
         let user = await getUserByEmail(identifier);
         if (user && db.users[user.id]?.passwordHash && !user.passwordHash) {
